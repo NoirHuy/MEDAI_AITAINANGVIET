@@ -1,0 +1,31 @@
+services:
+  backend:
+    build:
+      context: ./back_end
+    env_file:
+      - ./back_end/.env
+    environment:
+      # Overrides whatever's in back_end/.env — inside Compose, the
+      # frontend is reached at this origin, not the local dev ports.
+      CLIENT_ORIGIN: http://localhost:8080
+    volumes:
+      - backend_data:/app/data
+    restart: unless-stopped
+    expose:
+      - '4000'
+
+  frontend:
+    build:
+      context: .
+      args:
+        VITE_API_URL: ''
+        # Sourced from the root .env (same value used by `npm run dev`).
+        VITE_GOOGLE_CLIENT_ID: ${VITE_GOOGLE_CLIENT_ID:-}
+    depends_on:
+      - backend
+    ports:
+      - '8080:80'
+    restart: unless-stopped
+
+volumes:
+  backend_data:

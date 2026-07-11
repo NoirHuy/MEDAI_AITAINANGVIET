@@ -1,0 +1,288 @@
+// Small inline SVG icon set, styled via currentColor so parents control color.
+const base = {
+  width: '1em',
+  height: '1em',
+  viewBox: '0 0 24 24',
+  fill: 'none',
+  stroke: 'currentColor',
+  strokeWidth: 2,
+  strokeLinecap: 'round',
+  strokeLinejoin: 'round',
+}
+
+export function MenuIcon(props) {
+  return (
+    <svg {...base} {...props}>
+      <line x1="4" y1="7" x2="20" y2="7" />
+      <line x1="4" y1="12" x2="20" y2="12" />
+      <line x1="4" y1="17" x2="20" y2="17" />
+    </svg>
+  )
+}
+
+export function PlusIcon(props) {
+  return (
+    <svg {...base} {...props}>
+      <line x1="12" y1="5" x2="12" y2="19" />
+      <line x1="5" y1="12" x2="19" y2="12" />
+    </svg>
+  )
+}
+
+export function SearchIcon(props) {
+  return (
+    <svg {...base} {...props}>
+      <circle cx="11" cy="11" r="7" />
+      <line x1="21" y1="21" x2="16.65" y2="16.65" />
+    </svg>
+  )
+}
+
+export function SendIcon(props) {
+  return (
+    <svg {...base} fill="currentColor" stroke="none" {...props}>
+      <path d="M3.4 20.6 21 12 3.4 3.4 3 10l13 2-13 2z" />
+    </svg>
+  )
+}
+
+export function StopIcon(props) {
+  return (
+    <svg {...base} fill="currentColor" stroke="none" {...props}>
+      <rect x="6" y="6" width="12" height="12" rx="2" />
+    </svg>
+  )
+}
+
+export function MicIcon(props) {
+  return (
+    <svg {...base} {...props}>
+      <rect x="9" y="2" width="6" height="12" rx="3" />
+      <path d="M5 10a7 7 0 0 0 14 0" />
+      <line x1="12" y1="19" x2="12" y2="22" />
+    </svg>
+  )
+}
+
+export function PaperclipIcon(props) {
+  return (
+    <svg {...base} {...props}>
+      <path d="M21 11.5 12.4 20a4.5 4.5 0 0 1-6.4-6.4l8.5-8.5a3 3 0 0 1 4.2 4.2l-8.4 8.4a1.5 1.5 0 0 1-2.1-2.1l7.8-7.8" />
+    </svg>
+  )
+}
+
+export function ChevronDownIcon(props) {
+  return (
+    <svg {...base} {...props}>
+      <polyline points="6 9 12 15 18 9" />
+    </svg>
+  )
+}
+
+export function SunIcon(props) {
+  return (
+    <svg {...base} {...props}>
+      <circle cx="12" cy="12" r="4" />
+      <line x1="12" y1="2" x2="12" y2="4" />
+      <line x1="12" y1="20" x2="12" y2="22" />
+      <line x1="4.2" y1="4.2" x2="5.6" y2="5.6" />
+      <line x1="18.4" y1="18.4" x2="19.8" y2="19.8" />
+      <line x1="2" y1="12" x2="4" y2="12" />
+      <line x1="20" y1="12" x2="22" y2="12" />
+      <line x1="4.2" y1="19.8" x2="5.6" y2="18.4" />
+      <line x1="18.4" y1="5.6" x2="19.8" y2="4.2" />
+    </svg>
+  )
+}
+
+export function MoonIcon(props) {
+  return (
+    <svg {...base} {...props}>
+      <path d="M21 12.8A9 9 0 1 1 11.2 3 7 7 0 0 0 21 12.8z" />
+    </svg>
+  )
+}
+
+export function TrashIcon(props) {
+  return (
+    <svg {...base} {...props}>
+      <polyline points="3 6 5 6 21 6" />
+      <path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6" />
+      <path d="M10 11v6" />
+      <path d="M14 11v6" />
+      <path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2" />
+    </svg>
+  )
+}
+
+export function PulseIcon(props) {
+  return (
+    <svg {...base} {...props}>
+      <path d="M3 12h4l2-7 4 14 2-7h6" />
+    </svg>
+  )
+}
+
+export function AlertIcon(props) {
+  return (
+    <svg {...base} {...props}>
+      <path d="M12 9v4" />
+      <path d="M12 17h.01" />
+      <path d="M10.3 3.9 2.4 18a1.5 1.5 0 0 0 1.3 2.2h16.6a1.5 1.5 0 0 0 1.3-2.2L13.7 3.9a1.5 1.5 0 0 0-2.6 0z" />
+    </svg>
+  )
+}
+
+export function CheckIcon(props) {
+  return (
+    <svg {...base} {...props}>
+      <polyline points="4 12 9 17 20 6" />
+    </svg>
+  )
+}
+
+export function GearIcon(props) {
+  return (
+    <svg {...base} {...props}>
+      <circle cx="12" cy="12" r="3" />
+      <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09a1.65 1.65 0 0 0-1-1.51 1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09a1.65 1.65 0 0 0 1.51-1 1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 1 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 1 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z" />
+    </svg>
+  )
+}
+
+export function UserCircleIcon(props) {
+  return (
+    <svg {...base} {...props}>
+      <circle cx="12" cy="12" r="9" />
+      <circle cx="12" cy="10" r="3" />
+      <path d="M6.2 18.5a6.5 6.5 0 0 1 11.6 0" />
+    </svg>
+  )
+}
+
+export function LogOutIcon(props) {
+  return (
+    <svg {...base} {...props}>
+      <path d="M9 21H6a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h3" />
+      <polyline points="15 17 20 12 15 7" />
+      <line x1="20" y1="12" x2="9" y2="12" />
+    </svg>
+  )
+}
+
+export function CreditCardIcon(props) {
+  return (
+    <svg {...base} {...props}>
+      <rect x="2" y="5" width="20" height="14" rx="2" />
+      <line x1="2" y1="10" x2="22" y2="10" />
+    </svg>
+  )
+}
+
+export function GaugeIcon(props) {
+  return (
+    <svg {...base} {...props}>
+      <path d="M4.9 19a9 9 0 1 1 14.2 0" />
+      <line x1="12" y1="13" x2="15.5" y2="9" />
+      <circle cx="12" cy="13" r="1" />
+    </svg>
+  )
+}
+
+export function HelpCircleIcon(props) {
+  return (
+    <svg {...base} {...props}>
+      <circle cx="12" cy="12" r="9" />
+      <path d="M9.5 9.5a2.5 2.5 0 0 1 4.8 1c0 1.5-2.3 1.8-2.3 3.5" />
+      <line x1="12" y1="17.5" x2="12" y2="17.5" />
+    </svg>
+  )
+}
+
+export function CloseIcon(props) {
+  return (
+    <svg {...base} {...props}>
+      <line x1="6" y1="6" x2="18" y2="18" />
+      <line x1="18" y1="6" x2="6" y2="18" />
+    </svg>
+  )
+}
+
+export function ChevronRightIcon(props) {
+  return (
+    <svg {...base} {...props}>
+      <polyline points="9 6 15 12 9 18" />
+    </svg>
+  )
+}
+
+export function GoogleIcon(props) {
+  return (
+    <svg viewBox="0 0 18 18" width="1em" height="1em" {...props}>
+      <path
+        fill="#4285F4"
+        d="M17.64 9.2c0-.637-.057-1.251-.164-1.84H9v3.481h4.844c-.209 1.125-.843 2.078-1.796 2.717v2.258h2.908c1.702-1.567 2.684-3.874 2.684-6.615z"
+      />
+      <path
+        fill="#34A853"
+        d="M9 18c2.43 0 4.467-.806 5.956-2.18l-2.908-2.259c-.806.54-1.837.86-3.048.86-2.344 0-4.328-1.584-5.036-3.711H.957v2.332C2.438 15.983 5.482 18 9 18z"
+      />
+      <path
+        fill="#FBBC05"
+        d="M3.964 10.71A5.41 5.41 0 0 1 3.682 9c0-.593.102-1.17.282-1.71V4.958H.957A8.996 8.996 0 0 0 0 9c0 1.452.348 2.827.957 4.042l3.007-2.332z"
+      />
+      <path
+        fill="#EA4335"
+        d="M9 3.58c1.321 0 2.508.454 3.44 1.345l2.582-2.58C13.463.891 11.426 0 9 0 5.482 0 2.438 2.017.957 4.958L3.964 7.29C4.672 5.163 6.656 3.58 9 3.58z"
+      />
+    </svg>
+  )
+}
+
+export function LogInIcon(props) {
+  return (
+    <svg {...base} {...props}>
+      <path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4" />
+      <polyline points="10 17 15 12 10 7" />
+      <line x1="15" y1="12" x2="3" y2="12" />
+    </svg>
+  )
+}
+
+export function EyeIcon(props) {
+  return (
+    <svg {...base} {...props}>
+      <path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7-11-7-11-7z" />
+      <circle cx="12" cy="12" r="3" />
+    </svg>
+  )
+}
+
+export function EyeOffIcon(props) {
+  return (
+    <svg {...base} {...props}>
+      <path d="M17.4 17.5A11 11 0 0 1 12 19c-7 0-11-7-11-7a19.4 19.4 0 0 1 4.6-5.4" />
+      <path d="M9.5 5.2A9.9 9.9 0 0 1 12 5c7 0 11 7 11 7a19.5 19.5 0 0 1-2.6 3.6" />
+      <path d="M14.1 14.1a3 3 0 1 1-4.2-4.2" />
+      <line x1="2" y1="2" x2="22" y2="22" />
+    </svg>
+  )
+}
+
+export function SpinnerIcon(props) {
+  return (
+    <svg {...base} {...props} className={`spinner-icon ${props.className ?? ''}`}>
+      <path d="M21 12a9 9 0 1 1-9-9" />
+    </svg>
+  )
+}
+
+export function PanelCollapseIcon(props) {
+  return (
+    <svg {...base} {...props}>
+      <rect x="3" y="4" width="18" height="16" rx="2" />
+      <line x1="10" y1="4" x2="10" y2="20" />
+    </svg>
+  )
+}

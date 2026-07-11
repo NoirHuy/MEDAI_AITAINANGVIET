@@ -1,0 +1,169 @@
+import { useState } from 'react'
+import Sidebar from './components/Sidebar'
+import ChatView from './components/ChatView'
+import SettingsModal from './components/SettingsModal'
+import AuthModal from './components/AuthModal'
+import Toast from './components/Toast'
+import { useChat } from './hooks/useChat'
+import { useTheme } from './hooks/useTheme'
+import { useAccount } from './hooks/useAccount'
+import { useToast } from './hooks/useToast'
+import { DEFAULT_SPECIALTY_ID } from './data/specialties'
+import './App.css'
+
+function App() {
+  const chat = useChat()
+  const { theme, toggleTheme } = useTheme()
+  const {
+    account,
+    signUpForm,
+    signInForm,
+    signInWithGoogle,
+    updateName,
+    setPlan,
+    signOut,
+    fetchUsage,
+  } = useAccount()
+  const { message: toastMessage, showToast } = useToast()
+
+  const [inputValue, setInputValue] = useState('')
+  const [pendingSpecialtyId, setPendingSpecialtyId] = useState(DEFAULT_SPECIALTY_ID)
+  const [searchTerm, setSearchTerm] = useState('')
+  const [collapsed, setCollapsed] = useState(false)
+  const [mobileOpen, setMobileOpen] = useState(false)
+  const [settingsTab, setSettingsTab] = useState(null)
+  const [authTab, setAuthTab] = useState(null)
+
+  const specialtyId = chat.activeConversation?.specialtyId ?? pendingSpecialtyId
+
+  function handleSpecialtyChange(newId) {
+    if (chat.activeConversation) {
+      chat.setSpecialty(chat.activeConversation.id, newId)
+    } else {
+      setPendingSpecialtyId(newId)
+    }
+  }
+
+  function handleSend(text) {
+    const toSend = (text ?? '').trim() ? text : inputValue
+    if (!toSend.trim() || chat.isResponding) return
+    setInputValue('')
+    chat.sendMessage(toSend, specialtyId)
+  }
+
+  function handleNewChat() {
+    chat.startNewConversation(pendingSpecialtyId)
+    setMobileOpen(false)
+  }
+
+  function handleSelectConversation(id) {
+    chat.selectConversation(id)
+    setMobileOpen(false)
+  }
+
+  async function handleUpdateName(name) {
+    try {
+      await updateName(name)
+      showToast('Đã lưu thay đổi hồ sơ')
+    } catch (err) {
+      showToast(err.message)
+    }
+  }
+
+  async function handleSetPlan(planId) {
+    try {
+      await setPlan(planId)
+      setSettingsTab(null)
+      showToast(
+        planId === 'pro'
+          ? 'Đã nâng cấp lên Pro (giả lập) — chưa kết nối cổng thanh toán thật'
+          : 'Đã chuyển về gói Free (giả lập)',
+      )
+    } catch (err) {
+      showToast(err.message)
+    }
+  }
+
+  function handleSignOut() {
+    signOut()
+    setSettingsTab(null)
+    setMobileOpen(false)
+    showToast('Đã đăng xuất')
+  }
+
+  function handleHelp() {
+    showToast('Tính năng gửi phản hồi sắp ra mắt')
+  }
+
+  function handleAuthed(_user, message) {
+    setAuthTab(null)
+    showToast(message)
+  }
+
+  return (
+    <div className="app-shell">
+      <div className={`sidebar-wrapper ${mobileOpen ? 'sidebar-wrapper--open' : ''}`}>
+        <Sidebar
+          collapsed={collapsed}
+          onToggleCollapsed={() => setCollapsed((c) => !c)}
+          conversations={chat.conversations}
+          activeId={chat.activeId}
+          onSelect={handleSelectConversation}
+          onNewChat={handleNewChat}
+          onDelete={chat.deleteConversation}
+          theme={theme}
+          onToggleTheme={toggleTheme}
+          searchTerm={searchTerm}
+          onSearchTermChange={setSearchTerm}
+          account={account}
+          onOpenSettings={setSettingsTab}
+          onSignOut={handleSignOut}
+          onHelp={handleHelp}
+          onOpenAuth={() => setAuthTab('signin')}
+        />
+      </div>
+
+      {mobileOpen && <div className="app-backdrop" onClick={() => setMobileOpen(false)} />}
+
+      <ChatView
+        messages={chat.activeConversation?.messages ?? []}
+        isResponding={chat.isResponding}
+        inputValue={inputValue}
+        onInputChange={setInputValue}
+        onSend={handleSend}
+        onStop={chat.stopResponding}
+        specialtyId={specialtyId}
+        onSpecialtyChange={handleSpecialtyChange}
+        onOpenMenu={() => setMobileOpen(true)}
+      />
+
+      {settingsTab && account && (
+        <SettingsModal
+          activeTab={settingsTab}
+          onChangeTab={setSettingsTab}
+          onClose={() => setSettingsTab(null)}
+          account={account}
+          onUpdateName={handleUpdateName}
+          onSetPlan={handleSetPlan}
+          onSignOut={handleSignOut}
+          onFetchUsage={fetchUsage}
+        />
+      )}
+
+      {authTab && (
+        <AuthModal
+          initialTab={authTab}
+          onClose={() => setAuthTab(null)}
+          onSignUpForm={signUpForm}
+          onSignInForm={signInForm}
+          onSignInWithGoogle={signInWithGoogle}
+          onAuthed={handleAuthed}
+        />
+      )}
+
+      <Toast message={toastMessage} />
+    </div>
+  )
+}
+
+export default App

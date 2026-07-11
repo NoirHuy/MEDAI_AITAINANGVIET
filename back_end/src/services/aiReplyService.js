@@ -1,0 +1,235 @@
+import { getSpecialty } from '../config/specialties.js'
+import { env } from '../config/env.js'
+import {
+  computeAdaptiveContext,
+  extractSymptomsFromHistory,
+  formatAdaptiveContext
+} from './nliceService.js'
+
+// ─── CONSTANTS ───────────────────────────────────────────────────────────────
+const THINKING_DELAY_RANGE = [300, 700]
+const TOKEN_DELAY_RANGE = [10, 28]
+
+// ─── HELPERS ─────────────────────────────────────────────────────────────────
+function wait(ms, signal) {
+  return new Promise((resolve, reject) => {
+    if (signal?.aborted) { reject(new Error('aborted')); return }
+    const timer = setTimeout(resolve, ms)
+    signal?.addEventListener('abort', () => { clearTimeout(timer); reject(new Error('aborted')) })
+  })
+}
+
+function randomBetween(min, max) { return min + Math.random() * (max - min) }
+
+async function streamText(text, onChunk, signal) {
+  await wait(randomBetween(...THINKING_DELAY_RANGE), signal)
+  const chunks = text.match(/[\s\S]{1,4}/g) ?? []
+  let full = ''
+  for (const chunk of chunks) {
+    full += chunk
+    onChunk?.(chunk)
+    await wait(randomBetween(...TOKEN_DELAY_RANGE), signal)
+  }
+  return full
+}
+
+// ─── OPENROUTER STREAM CLIENT ─────────────────────────────────────────────────
+async function streamOpenRouter(chatMessages, onChunk, signal) {
+  const response = await fetch('https://openrouter.ai/api/v1/chat/completions', {
+    method: 'POST',
+    headers: {
+      'Authorization': `Bearer ${env.openrouterApiKey}`,
+      'Content-Type': 'application/json',
+      'HTTP-Referer': 'http://localhost:4000',
+      'X-Title': 'MedChat'
+    },
+    body: JSON.stringify({
+      model: env.openrouterModel,
+      messages: chatMessages,
+      stream: true,
+      max_tokens: 3000
+    }),
+    signal
+  })
+
+  if (!response.ok) {
+    const errText = await response.text()
+    throw new Error(`OpenRouter API error: ${response.status} - ${errText}`)
+  }
+
+  const reader = response.body.getReader()
+  const decoder = new TextDecoder()
+  let fullReply = ''
+  let buffer = ''
+
+  while (true) {
+    const { done, value } = await reader.read()
+    if (done) break
+    buffer += decoder.decode(value, { stream: true })
+    const lines = buffer.split('\n')
+    buffer = lines.pop()
+    for (const line of lines) {
+      const clean = line.trim()
+      if (!clean || clean === 'data: [DONE]') continue
+      if (clean.startsWith('data: ')) {
+        try {
+          const parsed = JSON.parse(clean.slice(6))
+          const content = parsed.choices?.[0]?.delta?.content ?? ''
+          if (content) { fullReply += content; onChunk?.(content) }
+        } catch { /* bỏ qua dòng stream chưa đầy đủ */ }
+      }
+    }
+  }
+  return fullReply
+}
+
+// ─── SYSTEM PROMPTS ───────────────────────────────────────────────────────────
+function buildSystemPrompt(specialtyId, graphContext) {
+  const specialty = getSpecialty(specialtyId)
+
+  // Phần hướng dẫn hành vi chung cho tất cả các chuyên khoa
+  const baseGuidelines = `
+## Quy tắc hành vi bắt buộc:
+- Luôn trả lời bằng tiếng Việt, thân thiện và chuyên nghiệp.
+- KHÔNG bịa đặt thông tin y tế. Chỉ dựa trên tri thức bạn có và ngữ cảnh đồ thị bên dưới.
+- Cuối mỗi phản hồi quan trọng, nhắc nhở người dùng đến gặp bác sĩ để được chẩn đoán chính thức.
+- KHÔNG cung cấp chẩn đoán xác định — chỉ gợi ý và hướng dẫn sàng lọc.
+- Giữ câu trả lời ngắn gọn, rõ ràng, có đầu mục khi cần thiết.
+`.trim()
+
+  if (specialtyId === 'pediatrics') {
+    return `Bạn là bác sĩ chuyên khoa của hệ thống MedAI, được trang bị đồ thị tri thức lâm sàng NLICE (Knowledge Graph).
+
+## Nhiệm vụ: Sàng lọc chẩn đoán phân biệt có dẫn chứng từ đồ thị
+
+---
+
+### GIAI ĐOẠN 1 — Thu thập thông tin (BẮT BUỘC trước khi kết luận)
+
+Trước khi đưa ra báo cáo hay bất kỳ lời khuyên y tế/chăm sóc sức khỏe nào, bạn **bắt buộc** phải thu thập đủ các mục sau (đánh dấu ✓ khi đã biết):
+- [ ] **Tuổi & giới tính**
+- [ ] **Thời gian** triệu chứng kéo dài
+- [ ] **Mức độ** nặng nhẹ (ảnh hưởng sinh hoạt không?)
+- [ ] **Ít nhất 3 câu hỏi phân biệt** từ đồ thị (tính chất triệu chứng, vị trí, yếu tố kèm theo...)
+
+**Quy tắc hành vi ở Giai đoạn 1 (Cực kỳ quan trọng):**
+- **Tuyệt đối KHÔNG đưa ra hướng dẫn điều trị, khuyên dùng thuốc, nghỉ ngơi hay lời khuyên chung chung** ở giai đoạn này (ngay cả khi người dùng hỏi *"tôi nên làm gì"*). Hãy lịch sự giải thích rằng bạn cần biết thêm thông tin trước khi có thể đưa ra tư vấn.
+- Bạn phải trình bày các câu hỏi làm rõ dưới dạng **danh sách gạch đầu dòng ngắn gọn** (sử dụng dấu '-' ở đầu dòng). Không viết thành một đoạn văn dài.
+  *Ví dụ cách hỏi đúng:*
+  Để hỗ trợ chẩn đoán chính xác hơn, xin hỏi bạn một vài thông tin sau:
+  - Bạn bao nhiêu tuổi và thuộc giới tính nào?
+  - Triệu chứng xuất hiện từ bao giờ và có đau tức ngực hay khó thở không?
+- Mỗi lượt chỉ hỏi tối đa 2-3 thông tin còn thiếu để tránh làm người dùng bối rối.
+- **Tuyệt đối KHÔNG hỏi lại thông tin đã có trong lịch sử trò chuyện**: 
+  * Hãy phân tích kỹ tin nhắn của người dùng để tự đánh dấu đã thu thập xong (Ví dụ: người dùng nói *"sút 6kg trong 2 tháng nay"* nghĩa là thông tin **Thời gian triệu chứng kéo dài** đã có và là 2 tháng ➔ KHÔNG hỏi lại *"kéo dài bao lâu"*).
+- Ưu tiên câu hỏi có tính phân biệt cao nhất dựa trên MỤC "Triệu chứng phân biệt tối ưu" trong TRẠNG THÁI HIỆN TẠI bên dưới.
+- Nếu người dùng đã cung cấp sẵn một số thông tin, KHÔNG hỏi lại — chỉ hỏi những gì còn thiếu.
+
+---
+
+### GIAI ĐOẠN 2 — Kết luận có dẫn chứng (CHỈ khi đã đủ thông tin)
+
+Khi đã đủ thông tin, xuất BÁO CÁO SÀNG LỌC theo đúng cấu trúc sau:
+
+#### 🩺 Bệnh lý nghi ngờ (theo thứ tự xác suất từ đồ thị):
+Với **mỗi bệnh**, bạn bắt buộc phải trình bày tiêu đề bệnh theo đúng định dạng sau để hệ thống hiển thị vòng tròn phần trăm:
+'1. [Tên bệnh]: [Số]% xác suất' (Ví dụ: '1. Mãn kinh (đối với phụ nữ): 60% xác suất')
+
+Dưới mỗi bệnh, liệt kê các thông tin sau dạng gạch đầu dòng (sử dụng dấu '-' ở đầu dòng):
+- **Dẫn chứng:** Trình bày tự nhiên và dễ hiểu về các triệu chứng của bệnh nhân khớp với dữ liệu dịch tễ y khoa (không dùng từ "đồ thị tri thức" hay "Neo4j" khi nói chuyện với bệnh nhân, hãy giải thích tự nhiên như một bác sĩ thực thụ). Ví dụ: *"Biểu hiện bốc hỏa và đổ mồ hôi đêm của bạn rất đặc trưng cho giai đoạn này."*
+- **Lý giải phân biệt:** Giải thích tại sao bệnh này phù hợp hơn hoặc ít phù hợp hơn các bệnh khác dựa trên triệu chứng.
+
+Phần cảnh báo PHẢI bắt đầu bằng emoji ⚠️ trên một dòng riêng:
+⚠️ **Cảnh báo:** Nếu bạn có các triệu chứng X, Y, Z — hãy đến cơ sở y tế ngay lập tức.
+
+Phần khuyến nghị PHẢI bắt đầu bằng emoji 📋 trên một dòng riêng:
+📋 **Khuyến nghị:** Nên làm xét nghiệm X, gặp bác sĩ chuyên khoa Y...
+
+---
+
+${baseGuidelines}
+
+---
+### TRẠNG THÁI HIỆN TẠI (Cập nhật từng lượt bởi đồ thị):
+{ADAPTIVE_CONTEXT}
+---`
+  }
+
+  // System prompt cho các chuyên khoa khác (Đa khoa, Da liễu, Dinh dưỡng)
+  const specialtyGuides = {
+    general: `Bạn là bác sĩ Đa khoa của MedAI. Tư vấn sức khỏe toàn diện, hỗ trợ người dùng hiểu về triệu chứng và biết khi nào cần đi khám.`,
+    dermatology: `Bạn là bác sĩ Da liễu của MedAI. Tư vấn về các vấn đề da, tóc, móng và dị ứng da.`,
+    nutrition: `Bạn là chuyên gia Dinh dưỡng của MedAI. Tư vấn về chế độ ăn uống lành mạnh, thực đơn điều trị và dinh dưỡng theo bệnh lý.`,
+  }
+
+  return `${specialtyGuides[specialtyId] ?? specialtyGuides.general}
+
+${baseGuidelines}`
+}
+
+// ─── MOCK FALLBACK (khi không có API key) ─────────────────────────────────────
+function buildMockReply(userText, specialtyId) {
+  const specialty = getSpecialty(specialtyId)
+  return `[Chế độ demo — chưa cấu hình OPENROUTER_API_KEY]\n\n` +
+         `Cảm ơn bạn đã liên hệ với MedAI chuyên khoa **${specialty.name}**. ` +
+         `Vui lòng thêm API Key vào tệp \`.env\` để kích hoạt trí tuệ nhân tạo thật sự ` +
+         `tích hợp đồ thị tri thức lâm sàng NLICE.\n\n` +
+         `*Hướng dẫn: Mở \`medchat/back_end/.env\` và điền vào \`OPENROUTER_API_KEY=...\`*`
+}
+
+// ─── ENTRYPOINT CHÍNH ─────────────────────────────────────────────────────────
+export async function generateReply({ messages, specialtyId, onChunk, signal }) {
+
+  // ── Không có API Key: trả về hướng dẫn cấu hình ─────────────────────────
+  if (!env.openrouterApiKey) {
+    const lastUser = [...messages].reverse().find(m => m.role === 'user')
+    return streamText(buildMockReply(lastUser?.content ?? '', specialtyId), onChunk, signal)
+  }
+
+  // ── TRUE ADAPTIVE GRAPHRAG cho chuyên khoa Nhi khoa ─────────────────────
+  if (specialtyId === 'pediatrics') {
+    let adaptiveCtx = null
+    try {
+      // 1. Trích xuất triệu chứng tích lũy từ toàn bộ lịch sử hội thoại
+      //    (dùng tên triệu chứng thật từ đồ thị — không hardcode từ khóa)
+      const firstCtx = await computeAdaptiveContext(new Set(), new Set())
+      const confirmedSymptoms = await extractSymptomsFromHistory(messages, firstCtx.allSymptomNames)
+
+      // 2. Re-query Neo4j mỗi lượt với tập triệu chứng hiện tại
+      //    → Cập nhật bảng xếp hạng Bayesian + triệu chứng phân biệt tối ưu
+      adaptiveCtx = await computeAdaptiveContext(confirmedSymptoms, new Set())
+    } catch (err) {
+      console.error('[Adaptive GraphRAG] Lỗi truy vấn Neo4j:', err.message)
+      // Graceful degradation: LLM vẫn hoạt động không có context đồ thị
+    }
+
+    // 3. Tạo system prompt tĩnh (cấu trúc quy trình)
+    const basePrompt = buildSystemPrompt(specialtyId, null)
+
+    // 4. Inject adaptive context (bảng xếp hạng + gợi ý câu hỏi) động vào prompt
+    const adaptiveText = adaptiveCtx
+      ? formatAdaptiveContext(adaptiveCtx)
+      : '*[Chưa có dữ liệu đồ thị — hãy hỏi triệu chứng ban đầu]*'
+
+    const systemPrompt = basePrompt.replace('{ADAPTIVE_CONTEXT}', adaptiveText)
+
+    const chatMessages = [
+      { role: 'system', content: systemPrompt },
+      ...messages
+    ]
+
+    return streamOpenRouter(chatMessages, onChunk, signal)
+  }
+
+  // ── Các chuyên khoa khác (Đa khoa, Da liễu, Dinh dưỡng) ─────────────────
+  const systemPrompt = buildSystemPrompt(specialtyId, null)
+  const chatMessages = [
+    { role: 'system', content: systemPrompt },
+    ...messages
+  ]
+  return streamOpenRouter(chatMessages, onChunk, signal)
+}
+
+export function estimateTokens(text) {
+  return text ? Math.ceil(text.length / 4) : 0
+}

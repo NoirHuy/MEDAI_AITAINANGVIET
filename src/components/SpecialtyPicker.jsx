@@ -1,0 +1,64 @@
+import { useEffect, useRef, useState } from 'react'
+import { ChevronDownIcon, CheckIcon } from './Icons'
+import './SpecialtyPicker.css'
+
+export default function SpecialtyPicker({
+  specialties,
+  value,
+  onChange,
+  direction = 'down',
+  align = 'start',
+  variant = 'plain',
+}) {
+  const [open, setOpen] = useState(false)
+  const ref = useRef(null)
+  const current = specialties.find((s) => s.id === value) ?? specialties[0]
+
+  useEffect(() => {
+    function handleClickOutside(e) {
+      if (ref.current && !ref.current.contains(e.target)) setOpen(false)
+    }
+    document.addEventListener('mousedown', handleClickOutside)
+    return () => document.removeEventListener('mousedown', handleClickOutside)
+  }, [])
+
+  return (
+    <div className={`specialty-picker specialty-picker--${variant}`} ref={ref}>
+      <button
+        className="specialty-picker__trigger"
+        onClick={() => setOpen((o) => !o)}
+        aria-haspopup="listbox"
+        aria-expanded={open}
+      >
+        <span>{current.name}</span>
+        <ChevronDownIcon className="specialty-picker__chevron" />
+      </button>
+
+      {open && (
+        <div
+          className={`specialty-picker__menu specialty-picker__menu--${direction} specialty-picker__menu--${align}`}
+          role="listbox"
+        >
+          {specialties.map((s) => (
+            <button
+              key={s.id}
+              className="specialty-picker__item"
+              role="option"
+              aria-selected={s.id === value}
+              onClick={() => {
+                onChange(s.id)
+                setOpen(false)
+              }}
+            >
+              <span className="specialty-picker__item-text">
+                <span className="specialty-picker__item-name">{s.name}</span>
+                <span className="specialty-picker__item-tagline">{s.tagline}</span>
+              </span>
+              {s.id === value && <CheckIcon className="specialty-picker__check" />}
+            </button>
+          ))}
+        </div>
+      )}
+    </div>
+  )
+}
