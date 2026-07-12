@@ -29,6 +29,12 @@ COPY --from=build /app/dist ./dist
 # Copy backend source and dependencies
 COPY --from=build /app/back_end ./back_end
 
+# Thiết lập quyền ghi thư mục database cho user 'node' (UID 1000 - mặc định của HF)
+RUN mkdir -p /app/back_end/data && chown -R node:node /app
+
+# Chuyển sang chạy bằng user bảo mật không đặc quyền
+USER node
+
 # Set environment
 ENV NODE_ENV=production
 # Hugging Face Spaces listens on port 7860 by default
