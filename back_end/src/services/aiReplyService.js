@@ -211,7 +211,17 @@ export async function generateReply({ messages, specialtyId, onChunk, signal }) 
       ? formatAdaptiveContext(adaptiveCtx)
       : '*[Chưa có dữ liệu đồ thị — hãy hỏi triệu chứng ban đầu]*'
 
-    const systemPrompt = basePrompt.replace('{ADAPTIVE_CONTEXT}', adaptiveText)
+    let systemPrompt = basePrompt.replace('{ADAPTIVE_CONTEXT}', adaptiveText)
+
+    // 5. Đếm số lượt hội thoại của người dùng để giới hạn tối đa 3 lần hỏi
+    const userMessages = messages.filter((m) => m.role === 'user')
+    const turnCount = userMessages.length
+
+    if (turnCount >= 4) {
+      systemPrompt += `\n\n⚠️ **CHỈ THỊ BẮT BUỘC**: Đây là lượt phản hồi thứ ${turnCount}. Người dùng đã trả lời đủ số câu hỏi giới hạn. Bạn TUYỆT ĐỐI KHÔNG ĐƯỢC hỏi thêm bất kỳ câu hỏi nào nữa. Hãy chuyển ngay sang GIAI ĐOẠN 2 (Kết luận có dẫn chứng) để xuất Báo cáo chẩn đoán sàng lọc dựa trên những thông tin đã thu thập được từ trước.`
+    } else {
+      systemPrompt += `\n\n💡 *Thông tin hệ thống: Đây là lượt hỏi thứ ${turnCount}/3. Nếu thông tin y tế còn thiếu, bạn có thể tiếp tục đặt 2-3 câu hỏi làm rõ ngắn gọn theo quy trình Giai đoạn 1.*`
+    }
 
     const chatMessages = [
       { role: 'system', content: systemPrompt },
