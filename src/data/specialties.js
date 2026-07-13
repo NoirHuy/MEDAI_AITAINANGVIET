@@ -1,13 +1,13 @@
 export const SPECIALTIES = [
   {
+    id: 'pediatrics',
+    name: 'Tư vấn sức khỏe',
+    tagline: 'Chẩn đoán sàng lọc ban đầu',
+  },
+  {
     id: 'general',
     name: 'Đa khoa',
     tagline: 'Tư vấn sức khỏe tổng quát',
-  },
-  {
-    id: 'pediatrics',
-    name: 'Tư vấn Chẩn đoán',
-    tagline: 'Sàng lọc & Chẩn đoán triệu chứng',
   },
   {
     id: 'dermatology',
