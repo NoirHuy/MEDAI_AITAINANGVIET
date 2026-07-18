@@ -78,7 +78,7 @@ async function searchUMLS(queryString) {
 }
 
 // Helper phụ thực thi cuộc gọi OpenRouter cụ thể
-async function tryCallOpenRouter(chatMessages, modelName) {
+async function tryCallOpenRouter(chatMessages, modelName, timeoutMs = 15000) {
   const response = await fetch('https://openrouter.ai/api/v1/chat/completions', {
     method: 'POST',
     headers: {
@@ -91,9 +91,9 @@ async function tryCallOpenRouter(chatMessages, modelName) {
       model: modelName,
       messages: chatMessages,
       temperature: 0.1,
-      max_tokens: 1000
+      max_tokens: 3000 // Tăng lên 3000 để chứa đủ cả reasoning và JSON content
     }),
-    signal: AbortSignal.timeout(15000)
+    signal: AbortSignal.timeout(timeoutMs)
   })
 
   if (!response.ok) {
@@ -119,14 +119,14 @@ async function callOpenRouter(chatMessages) {
 
   try {
     console.log(`[Audit Log][LLM_TRANSLATION][Info] Calling primary model: "${primaryModel}"`)
-    return await tryCallOpenRouter(chatMessages, primaryModel)
+    return await tryCallOpenRouter(chatMessages, primaryModel, 8000) // Giới hạn 8s cho model chính
   } catch (err) {
-    // Nếu model chính (DeepSeek) lỗi hoặc timeout, tự động failover sang Qwen
+    // Nếu model chính lỗi hoặc timeout, tự động failover sang Qwen
     const isTimeout = err.name === 'TimeoutError' || err.message?.includes('aborted') || err.message?.includes('Timeout')
     console.warn(`[Audit Log][LLM_TRANSLATION][Warning] Primary model "${primaryModel}" failed (${isTimeout ? 'Timeout' : err.message}). Retrying with defensive fallback model "${fallbackModel}"...`)
     
     try {
-      return await tryCallOpenRouter(chatMessages, fallbackModel)
+      return await tryCallOpenRouter(chatMessages, fallbackModel, 7000) // Giới hạn 7s cho model phòng thủ
     } catch (fallbackErr) {
       console.error(`[Audit Log][LLM_TRANSLATION][Error] Fallback model "${fallbackModel}" also failed:`, fallbackErr.message)
       throw new Error(`Cả model chính và phòng thủ đều lỗi. Model chính: ${err.message}. Model phòng thủ: ${fallbackErr.message}`)
