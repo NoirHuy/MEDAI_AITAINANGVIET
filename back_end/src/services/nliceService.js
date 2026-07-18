@@ -112,18 +112,21 @@ async function callOpenRouter(chatMessages) {
 export async function extractSymptomsFromHistory(messages, symptomsList) {
   const confirmed = new Set()
 
-  const userMessages = messages
-    .filter(m => m.role === 'user')
-    .map(m => m.content)
-    .join(' ')
+  if (!messages || messages.length === 0) return confirmed
 
-  if (!userMessages.trim()) return confirmed
+  // Tạo hội thoại phân vai đầy đủ (Bác sĩ & Bệnh nhân) để giữ vững ngữ cảnh lâm sàng
+  const formattedHistory = messages
+    .map(m => `${m.role === 'user' ? 'Bệnh nhân' : 'Bác sĩ'}: ${m.content}`)
+    .join('\n')
 
   // BƯỚC 1: LLM dịch mô tả tiếng Việt sang các thuật ngữ triệu chứng tiếng Anh y học thô
-  const translationPrompt = `Bạn là trợ lý y khoa chuyên nghiệp. Phân tích nội dung trò chuyện của bệnh nhân và liệt kê các triệu chứng lâm sàng bằng tiếng Anh (dạng danh từ ngắn gọn, ngăn cách bởi dấu phẩy).
-Ví dụ: "Tôi bị ho có đờm và sốt nhẹ" -> "Cough, Fever, Productive cough"
+  const translationPrompt = `Bạn là trợ lý y khoa chuyên nghiệp. Phân tích toàn bộ hội thoại giữa Bác sĩ và Bệnh nhân dưới đây.
+Liệt kê tất cả các triệu chứng lâm sàng mà Bệnh nhân XÁC NHẬN đang mắc phải bằng tiếng Anh (dạng danh từ ngắn gọn, ngăn cách bởi dấu phẩy).
+Lưu ý: Chỉ liệt kê các triệu chứng bệnh nhân có (xác nhận "Có" hoặc mô tả tích cực), tuyệt đối không liệt kê các triệu chứng bệnh nhân phủ nhận (xác nhận "Không" hoặc "Chưa từng bị").
 
-Hội thoại: "${userMessages}"
+Hội thoại:
+${formattedHistory}
+
 Danh sách triệu chứng tiếng Anh:`
 
   const rawTranslation = await callOpenRouter([
