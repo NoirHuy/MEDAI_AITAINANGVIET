@@ -50,7 +50,10 @@ router.post(
       })
     } catch (err) {
       const isAbort = err.name === 'AbortError' || err.message === 'aborted' || controller.signal.aborted
-      if (!isAbort) throw err
+      if (!isAbort) {
+        console.error('[API CHAT Error]', err)
+        res.write(`\n\n⚠️ **Cảnh báo hệ thống:** Mất kết nối y khoa (${err.message}). Vui lòng kiểm tra lại cấu hình API hoặc đường truyền mạng của bạn.`)
+      }
     }
 
     if (req.userId) {

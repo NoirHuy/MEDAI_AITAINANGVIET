@@ -67,14 +67,13 @@ async function searchUMLS(queryString) {
     const url = `https://uts-ws.nlm.nih.gov/rest/search/current?string=${encodeURIComponent(queryString)}&apiKey=${env.umlsApiKey}`
     const response = await fetch(url, { signal: AbortSignal.timeout(8000) })
     if (!response.ok) {
-      console.error(`[UMLS] API error: ${response.status}`)
-      return []
+      throw new Error(`Dịch vụ UMLS trả về lỗi ${response.status}`)
     }
     const data = await response.json()
     return data.result?.results || []
   } catch (err) {
-    console.error('[UMLS] Error calling UMLS search:', err.message)
-    return []
+    const isTimeout = err.name === 'TimeoutError' || err.message?.includes('aborted')
+    throw new Error(isTimeout ? "Dịch vụ UMLS không phản hồi (Timeout 8s)" : `Mất kết nối UMLS: ${err.message}`)
   }
 }
 
@@ -98,12 +97,14 @@ async function callOpenRouter(chatMessages) {
       }),
       signal: AbortSignal.timeout(15000)
     })
-    if (!response.ok) return ""
+    if (!response.ok) {
+      throw new Error(`OpenRouter trả về lỗi ${response.status}`)
+    }
     const data = await response.json()
     return data.choices?.[0]?.message?.content ?? ""
   } catch (err) {
-    console.error('[OpenRouter API Error]', err.message)
-    return ""
+    const isTimeout = err.name === 'TimeoutError' || err.message?.includes('aborted')
+    throw new Error(isTimeout ? "Dịch vụ AI OpenRouter không phản hồi (Timeout 15s)" : `Mất kết nối OpenRouter: ${err.message}`)
   }
 }
 

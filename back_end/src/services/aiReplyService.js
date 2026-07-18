@@ -199,8 +199,8 @@ export async function generateReply({ messages, specialtyId, onChunk, signal }) 
       //    → Cập nhật bảng xếp hạng Bayesian + triệu chứng phân biệt tối ưu
       adaptiveCtx = await computeAdaptiveContext(confirmedSymptoms, new Set())
     } catch (err) {
-      console.error('[Adaptive GraphRAG] Lỗi truy vấn Neo4j:', err.message)
-      // Graceful degradation: LLM vẫn hoạt động không có context đồ thị
+      console.error('[Adaptive GraphRAG] Lỗi:', err.message)
+      throw err
     }
 
     // 3. Tạo system prompt tĩnh (cấu trúc quy trình)
