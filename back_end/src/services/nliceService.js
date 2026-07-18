@@ -65,7 +65,7 @@ async function searchUMLS(queryString) {
   }
   try {
     const url = `https://uts-ws.nlm.nih.gov/rest/search/current?string=${encodeURIComponent(queryString)}&apiKey=${env.umlsApiKey}`
-    const response = await fetch(url)
+    const response = await fetch(url, { signal: AbortSignal.timeout(8000) })
     if (!response.ok) {
       console.error(`[UMLS] API error: ${response.status}`)
       return []
@@ -95,7 +95,8 @@ async function callOpenRouter(chatMessages) {
         messages: chatMessages,
         temperature: 0.1,
         max_tokens: 1000
-      })
+      }),
+      signal: AbortSignal.timeout(15000)
     })
     if (!response.ok) return ""
     const data = await response.json()
