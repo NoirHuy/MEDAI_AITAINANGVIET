@@ -193,7 +193,7 @@ export async function generateReply({ messages, specialtyId, onChunk, signal }) 
       // 1. Trích xuất triệu chứng tích lũy từ toàn bộ lịch sử hội thoại
       //    (dùng tên triệu chứng thật từ đồ thị — không hardcode từ khóa)
       const firstCtx = await computeAdaptiveContext(new Set(), new Set())
-      const confirmedSymptoms = await extractSymptomsFromHistory(messages, firstCtx.allSymptomNames)
+      const confirmedSymptoms = await extractSymptomsFromHistory(messages, firstCtx.allSymptoms)
 
       // 2. Re-query Neo4j mỗi lượt với tập triệu chứng hiện tại
       //    → Cập nhật bảng xếp hạng Bayesian + triệu chứng phân biệt tối ưu

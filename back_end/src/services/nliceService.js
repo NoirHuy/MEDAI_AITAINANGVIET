@@ -9,12 +9,24 @@ const driver = neo4j.driver(
 
 // ─── CACHE ───────────────────────────────────────────────────────────────────
 let _cachedSymptomNames = null
+let _cachedSymptoms = null
 let _cachedDiseaseOverview = null
+
+async function getAllSymptoms(session) {
+  if (_cachedSymptoms) return _cachedSymptoms
+  const res = await session.run('MATCH (s:Symptom) RETURN s.id AS id, s.name AS name, s.cui AS cui ORDER BY s.name')
+  _cachedSymptoms = res.records.map(r => ({
+    id: r.get('id'),
+    name: r.get('name'),
+    cui: r.get('cui') || null
+  }))
+  return _cachedSymptoms
+}
 
 async function getAllSymptomNames(session) {
   if (_cachedSymptomNames) return _cachedSymptomNames
-  const res = await session.run('MATCH (s:Symptom) RETURN s.name AS name ORDER BY s.name')
-  _cachedSymptomNames = res.records.map(r => r.get('name'))
+  const symptoms = await getAllSymptoms(session)
+  _cachedSymptomNames = symptoms.map(s => s.name)
   return _cachedSymptomNames
 }
 
@@ -95,7 +107,7 @@ async function callOpenRouter(chatMessages) {
 }
 
 // ─── UMLS + LLM SEMANTIC SYMPTOM EXTRACTION ──────────────────────────────────
-export async function extractSymptomsFromHistory(messages, symptomNames) {
+export async function extractSymptomsFromHistory(messages, symptomsList) {
   const confirmed = new Set()
 
   const userMessages = messages
@@ -122,53 +134,110 @@ Danh sách triệu chứng tiếng Anh:`
   console.log(`[LLM Translation] Extracted raw terms:`, rawEnglishSymptoms)
 
   // BƯỚC 2: Tìm kiếm UMLS API để lấy thông tin CUI y khoa chuẩn hóa
-  const umlsDetails = []
+  const umlsResults = []
   for (const term of rawEnglishSymptoms) {
     const results = await searchUMLS(term)
     if (results && results.length > 0) {
-      // Lấy kết quả khớp tốt nhất
       const topMatch = results[0]
-      umlsDetails.push(`Term: "${term}" -> UMLS Match: "${topMatch.name}" (CUI: ${topMatch.ui})`)
+      umlsResults.push({
+        term: term,
+        cui: topMatch.ui,
+        name: topMatch.name
+      })
     } else {
-      umlsDetails.push(`Term: "${term}" -> UMLS Match: None`)
+      umlsResults.push({
+        term: term,
+        cui: null,
+        name: null
+      })
     }
   }
-  console.log(`[UMLS Validation] Search results:`, umlsDetails)
+  console.log(`[UMLS Validation] Search results:`, umlsResults)
 
-  // BƯỚC 3: LLM Verify chéo so khớp với danh sách các slug triệu chứng (SymCAT/Neo4j)
-  // Gửi danh sách 474 triệu chứng hiện có để LLM so khớp chuẩn xác
-  const verificationPrompt = `Bạn là hệ thống ánh xạ thực thể y học lâm sàng. 
-Nhiệm vụ: Dựa trên các triệu chứng y khoa trích xuất từ cuộc trò chuyện và kết quả UMLS, hãy lựa chọn các slug triệu chứng khớp chính xác nhất từ danh sách cơ sở dữ liệu SymCAT.
+  // BƯỚC 3: So khớp thông minh dựa trên CUI (Độ chính xác tuyệt đối)
+  const cuiToIdMap = new Map()
+  const nameToIdMap = new Map()
+  const idToIdMap = new Map()
 
-Kết quả UMLS:
-${umlsDetails.join('\n')}
-
-Danh sách slug triệu chứng SymCAT được phép chọn (Chọn đúng slug trong danh sách dưới đây, ngăn cách bằng dấu phẩy. Không tự ý bịa slug khác):
-${symptomNames.slice(0, 300).join(', ')}
-${symptomNames.slice(300).join(', ')}
-
-Chỉ trả về danh sách các slug khớp chính xác nhất từ danh sách trên (ví dụ: "cough, back-pain, fever"). Nếu không có triệu chứng nào khớp, trả về "none".`
-
-  const verifiedRaw = await callOpenRouter([
-    { role: 'system', content: 'Bạn là chuyên viên chuẩn hóa y khoa. Chỉ trả về danh sách các slug hợp lệ ngăn cách bằng dấu phẩy.' },
-    { role: 'user', content: verificationPrompt }
-  ])
-
-  if (!verifiedRaw || verifiedRaw.toLowerCase().includes('none')) {
-    return confirmed
+  for (const s of symptomsList) {
+    if (s.cui) {
+      cuiToIdMap.set(s.cui.toLowerCase(), s.id)
+    }
+    nameToIdMap.set(s.name.toLowerCase(), s.id)
+    idToIdMap.set(s.id.toLowerCase(), s.id)
   }
 
-  const verifiedSlugs = verifiedRaw.split(',').map(s => s.trim().toLowerCase()).filter(Boolean)
-  console.log(`[LLM Verification] Final mapped slugs:`, verifiedSlugs)
+  const unmatchedTerms = []
 
-  // Lưu vào tập hợp triệu chứng xác nhận
-  verifiedSlugs.forEach(slug => {
-    // Đảm bảo slug khớp chính xác (case-insensitive) với danh sách trong Neo4j
-    const exactName = symptomNames.find(s => s.toLowerCase() === slug || s.toLowerCase().replace(/_/g, '-') === slug)
-    if (exactName) {
-      confirmed.add(exactName)
+  for (const item of umlsResults) {
+    let matchedId = null
+
+    // 3a. Ưu tiên 1: Khớp bằng CUI
+    if (item.cui && cuiToIdMap.has(item.cui.toLowerCase())) {
+      matchedId = cuiToIdMap.get(item.cui.toLowerCase())
+      console.log(`[CUI Match] "${item.term}" -> mapped via CUI ${item.cui} to Neo4j Symptom ID: "${matchedId}"`)
     }
-  })
+    // 3b. Ưu tiên 2: Khớp tên hoặc slug thô tiếng Anh
+    else {
+      const termLower = item.term.toLowerCase()
+      const cleanTerm = termLower.replace(/_/g, '-').replace(/\s+/g, '-')
+
+      if (nameToIdMap.has(termLower)) {
+        matchedId = nameToIdMap.get(termLower)
+        console.log(`[Text Match] "${item.term}" -> mapped via exact name to Neo4j Symptom ID: "${matchedId}"`)
+      } else if (idToIdMap.has(cleanTerm)) {
+        matchedId = idToIdMap.get(cleanTerm)
+        console.log(`[Text Match] "${item.term}" -> mapped via clean slug to Neo4j Symptom ID: "${matchedId}"`)
+      } else if (item.name && nameToIdMap.has(item.name.toLowerCase())) {
+        matchedId = nameToIdMap.get(item.name.toLowerCase())
+        console.log(`[Text Match] "${item.term}" -> mapped via UMLS name "${item.name}" to Neo4j Symptom ID: "${matchedId}"`)
+      }
+    }
+
+    if (matchedId) {
+      confirmed.add(matchedId)
+    } else {
+      unmatchedTerms.push(item)
+    }
+  }
+
+  // BƯỚC 4: Fallback LLM Match (chỉ dùng cho ~20% triệu chứng không có CUI khớp trực tiếp)
+  if (unmatchedTerms.length > 0) {
+    console.log(`[UMLS Fallback] Mapping remaining unmatched terms using LLM...`)
+    const unmatchedDetails = unmatchedTerms.map(u => 
+      u.cui ? `Term: "${u.term}" (UMLS Name: "${u.name}", CUI: ${u.cui})` : `Term: "${u.term}" (No UMLS CUI)`
+    ).join('\n')
+
+    const availableSlugs = symptomsList.map(s => s.id)
+
+    const verificationPrompt = `Bạn là hệ thống ánh xạ thực thể y học lâm sàng. 
+Nhiệm vụ: Dựa trên các triệu chứng chưa khớp được và kết quả UMLS dưới đây, hãy lựa chọn các slug triệu chứng phù hợp nhất từ danh sách cơ sở dữ liệu SymCAT.
+
+Các triệu chứng chưa khớp:
+${unmatchedDetails}
+
+Danh sách các slug SymCAT được phép chọn (Chọn đúng slug trong danh sách dưới đây, ngăn cách bằng dấu phẩy. Không tự ý bịa slug khác):
+${availableSlugs.slice(0, 300).join(', ')}
+${availableSlugs.slice(300).join(', ')}
+
+Chỉ trả về danh sách các slug khớp chính xác nhất từ danh sách trên (ví dụ: "cough, back-pain"). Nếu không có triệu chứng nào khớp, trả về "none".`
+
+    const verifiedRaw = await callOpenRouter([
+      { role: 'system', content: 'Bạn là chuyên viên chuẩn hóa y khoa. Chỉ trả về danh sách các slug hợp lệ ngăn cách bằng dấu phẩy.' },
+      { role: 'user', content: verificationPrompt }
+    ])
+
+    if (verifiedRaw && !verifiedRaw.toLowerCase().includes('none')) {
+      const verifiedSlugs = verifiedRaw.split(',').map(s => s.trim().toLowerCase()).filter(Boolean)
+      console.log(`[LLM Fallback Verification] Mapped slugs:`, verifiedSlugs)
+      verifiedSlugs.forEach(slug => {
+        const matchedSymptom = symptomsList.find(s => s.id.toLowerCase() === slug)
+        if (matchedSymptom) {
+          confirmed.add(matchedSymptom.id)
+        }
+      })
+    }
+  }
 
   return confirmed
 }
@@ -178,7 +247,8 @@ export async function computeAdaptiveContext(confirmedSymptoms, excludedSymptoms
   const session = driver.session({ database: env.neo4jDatabase })
 
   try {
-    const allSymptomNames = await getAllSymptomNames(session)
+    const allSymptoms = await getAllSymptoms(session)
+    const allSymptomNames = allSymptoms.map(s => s.name)
     const symptomsArr = Array.from(confirmedSymptoms)
     const excludedArr = Array.from(excludedSymptoms)
 
@@ -276,7 +346,7 @@ export async function computeAdaptiveContext(confirmedSymptoms, excludedSymptoms
       diseaseOverview = await getDiseaseOverview(session)
     }
 
-    return { allSymptomNames, confirmedSymptoms: symptomsArr, excludedSymptoms: excludedArr, rankedDiseases, bestNextSymptom, diseaseOverview }
+    return { allSymptomNames, allSymptoms, confirmedSymptoms: symptomsArr, excludedSymptoms: excludedArr, rankedDiseases, bestNextSymptom, diseaseOverview }
 
   } finally {
     await session.close()
