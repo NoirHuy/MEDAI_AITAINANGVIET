@@ -1,4 +1,4 @@
-process.env.OPENROUTER_MODEL = 'google/gemini-2.5-flash'
+process.env.OPENROUTER_MODEL = 'qwen/qwen3.5-flash-02-23'
 import { extractSymptomsFromHistory, computeAdaptiveContext } from './src/services/nliceService.js'
 import fs from 'fs'
 import path from 'path'
