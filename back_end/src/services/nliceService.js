@@ -52,7 +52,7 @@ async function searchUMLS(queryString) {
     return []
   }
   try {
-    const url = `https://uts-ws.nlm.nih.gov/rest/search/active?string=${encodeURIComponent(queryString)}&apiKey=${env.umlsApiKey}`
+    const url = `https://uts-ws.nlm.nih.gov/rest/search/current?string=${encodeURIComponent(queryString)}&apiKey=${env.umlsApiKey}`
     const response = await fetch(url)
     if (!response.ok) {
       console.error(`[UMLS] API error: ${response.status}`)
