@@ -119,14 +119,14 @@ async function callOpenRouter(chatMessages) {
 
   try {
     console.log(`[Audit Log][LLM_TRANSLATION][Info] Calling primary model: "${primaryModel}"`)
-    return await tryCallOpenRouter(chatMessages, primaryModel, 8000) // Giới hạn 8s cho model chính
+    return await tryCallOpenRouter(chatMessages, primaryModel, 25000) // Tăng thời gian chờ lên 25s cho model chính để suy nghĩ sâu
   } catch (err) {
     // Nếu model chính lỗi hoặc timeout, tự động failover sang Qwen
     const isTimeout = err.name === 'TimeoutError' || err.message?.includes('aborted') || err.message?.includes('Timeout')
     console.warn(`[Audit Log][LLM_TRANSLATION][Warning] Primary model "${primaryModel}" failed (${isTimeout ? 'Timeout' : err.message}). Retrying with defensive fallback model "${fallbackModel}"...`)
     
     try {
-      return await tryCallOpenRouter(chatMessages, fallbackModel, 7000) // Giới hạn 7s cho model phòng thủ
+      return await tryCallOpenRouter(chatMessages, fallbackModel, 15000) // Tăng thời gian chờ lên 15s cho model phòng ngự
     } catch (fallbackErr) {
       console.error(`[Audit Log][LLM_TRANSLATION][Error] Fallback model "${fallbackModel}" also failed:`, fallbackErr.message)
       throw new Error(`Cả model chính và phòng thủ đều lỗi. Model chính: ${err.message}. Model phòng thủ: ${fallbackErr.message}`)
