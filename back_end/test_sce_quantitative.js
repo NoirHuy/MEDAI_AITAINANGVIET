@@ -1,4 +1,4 @@
-process.env.OPENROUTER_MODEL = 'deepseek/deepseek-chat'
+process.env.OPENROUTER_MODEL = 'deepseek/deepseek-v4-flash'
 import { extractSymptomsFromHistory, computeAdaptiveContext } from './src/services/nliceService.js'
 import fs from 'fs'
 import path from 'path'

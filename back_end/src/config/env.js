@@ -5,9 +5,7 @@ export const env = {
   clientOrigin: process.env.CLIENT_ORIGIN || 'http://localhost:5173',
   jwtSecret: process.env.JWT_SECRET || 'dev-only-insecure-secret-change-me',
   openrouterApiKey: process.env.OPENROUTER_API_KEY || null,
-  openrouterModel: process.env.OPENROUTER_MODEL === 'deepseek/deepseek-v4-flash' 
-    ? 'deepseek/deepseek-chat' 
-    : (process.env.OPENROUTER_MODEL || 'deepseek/deepseek-chat'),
+  openrouterModel: process.env.OPENROUTER_MODEL || 'deepseek/deepseek-v4-flash',
   googleClientId: process.env.GOOGLE_CLIENT_ID || null,
   // Mark the session cookie Secure once this is actually served over HTTPS.
   cookieSecure: process.env.COOKIE_SECURE === 'true',
