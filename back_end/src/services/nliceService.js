@@ -77,41 +77,60 @@ async function searchUMLS(queryString) {
   }
 }
 
-// Helper gọi OpenRouter Completion không stream
+// Helper phụ thực thi cuộc gọi OpenRouter cụ thể
+async function tryCallOpenRouter(chatMessages, modelName) {
+  const response = await fetch('https://openrouter.ai/api/v1/chat/completions', {
+    method: 'POST',
+    headers: {
+      'Authorization': `Bearer ${env.openrouterApiKey}`,
+      'Content-Type': 'application/json',
+      'HTTP-Referer': 'http://localhost:4000',
+      'X-Title': 'MedChat'
+    },
+    body: JSON.stringify({
+      model: modelName,
+      messages: chatMessages,
+      temperature: 0.1,
+      max_tokens: 1000
+    }),
+    signal: AbortSignal.timeout(15000)
+  })
+
+  if (!response.ok) {
+    throw new Error(`OpenRouter trả về lỗi ${response.status}`)
+  }
+  const data = await response.json()
+  if (data.error) {
+    throw new Error(`OpenRouter API error: ${data.error.message || JSON.stringify(data.error)}`)
+  }
+  const content = data.choices?.[0]?.message?.content
+  if (content === undefined || content === null) {
+    console.warn('[Audit Log][LLM_TRANSLATION][Warning] Empty choices content from OpenRouter:', JSON.stringify(data))
+  }
+  return content ?? ""
+}
+
+// Helper gọi OpenRouter Completion chính hỗ trợ chuyển đổi phòng thủ (Active Failover)
 async function callOpenRouter(chatMessages) {
   if (!env.openrouterApiKey) return ""
+  
+  const primaryModel = env.openrouterModel
+  const fallbackModel = 'qwen/qwen3.5-flash-02-23'
+
   try {
-    const response = await fetch('https://openrouter.ai/api/v1/chat/completions', {
-      method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${env.openrouterApiKey}`,
-        'Content-Type': 'application/json',
-        'HTTP-Referer': 'http://localhost:4000',
-        'X-Title': 'MedChat'
-      },
-      body: JSON.stringify({
-        model: env.openrouterModel,
-        messages: chatMessages,
-        temperature: 0.1,
-        max_tokens: 1000
-      }),
-      signal: AbortSignal.timeout(15000)
-    })
-    if (!response.ok) {
-      throw new Error(`OpenRouter trả về lỗi ${response.status}`)
-    }
-    const data = await response.json()
-    if (data.error) {
-      throw new Error(`OpenRouter API error: ${data.error.message || JSON.stringify(data.error)}`)
-    }
-    const content = data.choices?.[0]?.message?.content
-    if (content === undefined || content === null) {
-      console.warn('[Audit Log][LLM_TRANSLATION][Warning] Empty choices content from OpenRouter:', JSON.stringify(data))
-    }
-    return content ?? ""
+    console.log(`[Audit Log][LLM_TRANSLATION][Info] Calling primary model: "${primaryModel}"`)
+    return await tryCallOpenRouter(chatMessages, primaryModel)
   } catch (err) {
-    const isTimeout = err.name === 'TimeoutError' || err.message?.includes('aborted')
-    throw new Error(isTimeout ? "Dịch vụ AI OpenRouter không phản hồi (Timeout 15s)" : `Mất kết nối OpenRouter: ${err.message}`)
+    // Nếu model chính (DeepSeek) lỗi hoặc timeout, tự động failover sang Qwen
+    const isTimeout = err.name === 'TimeoutError' || err.message?.includes('aborted') || err.message?.includes('Timeout')
+    console.warn(`[Audit Log][LLM_TRANSLATION][Warning] Primary model "${primaryModel}" failed (${isTimeout ? 'Timeout' : err.message}). Retrying with defensive fallback model "${fallbackModel}"...`)
+    
+    try {
+      return await tryCallOpenRouter(chatMessages, fallbackModel)
+    } catch (fallbackErr) {
+      console.error(`[Audit Log][LLM_TRANSLATION][Error] Fallback model "${fallbackModel}" also failed:`, fallbackErr.message)
+      throw new Error(`Cả model chính và phòng thủ đều lỗi. Model chính: ${err.message}. Model phòng thủ: ${fallbackErr.message}`)
+    }
   }
 }
 
