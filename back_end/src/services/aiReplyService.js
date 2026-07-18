@@ -190,14 +190,12 @@ export async function generateReply({ messages, specialtyId, onChunk, signal }) 
   if (specialtyId === 'pediatrics') {
     let adaptiveCtx = null
     try {
-      // 1. Trích xuất triệu chứng tích lũy từ toàn bộ lịch sử hội thoại
-      //    (dùng tên triệu chứng thật từ đồ thị — không hardcode từ khóa)
+      // 1. Trích xuất triệu chứng tích lũy theo cấu trúc dữ liệu SCE
       const firstCtx = await computeAdaptiveContext(new Set(), new Set())
-      const confirmedSymptoms = await extractSymptomsFromHistory(messages, firstCtx.allSymptoms)
+      const sceResult = await extractSymptomsFromHistory(messages, firstCtx.allSymptoms)
 
-      // 2. Re-query Neo4j mỗi lượt với tập triệu chứng hiện tại
-      //    → Cập nhật bảng xếp hạng Bayesian + triệu chứng phân biệt tối ưu
-      adaptiveCtx = await computeAdaptiveContext(confirmedSymptoms, new Set())
+      // 2. Re-query Neo4j với đối tượng SCE để áp dụng trọng số, dịch tễ học và phủ định
+      adaptiveCtx = await computeAdaptiveContext(sceResult)
     } catch (err) {
       console.error('[Adaptive GraphRAG] Lỗi:', err.message)
       throw err

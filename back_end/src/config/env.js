@@ -14,4 +14,8 @@ export const env = {
   neo4jPassword: process.env.NEO4J_PASSWORD || '',
   neo4jDatabase: process.env.NEO4J_DATABASE || 'neo4j',
   umlsApiKey: process.env.UMLS_API_KEY || null,
+  wChiefComplaint: Number(process.env.W_CHIEF_COMPLAINT) || 1.5,
+  wAssociated: Number(process.env.W_ASSOCIATED) || 1.0,
+  penaltyMultiplier: Number(process.env.PENALTY_MULTIPLIER) || 0.4,
+  confidenceThreshold: Number(process.env.CONFIDENCE_THRESHOLD) || 0.7,
 }
