@@ -1,0 +1,101 @@
+=============================================================
+METRIC REPORT: CLINICAL NLP & CDSS (SCE EVALUATION)
+=============================================================
+Average Latency: 3574.00 ms
+
+Confirmed Symptoms (Triệu chứng khẳng định):
+- Precision: 68.18%
+- Recall:    75.00%
+- F1-Score:  71.43%
+
+Negation Detection (Triệu chứng phủ định):
+- Precision: 75.00%
+- Recall:    66.67%
+- F1-Score:  70.59%
+
+Demographics Match Accuracy: 100.00% (5/5)
+Chief Complaint Match Accuracy: 90.00% (9/10)
+
+=============================================================
+DETAILED CASE EXECUTION LOGS
+=============================================================
+
+Case 1: Đau bụng kèm buồn nôn, không sốt
+- Latency: 4647ms
+- Demographics: Expected(Age: null, Sex: null) -> Extracted(Age: null, Sex: null) [PASS]
+- Chief Complaint: Expected(abdominal-pain) -> Extracted(abdominal-pain) [PASS]
+- Confirmed Symptoms: Expected(abdominal-pain, nausea) -> Extracted(abdominal-pain, nausea)
+- Excluded Symptoms: Expected(fever) -> Extracted(fever)
+
+
+Case 2: Đau đầu dữ dội, chóng mặt, không nôn (đủ tuổi, giới tính)
+- Latency: 2529ms
+- Demographics: Expected(Age: 22, Sex: male) -> Extracted(Age: 22, Sex: male) [PASS]
+- Chief Complaint: Expected(headache) -> Extracted(headache) [PASS]
+- Confirmed Symptoms: Expected(headache, dizziness) -> Extracted(headache, dizziness)
+- Excluded Symptoms: Expected(vomiting) -> Extracted(vomiting)
+
+
+Case 3: Sốt và ho ở trẻ nhỏ
+- Latency: 2488ms
+- Demographics: Expected(Age: 5, Sex: null) -> Extracted(Age: 5, Sex: null) [PASS]
+- Chief Complaint: Expected(fever) -> Extracted(fever) [PASS]
+- Confirmed Symptoms: Expected(fever, cough) -> Extracted(fever, cough)
+- Excluded Symptoms: Expected() -> Extracted()
+
+
+Case 4: Đau tức ngực, khó thở, không đau bụng
+- Latency: 2836ms
+- Demographics: Expected(Age: null, Sex: null) -> Extracted(Age: null, Sex: null) [PASS]
+- Chief Complaint: Expected(chest-pain) -> Extracted(chest-pain) [PASS]
+- Confirmed Symptoms: Expected(chest-pain, shortness-of-breath) -> Extracted(chest-pain, difficulty-breathing)
+- Excluded Symptoms: Expected(abdominal-pain) -> Extracted(abdominal-pain)
+
+
+Case 5: Đau đầu sau gáy (chẩm) kèm chóng mặt, không sốt
+- Latency: 2732ms
+- Demographics: Expected(Age: null, Sex: null) -> Extracted(Age: null, Sex: null) [PASS]
+- Chief Complaint: Expected(headache) -> Extracted(headache) [PASS]
+- Confirmed Symptoms: Expected(headache, dizziness) -> Extracted(headache, dizziness)
+- Excluded Symptoms: Expected(fever) -> Extracted(fever)
+
+
+Case 6: Đau họng, ho có đờm, không khó thở
+- Latency: 3677ms
+- Demographics: Expected(Age: null, Sex: null) -> Extracted(Age: null, Sex: null) [PASS]
+- Chief Complaint: Expected(sore-throat) -> Extracted(sore-throat) [PASS]
+- Confirmed Symptoms: Expected(sore-throat, cough) -> Extracted(sore-throat, coughing-up-sputum)
+- Excluded Symptoms: Expected(shortness-of-breath) -> Extracted(difficulty-breathing)
+
+
+Case 7: Đau tai, chảy mủ từ tai, không ù tai
+- Latency: 5144ms
+- Demographics: Expected(Age: null, Sex: null) -> Extracted(Age: null, Sex: null) [PASS]
+- Chief Complaint: Expected(ear-pain) -> Extracted(ear-pain) [PASS]
+- Confirmed Symptoms: Expected(ear-pain, bleeding-from-ear) -> Extracted(ear-pain, pus-draining-from-ear)
+- Excluded Symptoms: Expected(ringing-in-ears) -> Extracted(ringing-in-ear)
+
+
+Case 8: Đau lưng dữ dội lan xuống chân, không liệt
+- Latency: 5806ms
+- Demographics: Expected(Age: null, Sex: null) -> Extracted(Age: null, Sex: null) [PASS]
+- Chief Complaint: Expected(back-pain) -> Extracted(back-pain) [PASS]
+- Confirmed Symptoms: Expected(back-pain, leg-pain) -> Extracted(back-pain, pain, muscle-weakness, loss-of-sensation)
+- Excluded Symptoms: Expected(paralysis) -> Extracted()
+
+
+Case 9: Ngứa da, nổi mẩn đỏ, không sốt (nữ 30 tuổi)
+- Latency: 2847ms
+- Demographics: Expected(Age: 30, Sex: female) -> Extracted(Age: 30, Sex: female) [PASS]
+- Chief Complaint: Expected(itchy-skin) -> Extracted(itching-of-skin) [FAIL]
+- Confirmed Symptoms: Expected(itchy-skin, skin-rash) -> Extracted(itching-of-skin, skin-rash)
+- Excluded Symptoms: Expected(fever) -> Extracted(fever)
+
+
+Case 10: Mất ngủ kéo dài kèm mệt mỏi, không sụt cân
+- Latency: 3034ms
+- Demographics: Expected(Age: null, Sex: null) -> Extracted(Age: null, Sex: null) [PASS]
+- Chief Complaint: Expected(insomnia) -> Extracted(insomnia) [PASS]
+- Confirmed Symptoms: Expected(insomnia, fatigue) -> Extracted(insomnia, fatigue)
+- Excluded Symptoms: Expected(weight-loss) -> Extracted(weight-loss)
+
