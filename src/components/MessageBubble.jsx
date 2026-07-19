@@ -45,13 +45,20 @@ export default function MessageBubble({ role, content, streaming, lang = 'vi', o
           {hasChecklist && !streaming && (
             <div className="symptom-checklist-box">
               <p className="symptom-checklist-title">
-                {isEn ? "Please check all symptoms you have:" : "Vui lòng chọn các triệu chứng bạn đang gặp phải:"}
+                {isEn
+                  ? "To help differentiate more accurately, please select the symptoms below that you are experiencing so I have enough information to evaluate:"
+                  : "Để giúp phân biệt chính xác hơn, bạn vui lòng tích chọn các triệu chứng dưới đây mà bạn đang gặp phải để tôi có đủ thông tin đánh giá:"
+                }
               </p>
               <div className="symptom-checklist-grid">
                 {checklistItems.map(item => (
-                  <label key={item.id} className="symptom-checkbox-label">
+                  <label
+                    key={item.id}
+                    className={`symptom-checkbox-label ${checkedIds.includes(item.id) ? 'symptom-checkbox-label--checked' : ''}`}
+                  >
                     <input
                       type="checkbox"
+                      className="symptom-checkbox-input"
                       disabled={!isLast || submitted}
                       checked={checkedIds.includes(item.id)}
                       onChange={(e) => {
