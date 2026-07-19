@@ -25,41 +25,18 @@ import { fileURLToPath } from 'url'
 const __filename = fileURLToPath(import.meta.url)
 const __dirname = path.dirname(__filename)
 
-import fs from 'fs'
 
 // Phục vụ tệp tĩnh Frontend trong môi trường Production
 if (process.env.NODE_ENV === 'production') {
   const distPath = path.resolve(__dirname, '../../dist')
-  const indexPath = path.join(distPath, 'index.html')
-  console.log(`[Production Static] distPath: "${distPath}", exists: ${fs.existsSync(distPath)}`)
-  console.log(`[Production Static] indexPath: "${indexPath}", exists: ${fs.existsSync(indexPath)}`)
-
   app.use(express.static(distPath))
   app.get('*', (req, res, next) => {
+    // Các route API không khớp thì để errorHandler lo
     if (req.path.startsWith('/api/')) return next()
-    res.sendFile(indexPath, (err) => {
-      if (err) {
-        console.error(`[Static sendFile Error] path: "${indexPath}":`, err)
-        next(err)
-      }
-    })
+    // SPA fallback: Chuyển hướng các request thường về index.html
+    res.sendFile(path.join(distPath, 'index.html'))
   })
 }
-
-app.get('/api/error-log', (req, res) => {
-  res.json({
-    ok: true,
-    env: {
-      NODE_ENV: process.env.NODE_ENV,
-      PORT: process.env.PORT,
-      __dirname: __dirname,
-      distPathResolved: path.resolve(__dirname, '../../dist'),
-      distExists: fs.existsSync(path.resolve(__dirname, '../../dist')),
-      indexExists: fs.existsSync(path.resolve(__dirname, '../../dist/index.html'))
-    },
-    errors: global.serverErrors || []
-  })
-})
 
 app.use(notFoundHandler)
 app.use(errorHandler)
