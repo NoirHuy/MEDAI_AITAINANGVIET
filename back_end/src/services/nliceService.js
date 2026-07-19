@@ -588,7 +588,7 @@ export async function computeAdaptiveContext(sceResult, excludedSymptoms = new S
         WHERE disease_count >= 2
         RETURN symptom, sym_id, description, disease_probs, disease_count, prob_stdev, prob_avg
         ORDER BY prob_stdev DESC, prob_avg DESC
-        LIMIT 3
+        LIMIT 30
       `, { topDiseases: topDiseaseNames, known: knownSymptoms })
 
       bestNextSymptoms = discRes.records.map(rec => ({
@@ -717,7 +717,7 @@ export function formatAdaptiveContext(ctx, lang = 'vi') {
   if (bestNextSymptoms && bestNextSymptoms.length > 0) {
     text += isEn ? `\n### Optimal Differential Symptoms (Clarification Suggested):\n`
                  : `\n### Trieu chung phan biet toi uu (goi y hoi tiep):\n`
-    bestNextSymptoms.forEach(sym => {
+    bestNextSymptoms.slice(0, 5).forEach(sym => {
       const breakdown = sym.byDisease
         .map(d => `${d.disease}: ${d.prob?.toFixed(1)}%`)
         .join(' vs ')

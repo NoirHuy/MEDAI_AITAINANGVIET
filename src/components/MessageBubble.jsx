@@ -26,7 +26,7 @@ const SYMPTOM_TRANSLATIONS = {
   'bloody stool': 'Đi ngoài ra máu', 'heartburn': 'Ợ nóng / Trào ngược', 'acid reflux': 'Trào ngược axit',
   'frequent urination': 'Tiểu thường xuyên', 'painful urination': 'Tiểu buốt / Tiểu khó',
   'blood in urine': 'Tiểu ra máu', 'urinary retention': 'Bí tiểu',
-  'joint pain': 'Đau khớp', 'muscle pain': 'Đau cơ', 'muscle aches': 'Đau mỏi cơ',
+  'joint pain': 'Đau khớp', 'muscle pain': 'Đau cơ', 'muscle aches': 'Đau mỏi người / Đau mỏi cơ',
   'back pain': 'Đau lưng', 'lower back pain': 'Đau lưng dưới',
   'neck pain': 'Đau cổ', 'stiffness': 'Cứng khớp',
   'skin rash': 'Phát ban ngoài da', 'rash': 'Phát ban', 'itching': 'Ngứa',
@@ -59,6 +59,12 @@ function removeAccents(str) {
     .replace(/Đ/g, 'D')
 }
 
+function includesWholeWord(text, searchStr) {
+  const escaped = searchStr.replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&')
+  const regex = new RegExp(`(?:^|[^a-z0-9àáạảãâầấậẩẫăằắặẳẵèéẹẻẽêềếệểễìíịỉĩòóọỏõôồốộổỗơờớợởỡùúụủũưừứựửữỳýỵỷỹđ])` + escaped + `(?:$|[^a-z0-9àáạảãâầấậẩẫăằắặẳẵèéẹẻẽêềếệểễìíịỉĩòóọỏõôồốộổỗơờớợởỡùúụủũưừứựửữỳýỵỷỹđ])`, 'i')
+  return regex.test(text)
+}
+
 function getMatchedSymptomsForQuestion(questionText, symptoms, lang) {
   if (!symptoms || symptoms.length === 0) return []
   const lowerQuestion = questionText.toLowerCase()
@@ -69,26 +75,28 @@ function getMatchedSymptomsForQuestion(questionText, symptoms, lang) {
     const cleanLabel = removeAccents(label)
     const name = sym.name.toLowerCase()
 
-    // 1. Direct match with or without accents
-    if (lowerQuestion.includes(label) || cleanQuestion.includes(cleanLabel) || lowerQuestion.includes(name)) {
+    // 1. Direct whole-word match
+    if (includesWholeWord(lowerQuestion, label) || 
+        includesWholeWord(cleanQuestion, cleanLabel) || 
+        includesWholeWord(lowerQuestion, name)) {
       return true
     }
 
-    // 2. Split words and check chunks
+    // 2. Split words and check chunks using whole-word boundaries
     const parts = label.split(/\s+(?:hoặc|or|với|and|,|\/)\s+/)
     for (const part of parts) {
       const cleanPart = removeAccents(part)
-      if (part.length >= 3 && (lowerQuestion.includes(part) || cleanQuestion.includes(cleanPart))) {
+      if (part.length >= 3 && (includesWholeWord(lowerQuestion, part) || includesWholeWord(cleanQuestion, cleanPart))) {
         return true
       }
     }
 
-    // 3. Special clinical mappings
-    if (label.includes('đau ngực') && (lowerQuestion.includes('tức ngực') || cleanQuestion.includes('tuc nguc'))) return true
-    if (label.includes('sốt') && (lowerQuestion.includes('nóng') || cleanQuestion.includes('nong'))) return true
-    if (label.includes('co giật') && (lowerQuestion.includes('giật') || cleanQuestion.includes('giat'))) return true
-    if ((label.includes('nôn') || label.includes('nausea')) && (lowerQuestion.includes('ói') || cleanQuestion.includes('oi'))) return true
-    if (label.includes('u / cục') && (lowerQuestion.includes('cục') || cleanQuestion.includes('cuc') || lowerQuestion.includes('u '))) return true
+    // 3. Special clinical mappings (with whole-word boundaries check)
+    if (label.includes('đau ngực') && (includesWholeWord(lowerQuestion, 'tức ngực') || includesWholeWord(cleanQuestion, 'tuc nguc'))) return true
+    if (label.includes('sốt') && (includesWholeWord(lowerQuestion, 'nóng') || includesWholeWord(cleanQuestion, 'nong'))) return true
+    if (label.includes('co giật') && (includesWholeWord(lowerQuestion, 'giật') || includesWholeWord(cleanQuestion, 'giat'))) return true
+    if ((label.includes('nôn') || label.includes('nausea')) && (includesWholeWord(lowerQuestion, 'ói') || includesWholeWord(cleanQuestion, 'oi'))) return true
+    if (label.includes('u / cục') && (includesWholeWord(lowerQuestion, 'cục') || includesWholeWord(cleanQuestion, 'cuc') || includesWholeWord(lowerQuestion, 'u'))) return true
 
     return false
   })
