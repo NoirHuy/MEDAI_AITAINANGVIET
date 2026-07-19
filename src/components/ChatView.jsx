@@ -48,7 +48,7 @@ export default function ChatView({
           onClick={onToggleLang}
           title={isEn ? "Switch to Vietnamese" : "Chuyển sang Tiếng Anh"}
         >
-          {isEn ? "🇬🇧 EN" : "🇻🇳 VI"}
+          {isEn ? "English" : "Tiếng Việt"}
         </button>
       </div>
 
