@@ -40,9 +40,6 @@ router.post(
     res.setHeader('X-Accel-Buffering', 'no') // Ép Nginx/Hugging Face Proxy không buffer stream
     res.setHeader('Connection', 'keep-alive')
 
-    // Gửi byte đầu tiên ngay lập tức để giữ kết nối không bị Hugging Face proxy timeout (500/503)
-    res.write(' ')
-
     let full = ''
     try {
       full = await generateReply({
