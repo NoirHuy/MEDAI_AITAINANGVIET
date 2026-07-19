@@ -1,10 +1,110 @@
+import { useState } from 'react'
 import { PulseIcon } from './Icons'
 import TypingDots from './TypingDots'
 import './MessageBubble.css'
 
-export default function MessageBubble({ role, content, streaming, lang = 'vi' }) {
+const SYMPTOM_TRANSLATIONS = {
+  'fever': 'Sốt',
+  'nausea and vomiting': 'Buồn nôn hoặc nôn',
+  'nausea': 'Buồn nôn',
+  'vomiting': 'Nôn mửa',
+  'neck stiffness': 'Cứng cổ / Cứng gáy',
+  'headache': 'Đau đầu',
+  'cough': 'Ho',
+  'fatigue': 'Mệt mỏi',
+  'sore throat': 'Đau họng',
+  'runny nose': 'Chảy nước mũi',
+  'shortness of breath': 'Khó thở',
+  'chest pain': 'Đau ngực',
+  'abdominal pain': 'Đau bụng',
+  'diarrhea': 'Tiêu chảy',
+  'skin rash': 'Phát ban ngoài da',
+  'rash': 'Phát ban',
+  'joint pain': 'Đau khớp',
+  'muscle pain': 'Đau cơ',
+  'muscle aches': 'Đau mỏi cơ',
+  'photophobia': 'Sợ ánh sáng',
+  'confusion': 'Lú lẫn / mơ hồ',
+  'seizures': 'Co giật',
+  'ear pain': 'Đau tai',
+  'nasal congestion': 'Nghẹt mũi',
+  'loss of appetite': 'Chán ăn',
+}
+
+function getSymptomLabel(name, lang) {
+  if (lang !== 'vi') return name
+  const lower = name.toLowerCase().trim()
+  if (SYMPTOM_TRANSLATIONS[lower]) return SYMPTOM_TRANSLATIONS[lower]
+  for (const [key, val] of Object.entries(SYMPTOM_TRANSLATIONS)) {
+    if (lower.includes(key) || key.includes(lower)) return val
+  }
+  return name
+}
+
+export default function MessageBubble({ role, content, streaming, lang = 'vi', isLastAssistant, onSend }) {
   const isUser = role === 'user'
   const isEn = lang === 'en'
+  const [checkedSymptomIds, setCheckedSymptomIds] = useState([])
+
+  let visibleContent = content
+  let metadata = null
+  const metaIndex = content ? content.indexOf('\n[METADATA]:') : -1
+  if (metaIndex !== -1) {
+    visibleContent = content.substring(0, metaIndex)
+    const metadataStr = content.substring(metaIndex + '\n[METADATA]:'.length)
+    if (!streaming && metadataStr.trim()) {
+      try {
+        metadata = JSON.parse(metadataStr)
+      } catch (e) {
+        console.error(e)
+      }
+    }
+  }
+
+  const toggleSymptom = (id) => {
+    setCheckedSymptomIds(prev =>
+      prev.includes(id) ? prev.filter(x => x !== id) : [...prev, id]
+    )
+  }
+
+  const handleSubmit = () => {
+    if (!metadata || !metadata.symptoms) return
+    const confirmedNames = []
+    const excludedNames = []
+
+    metadata.symptoms.forEach(sym => {
+      const label = getSymptomLabel(sym.name, lang)
+      if (checkedSymptomIds.includes(sym.id)) {
+        confirmedNames.push(label)
+      } else {
+        excludedNames.push(label)
+      }
+    })
+
+    let responseText = ''
+    if (isEn) {
+      if (confirmedNames.length > 0) {
+        responseText += `I have the following symptoms: ${confirmedNames.join(', ')}.`
+      }
+      if (excludedNames.length > 0) {
+        responseText += ` I do not have: ${excludedNames.join(', ')}.`
+      }
+      if (confirmedNames.length === 0 && excludedNames.length === 0) {
+        responseText = `I do not have any of the symptoms mentioned above.`
+      }
+    } else {
+      if (confirmedNames.length > 0) {
+        responseText += `Tôi có các triệu chứng: ${confirmedNames.join(', ')}.`
+      }
+      if (excludedNames.length > 0) {
+        responseText += ` Tôi không bị: ${excludedNames.join(', ')}.`
+      }
+      if (confirmedNames.length === 0 && excludedNames.length === 0) {
+        responseText = `Tôi không có bất kỳ triệu chứng nào nêu trên.`
+      }
+    }
+    onSend?.(responseText)
+  }
 
   return (
     <div className={`message-row ${isUser ? 'message-row--user' : 'message-row--assistant'}`}>
@@ -17,16 +117,46 @@ export default function MessageBubble({ role, content, streaming, lang = 'vi' })
         <div
           className={`message-bubble ${isUser ? 'message-bubble--user' : 'message-bubble--assistant'}`}
         >
-          {content ? renderMessageContent(content) : streaming ? <TypingDots /> : null}
-          {streaming && content && <span className="message-cursor" />}
+          {visibleContent ? renderMessageContent(visibleContent) : streaming ? <TypingDots /> : null}
+          {streaming && visibleContent && <span className="message-cursor" />}
         </div>
-        {!isUser && content && !streaming && (
+        {!isUser && visibleContent && !streaming && (
           <p className="message-disclaimer">
             {isEn
               ? "AI may make mistakes. Please consult a doctor if necessary."
               : "AI có thể mắc sai sót. Hãy tham khảo bác sĩ khi cần thiết."
             }
           </p>
+        )}
+
+        {isLastAssistant && metadata && metadata.symptoms && metadata.symptoms.length > 0 && (
+          <div className="symptom-panel">
+            <p className="symptom-panel__title">
+              {isEn ? "Select symptoms that apply to you:" : "Chọn các triệu chứng bạn gặp phải:"}
+            </p>
+            <div className="symptom-panel__grid">
+              {metadata.symptoms.map(sym => {
+                const label = getSymptomLabel(sym.name, lang)
+                const isSelected = checkedSymptomIds.includes(sym.id)
+                return (
+                  <label
+                    key={sym.id}
+                    className={`symptom-checkbox-row ${isSelected ? 'symptom-checkbox-row--selected' : ''}`}
+                  >
+                    <input
+                      type="checkbox"
+                      checked={isSelected}
+                      onChange={() => toggleSymptom(sym.id)}
+                    />
+                    <span className="symptom-checkbox-label">{label}</span>
+                  </label>
+                )
+              })}
+            </div>
+            <button className="symptom-submit-btn" onClick={handleSubmit}>
+              {isEn ? "Submit Checked Symptoms" : "Xác nhận triệu chứng đã chọn"}
+            </button>
+          </div>
         )}
       </div>
     </div>

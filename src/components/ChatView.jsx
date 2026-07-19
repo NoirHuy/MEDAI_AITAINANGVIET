@@ -65,9 +65,20 @@ export default function ChatView({
       <div className="chat-body" ref={scrollRef}>
         {hasMessages ? (
           <div className="chat-messages">
-            {messages.map((m) => (
-              <MessageBubble key={m.id} role={m.role} content={m.content} streaming={m.streaming} lang={lang} />
-            ))}
+            {messages.map((m, index) => {
+              const isLastAssistant = !isResponding && m.role === 'assistant' && index === messages.length - 1
+              return (
+                <MessageBubble
+                  key={m.id}
+                  role={m.role}
+                  content={m.content}
+                  streaming={m.streaming}
+                  lang={lang}
+                  isLastAssistant={isLastAssistant}
+                  onSend={onSend}
+                />
+              )
+            })}
           </div>
         ) : (
           <WelcomeScreen onPick={onSend} lang={lang} />

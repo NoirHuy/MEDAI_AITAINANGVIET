@@ -313,7 +313,19 @@ export async function generateReply({ messages, specialtyId, lang = 'vi', onChun
       ...messages
     ]
 
-    return streamOpenRouter(chatMessages, onChunk, signal)
+    const fullReply = await streamOpenRouter(chatMessages, onChunk, signal)
+    if (adaptiveCtx && adaptiveCtx.bestNextSymptoms && adaptiveCtx.bestNextSymptoms.length > 0) {
+      const metaObj = {
+        symptoms: adaptiveCtx.bestNextSymptoms.map(sym => ({
+          id: sym.id,
+          name: sym.name
+        }))
+      }
+      const metaChunk = `\n[METADATA]:${JSON.stringify(metaObj)}`
+      onChunk?.(metaChunk)
+      return fullReply + metaChunk
+    }
+    return fullReply
   }
 
   // ── Các chuyên khoa khác (Đa khoa, Da liễu, Dinh dưỡng) ─────────────────
