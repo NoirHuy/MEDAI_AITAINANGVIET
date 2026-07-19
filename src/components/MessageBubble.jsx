@@ -199,10 +199,11 @@ function renderBlock(block, key) {
         <div key={key} className="msg-mixed-block">
           {lines.map((line, i) => {
             const trimmed = line.trim()
+            const cleanLine = trimmed.replace(/\*\*/g, '')
 
             // 1. Kiểm tra dòng tên bệnh kèm xác suất:
             // Match các dạng: "1. Tên bệnh: 60% xác suất" hoặc "1. Tên bệnh: ~60% xác suất"
-            const diseaseMatch = trimmed.match(/^(\d+)\.\s*(.*?):\s*~?(\d+)%\s*(xác suất|khả năng|ước tính)?/i)
+            const diseaseMatch = cleanLine.match(/^(\d+)\.\s*(.*?):\s*~?(\d+)%\s*(xác suất|khả năng|ước tính)?/i)
             if (diseaseMatch) {
               const num = diseaseMatch[1]
               const name = diseaseMatch[2].trim()

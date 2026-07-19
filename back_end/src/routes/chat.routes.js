@@ -35,6 +35,9 @@ router.post(
       if (!res.writableEnded) controller.abort()
     })
 
+    req.socket.setKeepAlive(true)
+    req.socket.setTimeout(0) // Tắt thời gian chờ socket để tránh bị ngắt kết nối giữa chừng khi streaming
+
     res.setHeader('Content-Type', 'text/plain; charset=utf-8')
     res.setHeader('Cache-Control', 'no-cache, no-transform')
     res.setHeader('X-Accel-Buffering', 'no') // Ép Nginx/Hugging Face Proxy không buffer stream

@@ -201,12 +201,14 @@ Trước khi đưa ra báo cáo hay bất kỳ lời khuyên y tế/chăm sóc s
 Khi đã đủ thông tin, xuất BÁO CÁO SÀNG LỌC theo đúng cấu trúc sau:
 
 #### 🩺 Bệnh lý nghi ngờ (theo thứ tự xác suất từ đồ thị):
-Với **mỗi bệnh**, bạn bắt buộc phải trình bày tiêu đề bệnh theo đúng định dạng sau để hệ thống hiển thị vòng tròn phần trăm:
+Với **mỗi bệnh**, bạn bắt buộc phải trình bày tiêu đề bệnh theo đúng định dạng sau để hệ thống hiển thị vòng tròn phần trăm (không thêm dấu sao in đậm ở tiêu đề này):
 '1. [Tên bệnh]: [Số]% xác suất' (Ví dụ: '1. Mãn kinh (đối với phụ nữ): 60% xác suất')
 
-Dưới mỗi bệnh, liệt kê các thông tin sau dạng gạch đầu dòng (sử dụng dấu '-' ở đầu dòng):
-- **Dẫn chứng:** Trình bày tự nhiên và dễ hiểu về các triệu chứng của bệnh nhân khớp với dữ liệu dịch tễ y khoa (không dùng từ "đồ thị tri thức" hay "Neo4j" khi nói chuyện với bệnh nhân, hãy giải thích tự nhiên như một bác sĩ thực thụ). Ví dụ: *"Biểu hiện bốc hỏa và đổ mồ hôi đêm của bạn rất đặc trưng cho giai đoạn này."*
+Dưới mỗi bệnh, liệt kê các thông tin sau dạng gạch đầu dòng (sử dụng dấu '-' ở đầu dòng) và bắt buộc phải in đậm nhãn bắt đầu bằng cặp dấu sao:
+- **Dẫn chứng:** Trình bày tự nhiên và dễ hiểu về các triệu chứng của bệnh nhân khớp với dữ liệu dịch tễ y khoa (không dùng từ "đồ thị tri thức" hay "Neo4j", hãy tư vấn tự nhiên như một bác sĩ thực thụ). Ví dụ: *"Biểu hiện bốc hỏa và đổ mồ hôi đêm của bạn rất đặc trưng cho giai đoạn này."*
 - **Lý giải phân biệt:** Giải thích tại sao bệnh này phù hợp hơn hoặc ít phù hợp hơn các bệnh khác dựa trên triệu chứng.
+
+**Yêu cầu quan trọng về độ dài**: Để đảm bảo phản hồi nhanh chóng và không bị ngắt quãng giữa chừng do quá tải hoặc nghẽn mạng, bạn hãy viết phần "Dẫn chứng" và "Lý giải phân biệt" thật ngắn gọn, súc tích (tối đa 2-3 câu ngắn cho mỗi phần).
 
 Phần cảnh báo PHẢI bắt đầu bằng emoji ⚠️ trên một dòng riêng:
 ⚠️ **Cảnh báo:** Nếu bạn có các triệu chứng X, Y, Z — hãy đến cơ sở y tế ngay lập tức.
