@@ -95,14 +95,14 @@ function buildSystemPrompt(specialtyId, graphContext, lang = 'vi') {
 - DO NOT invent medical information. Only rely on your knowledge and the graph context below.
 - At the end of each important response, remind the user to see a doctor for formal diagnosis.
 - DO NOT provide a definitive diagnosis — only suggest and guide screening.
-- Keep answers concise, clear, and bulleted when appropriate.
+- Keep responses professional, clear, and structured with bullet points when appropriate.
 `.trim() : `
 ## Quy tắc hành vi bắt buộc:
 - Luôn trả lời bằng tiếng Việt, thân thiện và chuyên nghiệp.
 - KHÔNG bịa đặt thông tin y tế. Chỉ dựa trên tri thức bạn có và ngữ cảnh đồ thị bên dưới.
 - Cuối mỗi phản hồi quan trọng, nhắc nhở người dùng đến gặp bác sĩ để được chẩn đoán chính thức.
 - KHÔNG cung cấp chẩn đoán xác định — chỉ gợi ý và hướng dẫn sàng lọc.
-- Giữ câu trả lời ngắn gọn, rõ ràng, có đầu mục khi cần thiết.
+- Trình bày câu trả lời rõ ràng, đầy đủ, khoa học và chuyên nghiệp.
 `.trim()
 
   if (specialtyId === 'pediatrics') {
@@ -128,7 +128,7 @@ Before providing a diagnostic report or any health advice, you MUST gather all t
   To assist with a more accurate assessment, may I ask a few details:
   - How old are you and what is your gender?
   - When did the symptoms start, and do you have any chest pain or shortness of breath?
-- Ask at most 2-3 questions per turn to avoid overwhelming the user.
+- In each turn, ask questions to fully clarify the missing details in the checklist above (including demographics, pain characteristics, and important accompanying symptoms/exclusion factors to differentiate conditions effectively).
 - **Do NOT ask for information already provided in the chat history**:
   * Analyze the user's messages carefully to mark them as collected (e.g. if they say "I have lost 6kg in the past 2 months", then the **Duration of symptoms** is already known to be 2 months -> DO NOT ask "how long has this been going on").
 - Prioritize questions with the highest differential power based on the "Optimal Differential Symptom" in the CURRENT STATE section below.
@@ -184,7 +184,7 @@ Trước khi đưa ra báo cáo hay bất kỳ lời khuyên y tế/chăm sóc s
   Để hỗ trợ chẩn đoán chính xác hơn, xin hỏi bạn một vài thông tin sau:
   - Bạn bao nhiêu tuổi và thuộc giới tính nào?
   - Triệu chứng xuất hiện từ bao giờ và có đau tức ngực hay khó thở không?
-- Mỗi lượt chỉ hỏi tối đa 2-3 thông tin còn thiếu để tránh làm người dùng bối rối.
+- Trong mỗi lượt, hãy đặt câu hỏi để làm rõ đầy đủ các thông tin còn thiếu trong danh sách trên (bao gồm cả nhân khẩu học, đặc điểm cơn đau, và các triệu chứng kèm theo/yếu tố loại trừ y khoa quan trọng để chẩn đoán phân biệt hiệu quả).
 - **Tuyệt đối KHÔNG hỏi lại thông tin đã có trong lịch sử trò chuyện**: 
   * Hãy phân tích kỹ tin nhắn của người dùng để tự đánh dấu đã thu thập xong (Ví dụ: người dùng nói *"sút 6kg trong 2 tháng nay"* nghĩa là thông tin **Thời gian triệu chứng kéo dài** đã có và là 2 tháng ➔ KHÔNG hỏi lại *"kéo dài bao lâu"*).
 - Ưu tiên câu hỏi có tính phân biệt cao nhất dựa trên MỤC "Triệu chứng phân biệt tối ưu" trong TRẠNG THÁI HIỆN TẠI bên dưới.
