@@ -133,6 +133,42 @@ async function callOpenRouter(chatMessages) {
   }
 }
 
+// Hàm chuẩn hóa triệu chứng bụng/đặc điểm vị trí sang nút đặc hiệu trong SymCAT
+function normalizeSymptomTerm(sym) {
+  const termLower = (sym.term || '').toLowerCase()
+  const locLower = (sym.attributes?.bodyLocation || '').toLowerCase()
+  const sevLower = (sym.attributes?.severity || '').toLowerCase()
+
+  if (termLower.includes('abdominal pain') || termLower === 'abdominal pain') {
+    if (
+      locLower.includes('lower') || 
+      locLower.includes('hypogastric') || 
+      locLower.includes('pelvic') || 
+      locLower.includes('iliac') ||
+      locLower.includes('dưới rốn') ||
+      locLower.includes('hố chậu')
+    ) {
+      return 'lower abdominal pain'
+    }
+    if (
+      locLower.includes('upper') || 
+      locLower.includes('epigastric') || 
+      locLower.includes('epigastrium') ||
+      locLower.includes('thượng vị') ||
+      locLower.includes('trên rốn')
+    ) {
+      return 'upper abdominal pain'
+    }
+    if (locLower.includes('burning') || termLower.includes('burning') || sevLower.includes('burning')) {
+      return 'burning abdominal pain'
+    }
+    if (sevLower === 'severe' || termLower.includes('sharp') || termLower.includes('severe')) {
+      return 'sharp abdominal pain'
+    }
+  }
+  return sym.term
+}
+
 // ─── UMLS + LLM SEMANTIC SYMPTOM EXTRACTION ──────────────────────────────────
 export async function extractSymptomsFromHistory(messages, symptomsList, lang = 'vi') {
   const emptySCE = {
@@ -287,21 +323,22 @@ Kết quả JSON:`
   // 2a. Thực thi song song tất cả các cuộc gọi UMLS Search API
   const umlsResults = await Promise.all(
     extractedSymptoms.map(async (sym) => {
-      console.log(`[Audit Log][UMLS_SEARCH][Start] Querying UMLS parallel for term: "${sym.term}"`)
+      const queryTerm = normalizeSymptomTerm(sym)
+      console.log(`[Audit Log][UMLS_SEARCH][Start] Querying UMLS parallel for term: "${queryTerm}" (Original: "${sym.term}")`)
       try {
-        const results = await searchUMLS(sym.term)
+        const results = await searchUMLS(queryTerm)
         let umlsCui = null
         let umlsName = null
         if (results && results.length > 0) {
           umlsCui = results[0].ui
           umlsName = results[0].name
-          console.log(`[Audit Log][UMLS_SEARCH][Success] Term: "${sym.term}" -> Match: "${umlsName}" (CUI: ${umlsCui})`)
+          console.log(`[Audit Log][UMLS_SEARCH][Success] Term: "${queryTerm}" -> Match: "${umlsName}" (CUI: ${umlsCui})`)
         } else {
-          console.log(`[Audit Log][UMLS_SEARCH][Warning] No UMLS results for term: "${sym.term}"`)
+          console.log(`[Audit Log][UMLS_SEARCH][Warning] No UMLS results for term: "${queryTerm}"`)
         }
         return { sym, umlsCui, umlsName }
       } catch (err) {
-        console.error(`[Audit Log][UMLS_SEARCH][Error] UMLS search failed for "${sym.term}":`, err.message)
+        console.error(`[Audit Log][UMLS_SEARCH][Error] UMLS search failed for "${queryTerm}":`, err.message)
         throw err
       }
     })
