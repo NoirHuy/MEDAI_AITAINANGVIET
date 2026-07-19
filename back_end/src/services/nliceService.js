@@ -177,7 +177,9 @@ You MUST return ONLY a single valid JSON block matching the following structure 
         "severity": "<'mild' | 'moderate' | 'severe' | null>",
         "frequency": "<'constant' | 'episodic' | null>",
         "progression": "<'improving' | 'stable' | 'worsening' | null>",
-        "bodyLocation": "<specific anatomical location, e.g. 'occipital region', 'epigastrium', or null>"
+        "bodyLocation": "<specific anatomical location, e.g. 'occipital region', 'epigastrium', or null>",
+        "exacerbatingFactors": <array of strings representing things that worsen the symptom, e.g. ["movement", "pressure"], or []>,
+        "relievingFactors": <array of strings representing things that relieve the symptom, e.g. ["rest", "lying down"], or []>
       }
     }
   ]
@@ -213,11 +215,13 @@ Bạn CHỈ được phép trả về duy nhất một khối JSON hợp lệ th
       "status": "<'positive' nếu bệnh nhân xác nhận có triệu chứng này | 'negative' nếu bệnh nhân phủ nhận triệu chứng này>",
       "role": "<'chief_complaint' nếu đây là triệu chứng chính/lý do khám y khoa chính | 'associated' nếu đây là triệu chứng đi kèm>",
       "confidenceScore": <mức độ tự tin (confidence score) của bạn về việc trích xuất thực thể này từ 0.0 đến 1.0>,
-      "attributes": {
+       "attributes": {
         "severity": "<'mild' | 'moderate' | 'severe' | null>",
         "frequency": "<'constant' | 'episodic' | null>",
         "progression": "<'improving' | 'stable' | 'worsening' | null>",
-        "bodyLocation": "<vị trí giải phẫu cụ thể, ví dụ: 'occipital region', 'epigastrium', hoặc null>"
+        "bodyLocation": "<vị trí giải phẫu cụ thể, ví dụ: 'occipital region', 'epigastrium', hoặc null>",
+        "exacerbatingFactors": <danh sách chuỗi các yếu tố làm triệu chứng nặng lên, ví dụ: ["movement", "pressure"], hoặc []>,
+        "relievingFactors": <danh sách chuỗi các yếu tố làm giảm nhẹ triệu chứng, ví dụ: ["rest", "lying down"], hoặc []>
       }
     }
   ]
@@ -343,7 +347,14 @@ Kết quả JSON:`
         status: sym.status || 'positive',
         role: sym.role || 'associated',
         confidenceScore: sym.confidenceScore || 1.0,
-        attributes: sym.attributes || { severity: null, frequency: null, progression: null, bodyLocation: null }
+        attributes: {
+          severity: sym.attributes?.severity || null,
+          frequency: sym.attributes?.frequency || null,
+          progression: sym.attributes?.progression || null,
+          bodyLocation: sym.attributes?.bodyLocation || null,
+          exacerbatingFactors: sym.attributes?.exacerbatingFactors || [],
+          relievingFactors: sym.attributes?.relievingFactors || []
+        }
       })
     } else {
       unmatchedTerms.push({ ...sym, umlsCui, umlsName })
@@ -393,7 +404,14 @@ Chỉ trả về danh sách các slug khớp chính xác nhất từ danh sách 
                 status: originalItem.status || 'positive',
                 role: originalItem.role || 'associated',
                 confidenceScore: originalItem.confidenceScore || 0.8,
-                attributes: originalItem.attributes || { severity: null, frequency: null, progression: null, bodyLocation: null }
+                attributes: {
+                  severity: originalItem.attributes?.severity || null,
+                  frequency: originalItem.attributes?.frequency || null,
+                  progression: originalItem.attributes?.progression || null,
+                  bodyLocation: originalItem.attributes?.bodyLocation || null,
+                  exacerbatingFactors: originalItem.attributes?.exacerbatingFactors || [],
+                  relievingFactors: originalItem.attributes?.relievingFactors || []
+                }
               })
             }
           }
@@ -504,22 +522,23 @@ export async function computeAdaptiveContext(sceResult, excludedSymptoms = new S
       // Thực hiện truy vấn Neo4j với trọng số Bayesian phân vai triệu chứng
       const diseaseRes = await session.run(`
         MATCH (d:Disease)-[r:HAS_SYMPTOM]->(s:Symptom)
-        WHERE s.id IN $symptoms
-        WITH d, s, r,
-             coalesce($symptomWeights[s.id], 1.0) AS w
+        WITH d, collect({s_id: s.id, prob: r.probability, name: s.name, description: s.description}) AS all_symptoms
+        WITH d, all_symptoms, [x IN all_symptoms WHERE x.s_id IN $symptoms | x] AS matched_list
+        WHERE size(matched_list) > 0
         WITH d,
-             count(s) AS matched_count,
-             sum(r.probability * w) AS base_score,
-             collect({symptom: s.name, prob: r.probability, description: s.description}) AS matched_details
+             size(matched_list) AS matched_count,
+             reduce(s = 0.0, x IN matched_list | s + x.prob * coalesce($symptomWeights[x.s_id], 1.0)) AS base_score,
+             reduce(s = 0.0, x IN all_symptoms | s + x.prob) AS max_possible_score,
+             [x IN matched_list | {symptom: x.name, prob: x.prob, description: x.description}] AS matched_details
         ORDER BY matched_count DESC, base_score DESC
         LIMIT 8
         OPTIONAL MATCH (d)-[ra:AFFECTS_AGE]->(a:AgeGroup)
         OPTIONAL MATCH (d)-[rg:AFFECTS_SEX]->(g:Sex)
-        WITH d, matched_count, base_score, matched_details,
+        WITH d, matched_count, base_score, max_possible_score, matched_details,
              collect(DISTINCT {age: a.name, prob: ra.probability}) AS ages,
              collect(DISTINCT {sex: g.name, prob: rg.probability}) AS sexes
         RETURN d.name AS disease, d.description AS description, d.remarks AS remarks,
-               matched_count, base_score, matched_details, ages, sexes
+               matched_count, base_score, max_possible_score, matched_details, ages, sexes
       `, { symptoms: symptomsArr, symptomWeights: symptomWeights })
 
       let penaltyMap = {}
@@ -540,6 +559,7 @@ export async function computeAdaptiveContext(sceResult, excludedSymptoms = new S
       rankedDiseases = diseaseRes.records.map(r => {
         const name = r.get('disease')
         const baseScore = r.get('base_score')
+        const maxPossibleScore = r.get('max_possible_score') || 100
         const penalty = (penaltyMap[name] || 0) * env.penaltyMultiplier
 
         // Tích hợp dữ liệu dịch tễ học và giới tính (Odds Bayesian prior adjustment)
@@ -565,6 +585,7 @@ export async function computeAdaptiveContext(sceResult, excludedSymptoms = new S
           remarks: r.get('remarks') || '',
           matchedCount: r.get('matched_count').toNumber(),
           score: score,
+          maxPossibleScore: maxPossibleScore,
           matchedDetails: r.get('matched_details').map(s => ({
             symptom: s.symptom,
             prob: s.prob,
@@ -705,9 +726,9 @@ export function formatAdaptiveContext(ctx, lang = 'vi') {
     text += isEn ? `*Not enough symptoms to rank diseases — please ask for more.*\n`
                  : `*Chua du trieu chung de xep hang benh — hay hoi them.*\n`
   } else {
-    const maxScore = rankedDiseases[0].score || 1
     rankedDiseases.slice(0, 5).forEach((d, idx) => {
-      const pct = Math.min(95, Math.round((d.score / maxScore) * 85) + (idx === 0 ? 10 : 0))
+      const matchRatio = d.score / d.maxPossibleScore
+      const pct = Math.min(95, Math.max(5, Math.round(matchRatio * 100)))
       const symList = d.matchedDetails.map(s => `${s.symptom} (${s.prob.toFixed(1)}%${s.description ? ` - Desc: ${s.description}` : ''})`).join(', ')
       const ageInfo = d.ages.length > 0 ? (isEn ? ` | Common age: ` : ` | Tuoi pho bien: `) + d.ages.map(a => `${a.age} (${a.prob?.toFixed(1)}%)`).join(', ') : ''
       const sexInfo = d.sexes.length > 0 ? (isEn ? ` | Gender: ` : ` | Gioi tinh: `) + d.sexes.map(s => `${s.sex} (${s.prob?.toFixed(1)}%)`).join(', ') : ''
