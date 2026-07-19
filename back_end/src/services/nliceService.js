@@ -119,14 +119,13 @@ async function callOpenRouter(chatMessages) {
 
   try {
     console.log(`[Audit Log][LLM_TRANSLATION][Info] Calling primary model: "${primaryModel}"`)
-    return await tryCallOpenRouter(chatMessages, primaryModel, 25000) // Tăng thời gian chờ lên 25s cho model chính để suy nghĩ sâu
+    return await tryCallOpenRouter(chatMessages, primaryModel, 35000) // Tăng thời gian chờ lên 35s cho model chính
   } catch (err) {
-    // Nếu model chính lỗi hoặc timeout, tự động failover sang Qwen
     const isTimeout = err.name === 'TimeoutError' || err.message?.includes('aborted') || err.message?.includes('Timeout')
     console.warn(`[Audit Log][LLM_TRANSLATION][Warning] Primary model "${primaryModel}" failed (${isTimeout ? 'Timeout' : err.message}). Retrying with defensive fallback model "${fallbackModel}"...`)
-    
+
     try {
-      return await tryCallOpenRouter(chatMessages, fallbackModel, 15000) // Tăng thời gian chờ lên 15s cho model phòng ngự
+      return await tryCallOpenRouter(chatMessages, fallbackModel, 20000) // Tăng thời gian chờ lên 20s cho model phòng ngự
     } catch (fallbackErr) {
       console.error(`[Audit Log][LLM_TRANSLATION][Error] Fallback model "${fallbackModel}" also failed:`, fallbackErr.message)
       throw new Error(`Cả model chính và phòng thủ đều lỗi. Model chính: ${err.message}. Model phòng thủ: ${fallbackErr.message}`)
@@ -266,43 +265,49 @@ Kết quả JSON:`
   const finalSymptoms = []
   const unmatchedTerms = []
 
-  // BƯỚC 2: Duyệt qua triệu chứng để tìm mã CUI UMLS y khoa
+  // BƯỚC 2 & 3: Gọi API UMLS song song và sau đó so khớp đồng loạt vào Neo4j
   const extractedSymptoms = extractedPayload.symptoms || []
-  for (const sym of extractedSymptoms) {
-    console.log(`[Audit Log][UMLS_SEARCH][Start] Querying UMLS for term: "${sym.term}"`)
-    let umlsCui = null
-    let umlsName = null
 
-    try {
-      const results = await searchUMLS(sym.term)
-      if (results && results.length > 0) {
-        umlsCui = results[0].ui
-        umlsName = results[0].name
-        console.log(`[Audit Log][UMLS_SEARCH][Success] Term: "${sym.term}" -> Match: "${umlsName}" (CUI: ${umlsCui})`)
-      } else {
-        console.log(`[Audit Log][UMLS_SEARCH][Warning] No UMLS results for term: "${sym.term}"`)
-      }
-    } catch (err) {
-      console.error(`[Audit Log][UMLS_SEARCH][Error] UMLS search failed for "${sym.term}":`, err.message)
-      throw err
+  // Chuẩn bị danh sách ánh xạ Neo4j một lần trước
+  const cuiToIdMap = new Map()
+  const nameToIdMap = new Map()
+  const idToIdMap = new Map()
+  for (const s of symptomsList) {
+    if (s.cui) {
+      cuiToIdMap.set(s.cui.toLowerCase(), s.id)
     }
+    nameToIdMap.set(s.name.toLowerCase(), s.id)
+    idToIdMap.set(s.id.toLowerCase(), s.id)
+  }
 
+  // 2a. Thực thi song song tất cả các cuộc gọi UMLS Search API
+  const umlsResults = await Promise.all(
+    extractedSymptoms.map(async (sym) => {
+      console.log(`[Audit Log][UMLS_SEARCH][Start] Querying UMLS parallel for term: "${sym.term}"`)
+      try {
+        const results = await searchUMLS(sym.term)
+        let umlsCui = null
+        let umlsName = null
+        if (results && results.length > 0) {
+          umlsCui = results[0].ui
+          umlsName = results[0].name
+          console.log(`[Audit Log][UMLS_SEARCH][Success] Term: "${sym.term}" -> Match: "${umlsName}" (CUI: ${umlsCui})`)
+        } else {
+          console.log(`[Audit Log][UMLS_SEARCH][Warning] No UMLS results for term: "${sym.term}"`)
+        }
+        return { sym, umlsCui, umlsName }
+      } catch (err) {
+        console.error(`[Audit Log][UMLS_SEARCH][Error] UMLS search failed for "${sym.term}":`, err.message)
+        throw err
+      }
+    })
+  )
+
+  // 2b. Duyệt và so khớp kết quả đã có sẵn
+  for (const { sym, umlsCui, umlsName } of umlsResults) {
     // Kiểm tra ngưỡng tự tin trích xuất của mô hình (Confidence Score)
     if (sym.confidenceScore < env.confidenceThreshold) {
       console.warn(`[Audit Log][LLM_TRANSLATION][Warning] Low extraction confidence (${sym.confidenceScore}) for term: "${sym.term}"`)
-    }
-
-    // BƯỚC 3: So khớp triệu chứng vào danh sách từ Neo4j
-    const cuiToIdMap = new Map()
-    const nameToIdMap = new Map()
-    const idToIdMap = new Map()
-
-    for (const s of symptomsList) {
-      if (s.cui) {
-        cuiToIdMap.set(s.cui.toLowerCase(), s.id)
-      }
-      nameToIdMap.set(s.name.toLowerCase(), s.id)
-      idToIdMap.set(s.id.toLowerCase(), s.id)
     }
 
     let matchedSymptomId = null
