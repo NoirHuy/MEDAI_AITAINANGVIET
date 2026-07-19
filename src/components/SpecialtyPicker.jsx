@@ -9,10 +9,13 @@ export default function SpecialtyPicker({
   direction = 'down',
   align = 'start',
   variant = 'plain',
+  lang = 'vi',
 }) {
   const [open, setOpen] = useState(false)
   const ref = useRef(null)
   const current = specialties.find((s) => s.id === value) ?? specialties[0]
+
+  const currentName = typeof current.name === 'object' ? (current.name[lang] || current.name.vi) : current.name
 
   useEffect(() => {
     function handleClickOutside(e) {
@@ -30,7 +33,7 @@ export default function SpecialtyPicker({
         aria-haspopup="listbox"
         aria-expanded={open}
       >
-        <span>{current.name}</span>
+        <span>{currentName}</span>
         <ChevronDownIcon className="specialty-picker__chevron" />
       </button>
 
@@ -39,24 +42,28 @@ export default function SpecialtyPicker({
           className={`specialty-picker__menu specialty-picker__menu--${direction} specialty-picker__menu--${align}`}
           role="listbox"
         >
-          {specialties.map((s) => (
-            <button
-              key={s.id}
-              className="specialty-picker__item"
-              role="option"
-              aria-selected={s.id === value}
-              onClick={() => {
-                onChange(s.id)
-                setOpen(false)
-              }}
-            >
-              <span className="specialty-picker__item-text">
-                <span className="specialty-picker__item-name">{s.name}</span>
-                <span className="specialty-picker__item-tagline">{s.tagline}</span>
-              </span>
-              {s.id === value && <CheckIcon className="specialty-picker__check" />}
-            </button>
-          ))}
+          {specialties.map((s) => {
+            const name = typeof s.name === 'object' ? (s.name[lang] || s.name.vi) : s.name
+            const tagline = typeof s.tagline === 'object' ? (s.tagline[lang] || s.tagline.vi) : s.tagline
+            return (
+              <button
+                key={s.id}
+                className="specialty-picker__item"
+                role="option"
+                aria-selected={s.id === value}
+                onClick={() => {
+                  onChange(s.id)
+                  setOpen(false)
+                }}
+              >
+                <span className="specialty-picker__item-text">
+                  <span className="specialty-picker__item-name">{name}</span>
+                  <span className="specialty-picker__item-tagline">{tagline}</span>
+                </span>
+                {s.id === value && <CheckIcon className="specialty-picker__check" />}
+              </button>
+            )
+          })}
         </div>
       )}
     </div>

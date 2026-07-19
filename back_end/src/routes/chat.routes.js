@@ -14,8 +14,8 @@ router.post(
   '/',
   attachUserIfPresent,
   asyncHandler(async (req, res) => {
-    const { messages, specialtyId } = req.body ?? {}
-    console.log(`[API CHAT] Incoming request specialtyId: "${specialtyId}", messages count: ${messages?.length}`)
+    const { messages, specialtyId, lang } = req.body ?? {}
+    console.log(`[API CHAT] Incoming request specialtyId: "${specialtyId}", lang: "${lang}", messages count: ${messages?.length}`)
     if (messages && messages.length > 0) {
       console.log(`[API CHAT] Last message:`, messages[messages.length - 1])
     }
@@ -45,6 +45,7 @@ router.post(
       full = await generateReply({
         messages,
         specialtyId,
+        lang: lang || 'vi',
         signal: controller.signal,
         onChunk: (chunk) => res.write(chunk),
       })

@@ -135,7 +135,7 @@ async function callOpenRouter(chatMessages) {
 }
 
 // ─── UMLS + LLM SEMANTIC SYMPTOM EXTRACTION ──────────────────────────────────
-export async function extractSymptomsFromHistory(messages, symptomsList) {
+export async function extractSymptomsFromHistory(messages, symptomsList, lang = 'vi') {
   const emptySCE = {
     demographics: { age: null, sex: null },
     temporal: { durationValue: null, durationUnit: null, onset: null },
@@ -144,13 +144,55 @@ export async function extractSymptomsFromHistory(messages, symptomsList) {
 
   if (!messages || messages.length === 0) return emptySCE
 
+  const isEn = lang === 'en'
+
   // Tạo hội thoại phân vai đầy đủ (Bác sĩ & Bệnh nhân) để giữ vững ngữ cảnh lâm sàng
   const formattedHistory = messages
-    .map(m => `${m.role === 'user' ? 'Bệnh nhân' : 'Bác sĩ'}: ${m.content}`)
+    .map(m => `${m.role === 'user' ? (isEn ? 'Patient' : 'Bệnh nhân') : (isEn ? 'Doctor' : 'Bác sĩ')}: ${m.content}`)
     .join('\n')
 
-  // BƯỚC 1: LLM dịch mô tả tiếng Việt sang định dạng JSON Structured Clinical Extraction (SCE)
-  const translationPrompt = `Bạn là trợ lý y khoa chuyên nghiệp và là chuyên gia trích xuất thực thể (Clinical NER).
+  // BƯỚC 1: LLM dịch mô tả sang định dạng JSON Structured Clinical Extraction (SCE) song ngữ
+  const translationPrompt = isEn ? `You are a professional medical assistant and a clinical entity extraction expert (Clinical NER).
+Analyze the conversation history between the Doctor and the Patient below to extract structured clinical information in Structured Clinical Extraction (SCE) format.
+
+Output Format:
+You MUST return ONLY a single valid JSON block matching the following structure (Do not add any markdown comments, reasoning text, or extra characters outside of this JSON):
+
+{
+  "demographics": {
+    "age": <patient's age as a number, e.g. 22, or null if not mentioned>,
+    "sex": <"male" | "female" | null>
+  },
+  "temporal": {
+    "durationValue": <number representing symptom duration, e.g. 2, or null>,
+    "durationUnit": <"hours" | "days" | "weeks" | "months" | null>,
+    "onset": <"acute" (e.g. hours/days) | "subacute" | "chronic" (e.g. weeks/months) | null>
+  },
+  "symptoms": [
+    {
+      "term": "<atomic clinical symptom term in English, e.g. 'Headache', 'Nausea'>",
+      "status": "<'positive' if the patient confirms this symptom | 'negative' if the patient denies this symptom>",
+      "role": "<'chief_complaint' if this is the primary reason for the medical visit | 'associated' if it is a secondary symptom>",
+      "confidenceScore": <your extraction confidence score from 0.0 to 1.0>,
+      "attributes": {
+        "severity": "<'mild' | 'moderate' | 'severe' | null>",
+        "frequency": "<'constant' | 'episodic' | null>",
+        "progression": "<'improving' | 'stable' | 'worsening' | null>",
+        "bodyLocation": "<specific anatomical location, e.g. 'occipital region', 'epigastrium', or null>"
+      }
+    }
+  ]
+}
+
+Mandatory Clinical NLP Rules:
+1. Atomic Representation & No Disease Inference: Only extract symptoms at an atomic level. For example, "back of head pain" -> term "Headache" or "Occipital headache", bodyLocation "occipital region". Do NOT infer clinical diseases (e.g. do not output Tension headache, as disease classification belongs to the graph reasoning layer).
+2. Negation Detection: Extract negated symptoms mentioned by the patient. If the patient says "no vomiting", output term: "Vomiting", status: "negative".
+3. Hybrid Chief Complaint: The first symptom reported by the Patient in their first turn is the highest priority candidate. Verify if it is indeed the main reason for visit to set role: "chief_complaint". Mark subsequent symptoms as "associated".
+
+Clinical Conversation:
+${formattedHistory}
+
+JSON Output:` : `Bạn là trợ lý y khoa chuyên nghiệp và là chuyên gia trích xuất thực thể (Clinical NER).
 Hãy phân tích toàn bộ cuộc hội thoại giữa Bác sĩ (Doctor) và Bệnh nhân (Patient) dưới đây để trích xuất thông tin lâm sàng chuẩn hóa theo mô hình Structured Clinical Extraction (SCE).
 
 Yêu cầu định dạng đầu ra:
@@ -195,7 +237,7 @@ Kết quả JSON:`
   let rawTranslation = ""
   try {
     rawTranslation = await callOpenRouter([
-      { role: 'system', content: 'Bạn là robot trích xuất y khoa chỉ trả về định dạng JSON hợp lệ.' },
+      { role: 'system', content: isEn ? 'You are a medical extraction robot that only returns valid JSON.' : 'Bạn là robot trích xuất y khoa chỉ trả về định dạng JSON hợp lệ.' },
       { role: 'user', content: translationPrompt }
     ])
   } catch (err) {
@@ -583,16 +625,21 @@ export async function computeAdaptiveContext(sceResult, excludedSymptoms = new S
 }
 
 // ─── FORMAT NGU CANH THANH VAN BAN CHO SYSTEM PROMPT ─────────────────────────
-export function formatAdaptiveContext(ctx) {
+export function formatAdaptiveContext(ctx, lang = 'vi') {
   const { confirmedSymptoms, excludedSymptoms, rankedDiseases, bestNextSymptom, diseaseOverview, sce } = ctx
+  const isEn = lang === 'en'
 
-  let text = '## ADAPTIVE GRAPH CONTEXT (Cap nhat luot nay)\n\n'
+  let text = isEn ? '## ADAPTIVE GRAPH CONTEXT (Current Turn)\n\n' : '## ADAPTIVE GRAPH CONTEXT (Cap nhat luot nay)\n\n'
 
   // Định dạng thông tin thuộc tính nhân khẩu học (Demographics)
   if (sce && sce.demographics) {
     const { age, sex } = sce.demographics
     if (age || sex) {
-      text += `**Thong tin benh nhan:** ${age ? `Tuoi: ${age}` : ''}${age && sex ? ', ' : ''}${sex ? `Gioi tinh: ${sex}` : ''}\n`
+      if (isEn) {
+        text += `**Patient demographics:** ${age ? `Age: ${age}` : ''}${age && sex ? ', ' : ''}${sex ? `Sex: ${sex}` : ''}\n`
+      } else {
+        text += `**Thong tin benh nhan:** ${age ? `Tuoi: ${age}` : ''}${age && sex ? ', ' : ''}${sex ? `Gioi tinh: ${sex}` : ''}\n`
+      }
     }
   }
 
@@ -600,60 +647,72 @@ export function formatAdaptiveContext(ctx) {
   if (sce && sce.temporal) {
     const { durationValue, durationUnit, onset } = sce.temporal
     if (durationValue || onset) {
-      text += `**Thoi gian khoi phat:** ${durationValue ? `${durationValue} ${durationUnit}` : ''}${durationValue && onset ? ' (' : ''}${onset ? `${onset}` : ''}${durationValue && onset ? ')' : ''}\n`
+      if (isEn) {
+        text += `**Onset & Duration:** ${durationValue ? `${durationValue} ${durationUnit}` : ''}${durationValue && onset ? ' (' : ''}${onset ? `${onset}` : ''}${durationValue && onset ? ')' : ''}\n`
+      } else {
+        text += `**Thoi gian khoi phat:** ${durationValue ? `${durationValue} ${durationUnit}` : ''}${durationValue && onset ? ' (' : ''}${onset ? `${onset}` : ''}${durationValue && onset ? ')' : ''}\n`
+      }
     }
   }
 
   if (confirmedSymptoms.length === 0 && diseaseOverview) {
-    text += `**Trang thai:** Dau hoi thoai — chua xac nhan trieu chung nao.\n\n`
-    text += `**Toan bộ benh trong do thi NLICE va cac trieu chung dac trung:**\n`
+    if (isEn) {
+      text += `**Status:** Conversation start — no symptoms confirmed yet.\n\n`
+      text += `**All diseases in NLICE graph and their characteristic symptoms:**\n`
+    } else {
+      text += `**Trang thai:** Dau hoi thoai — chua xac nhan trieu chung nao.\n\n`
+      text += `**Toan bộ benh trong do thi NLICE va cac trieu chung dac trung:**\n`
+    }
     diseaseOverview.slice(0, 15).forEach(d => {
-      const symList = d.symptoms.map(s => `${s.symptom} (${s.prob.toFixed(1)}%${s.description ? ` - Mo ta: ${s.description}` : ''})`).join(', ')
+      const symList = d.symptoms.map(s => `${s.symptom} (${s.prob.toFixed(1)}%${s.description ? ` - Desc: ${s.description}` : ''})`).join(', ')
       text += `- **${d.name}**: ${symList}\n`
-      if (d.remarks) text += `  (Dich te: ${d.remarks})\n`
+      if (d.remarks) text += isEn ? `  (Epidemiology: ${d.remarks})\n` : `  (Dich te: ${d.remarks})\n`
     })
-    text += `\n**Nhiem vu:** Hoi nguoi dung mo ta trieu chung. Sau do doc bang tren de xac dinh nhom benh va hoi cau phan biet.\n`
+    text += isEn ? `\n**Mission:** Ask the user to describe symptoms. Then refer to the list above to guide clarification.\n`
+                 : `\n**Nhiem vu:** Hoi nguoi dung mo ta trieu chung. Sau do doc bang tren de xac dinh nhom benh va hoi cau phan biet.\n`
     return text
   }
 
   if (confirmedSymptoms.length > 0) {
-    // Liệt kê chi tiết các triệu chứng khẳng định phân vai
     const positiveSymptomsSCE = sce ? sce.symptoms.filter(s => s.status === 'positive') : []
     if (positiveSymptomsSCE.length > 0) {
       const ccList = positiveSymptomsSCE.filter(s => s.role === 'chief_complaint').map(s => `${s.name} (Slug: ${s.symptomId}${s.attributes?.bodyLocation ? `, Location: ${s.attributes.bodyLocation}` : ''})`)
       const asList = positiveSymptomsSCE.filter(s => s.role !== 'chief_complaint').map(s => `${s.name} (Slug: ${s.symptomId})`)
       
       if (ccList.length > 0) {
-        text += `**Trieu chung chinh (Chief Complaint):** ${ccList.join(', ')}\n`
+        text += isEn ? `**Chief Complaint:** ${ccList.join(', ')}\n` : `**Trieu chung chinh (Chief Complaint):** ${ccList.join(', ')}\n`
       }
       if (asList.length > 0) {
-        text += `**Trieu chung di kem (Associated Symptoms):** ${asList.join(', ')}\n`
+        text += isEn ? `**Associated Symptoms:** ${asList.join(', ')}\n` : `**Trieu chung di kem (Associated Symptoms):** ${asList.join(', ')}\n`
       }
     } else {
-      text += `**Trieu chung da xac nhan (Standardized Slugs):** ${confirmedSymptoms.join(', ')}\n`
+      text += isEn ? `**Confirmed Symptoms (Standardized Slugs):** ${confirmedSymptoms.join(', ')}\n`
+                   : `**Trieu chung da xac nhan (Standardized Slugs):** ${confirmedSymptoms.join(', ')}\n`
     }
   }
 
   if (excludedSymptoms.length > 0) {
-    text += `**Trieu chung da loai tru (Standardized Slugs):** ${excludedSymptoms.join(', ')}\n`
+    text += isEn ? `**Excluded Symptoms (Standardized Slugs):** ${excludedSymptoms.join(', ')}\n`
+                 : `**Trieu chung da loai tru (Standardized Slugs):** ${excludedSymptoms.join(', ')}\n`
   }
 
-  text += `\n### Bang xep hang benh theo Bayesian Score:\n`
+  text += isEn ? `\n### Disease Ranking by Bayesian Score:\n` : `\n### Bang xep hang benh theo Bayesian Score:\n`
 
   if (rankedDiseases.length === 0) {
-    text += `*Chua du trieu chung de xep hang benh — hay hoi them.*\n`
+    text += isEn ? `*Not enough symptoms to rank diseases — please ask for more.*\n`
+                 : `*Chua du trieu chung de xep hang benh — hay hoi them.*\n`
   } else {
     const maxScore = rankedDiseases[0].score || 1
     rankedDiseases.slice(0, 5).forEach((d, idx) => {
       const pct = Math.min(95, Math.round((d.score / maxScore) * 85) + (idx === 0 ? 10 : 0))
-      const symList = d.matchedDetails.map(s => `${s.symptom} (${s.prob.toFixed(1)}%${s.description ? ` - Mo ta: ${s.description}` : ''})`).join(', ')
-      const ageInfo = d.ages.length > 0 ? ` | Tuoi pho bien: ${d.ages.map(a => `${a.age} (${a.prob?.toFixed(1)}%)`).join(', ')}` : ''
-      const sexInfo = d.sexes.length > 0 ? ` | Gioi tinh: ${d.sexes.map(s => `${s.sex} (${s.prob?.toFixed(1)}%)`).join(', ')}` : ''
+      const symList = d.matchedDetails.map(s => `${s.symptom} (${s.prob.toFixed(1)}%${s.description ? ` - Desc: ${s.description}` : ''})`).join(', ')
+      const ageInfo = d.ages.length > 0 ? (isEn ? ` | Common age: ` : ` | Tuoi pho bien: `) + d.ages.map(a => `${a.age} (${a.prob?.toFixed(1)}%)`).join(', ') : ''
+      const sexInfo = d.sexes.length > 0 ? (isEn ? ` | Gender: ` : ` | Gioi tinh: `) + d.sexes.map(s => `${s.sex} (${s.prob?.toFixed(1)}%)`).join(', ') : ''
 
-      text += `\n**${idx + 1}. ${d.name}** — Xac suat uoc tinh: ~${pct}%\n`
-      if (d.description) text += `   Y khoa mo ta: ${d.description}\n`
-      if (d.remarks) text += `   Thong ke lam sang: ${d.remarks}\n`
-      text += `   Trieu chung khop: ${symList}${ageInfo}${sexInfo}\n`
+      text += `\n**${idx + 1}. ${d.name}** — Estimated Probability: ~${pct}%\n`
+      if (d.description) text += isEn ? `   Medical description: ${d.description}\n` : `   Y khoa mo ta: ${d.description}\n`
+      if (d.remarks) text += isEn ? `   Clinical stats: ${d.remarks}\n` : `   Thong ke lam sang: ${d.remarks}\n`
+      text += isEn ? `   Matched symptoms: ${symList}${ageInfo}${sexInfo}\n` : `   Trieu chung khop: ${symList}${ageInfo}${sexInfo}\n`
     })
   }
 
@@ -661,12 +720,15 @@ export function formatAdaptiveContext(ctx) {
     const breakdown = bestNextSymptom.byDisease
       .map(d => `${d.disease}: ${d.prob?.toFixed(1)}%`)
       .join(' vs ')
-    text += `\n### Trieu chung phan biet toi uu (goi y hoi tiep):\n`
-    const descText = bestNextSymptom.description ? ` - Mo ta: ${bestNextSymptom.description}` : ''
-    text += `**"${bestNextSymptom.name}"** (slug: ${bestNextSymptom.id}${descText}) — Do lech xac suat giua cac benh: ${breakdown}\n`
-    text += `-> Hay hoi nguoi dung ve trieu chung nay de phan biet hieu qua nhat.\n`
+    text += isEn ? `\n### Optimal Differential Symptom (Clarification Suggested):\n`
+                 : `\n### Trieu chung phan biet toi uu (goi y hoi tiep):\n`
+    const descText = bestNextSymptom.description ? ` - Desc: ${bestNextSymptom.description}` : ''
+    text += `**"${bestNextSymptom.name}"** (slug: ${bestNextSymptom.id}${descText}) — Probability gap between diseases: ${breakdown}\n`
+    text += isEn ? `-> Please ask the user about this symptom to differentiate effectively.\n`
+                 : `-> Hay hoi nguoi dung ve trieu chung nay de phan biet hieu qua nhat.\n`
   } else if (rankedDiseases.length > 0) {
-    text += `\n-> Da co du du lieu phan biet. Hay tong ket bao cao chan doan sang loc.\n`
+    text += isEn ? `\n-> Adequate differential data collected. Please summarize the screening report.\n`
+                 : `\n-> Da co du du lieu phan biet. Hay tong ket bao cao chan doan sang loc.\n`
   }
 
   return text

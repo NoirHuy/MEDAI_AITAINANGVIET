@@ -33,8 +33,16 @@ function App() {
   const [mobileOpen, setMobileOpen] = useState(false)
   const [settingsTab, setSettingsTab] = useState(null)
   const [authTab, setAuthTab] = useState(null)
+  const [lang, setLang] = useState(localStorage.getItem('medai_lang') || 'en')
 
   const specialtyId = chat.activeConversation?.specialtyId ?? pendingSpecialtyId
+
+  function handleToggleLang() {
+    const nextLang = lang === 'en' ? 'vi' : 'en'
+    setLang(nextLang)
+    localStorage.setItem('medai_lang', nextLang)
+    showToast(nextLang === 'en' ? 'Language switched to English' : 'Đã chuyển sang Tiếng Việt')
+  }
 
   function handleSpecialtyChange(newId) {
     if (chat.activeConversation) {
@@ -48,7 +56,7 @@ function App() {
     const toSend = (text ?? '').trim() ? text : inputValue
     if (!toSend.trim() || chat.isResponding) return
     setInputValue('')
-    chat.sendMessage(toSend, specialtyId)
+    chat.sendMessage(toSend, specialtyId, lang)
   }
 
   function handleNewChat() {
@@ -64,7 +72,7 @@ function App() {
   async function handleUpdateName(name) {
     try {
       await updateName(name)
-      showToast('Đã lưu thay đổi hồ sơ')
+      showToast(lang === 'en' ? 'Profile changes saved' : 'Đã lưu thay đổi hồ sơ')
     } catch (err) {
       showToast(err.message)
     }
@@ -74,11 +82,11 @@ function App() {
     try {
       await setPlan(planId)
       setSettingsTab(null)
-      showToast(
-        planId === 'pro'
-          ? 'Đã nâng cấp lên Pro (giả lập) — chưa kết nối cổng thanh toán thật'
-          : 'Đã chuyển về gói Free (giả lập)',
-      )
+      if (planId === 'pro') {
+        showToast(lang === 'en' ? 'Upgraded to Pro (simulated) — payment gateway not connected' : 'Đã nâng cấp lên Pro (giả lập) — chưa kết nối cổng thanh toán thật')
+      } else {
+        showToast(lang === 'en' ? 'Downgraded to Free plan (simulated)' : 'Đã chuyển về gói Free (giả lập)')
+      }
     } catch (err) {
       showToast(err.message)
     }
@@ -88,11 +96,11 @@ function App() {
     signOut()
     setSettingsTab(null)
     setMobileOpen(false)
-    showToast('Đã đăng xuất')
+    showToast(lang === 'en' ? 'Logged out' : 'Đã đăng xuất')
   }
 
   function handleHelp() {
-    showToast('Tính năng gửi phản hồi sắp ra mắt')
+    showToast(lang === 'en' ? 'Feedback feature coming soon' : 'Tính năng gửi phản hồi sắp ra mắt')
   }
 
   function handleAuthed(_user, message) {
@@ -120,6 +128,7 @@ function App() {
           onSignOut={handleSignOut}
           onHelp={handleHelp}
           onOpenAuth={() => setAuthTab('signin')}
+          lang={lang}
         />
       </div>
 
@@ -135,6 +144,8 @@ function App() {
         specialtyId={specialtyId}
         onSpecialtyChange={handleSpecialtyChange}
         onOpenMenu={() => setMobileOpen(true)}
+        lang={lang}
+        onToggleLang={handleToggleLang}
       />
 
       {settingsTab && account && (

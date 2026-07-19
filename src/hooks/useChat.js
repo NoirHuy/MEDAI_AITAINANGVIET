@@ -57,7 +57,7 @@ export function useChat() {
   }, [])
 
   const sendMessage = useCallback(
-    async (text, specialtyIdForNew) => {
+    async (text, specialtyIdForNew, lang = 'vi') => {
       const trimmed = text.trim()
       if (!trimmed || isResponding) return
 
@@ -127,12 +127,13 @@ export function useChat() {
         await streamAssistantReply({
           messages: messagesForApi,
           specialtyId,
+          lang,
           signal: controller.signal,
           onToken: appendToken,
         })
       } catch (err) {
         if (err?.name !== 'AbortError') {
-          appendToken('\n\n_Đã xảy ra lỗi khi lấy phản hồi. Vui lòng thử lại._')
+          appendToken(lang === 'en' ? '\n\n_An error occurred while fetching the response. Please try again._' : '\n\n_Đã xảy ra lỗi khi lấy phản hồi. Vui lòng thử lại._')
         }
       } finally {
         setConversations((prev) =>

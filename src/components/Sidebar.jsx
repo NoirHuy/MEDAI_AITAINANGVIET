@@ -19,7 +19,9 @@ export default function Sidebar({
   onSignOut,
   onHelp,
   onOpenAuth,
+  lang = 'vi',
 }) {
+  const isEn = lang === 'en'
   const filtered = searchTerm
     ? conversations.filter((c) => c.title.toLowerCase().includes(searchTerm.toLowerCase()))
     : conversations
@@ -30,7 +32,7 @@ export default function Sidebar({
         <button
           className="icon-btn"
           onClick={onToggleCollapsed}
-          title={collapsed ? 'Mở rộng menu' : 'Thu gọn menu'}
+          title={collapsed ? (isEn ? 'Expand menu' : 'Mở rộng menu') : (isEn ? 'Collapse menu' : 'Thu gọn menu')}
           aria-label="Toggle sidebar"
         >
           <MenuIcon />
@@ -45,7 +47,7 @@ export default function Sidebar({
 
       <button className="new-chat-btn" onClick={onNewChat}>
         <PlusIcon />
-        {!collapsed && <span>Cuộc trò chuyện mới</span>}
+        {!collapsed && <span>{isEn ? 'New conversation' : 'Cuộc trò chuyện mới'}</span>}
       </button>
 
       {!collapsed && (
@@ -53,7 +55,7 @@ export default function Sidebar({
           <SearchIcon className="sidebar__search-icon" />
           <input
             type="text"
-            placeholder="Tìm kiếm cuộc trò chuyện"
+            placeholder={isEn ? "Search conversations" : "Tìm kiếm cuộc trò chuyện"}
             value={searchTerm}
             onChange={(e) => onSearchTermChange(e.target.value)}
           />
@@ -62,12 +64,12 @@ export default function Sidebar({
 
       {!collapsed && (
         <nav className="sidebar__history">
-          <p className="sidebar__section-label">Gần đây</p>
+          <p className="sidebar__section-label">{isEn ? 'Recent' : 'Gần đây'}</p>
           <ul>
             {filtered.map((conv) => (
               <li key={conv.id}>
                 <button
-                  className={`history-item ${conv.id === activeId ? 'history-item--active' : ''}`}
+                   className={`history-item ${conv.id === activeId ? 'history-item--active' : ''}`}
                   onClick={() => onSelect(conv.id)}
                   title={conv.title}
                 >
@@ -86,7 +88,7 @@ export default function Sidebar({
                         onDelete(conv.id)
                       }
                     }}
-                    aria-label={`Xóa "${conv.title}"`}
+                    aria-label={isEn ? `Delete "${conv.title}"` : `Xóa "${conv.title}"`}
                   >
                     <TrashIcon />
                   </span>
@@ -94,7 +96,7 @@ export default function Sidebar({
               </li>
             ))}
             {filtered.length === 0 && (
-              <li className="sidebar__empty">Không có cuộc trò chuyện nào</li>
+              <li className="sidebar__empty">{isEn ? 'No conversations' : 'Không có cuộc trò chuyện nào'}</li>
             )}
           </ul>
         </nav>
@@ -112,6 +114,7 @@ export default function Sidebar({
             onOpenSettings={onOpenSettings}
             onSignOut={onSignOut}
             onHelp={onHelp}
+            lang={lang}
           />
         ) : (
           <button
@@ -119,12 +122,15 @@ export default function Sidebar({
             onClick={onOpenAuth}
           >
             <LogInIcon />
-            {!collapsed && <span>Đăng nhập / Đăng ký</span>}
+            {!collapsed && <span>{isEn ? 'Sign in / Sign up' : 'Đăng nhập / Đăng ký'}</span>}
           </button>
         )}
         {!collapsed && (
           <p className="sidebar__disclaimer">
-            MedChat chỉ mang tính tham khảo, không thay thế chẩn đoán của bác sĩ.
+            {isEn 
+              ? "MedChat is for reference only, not a replacement for a doctor's diagnosis."
+              : "MedChat chỉ mang tính tham khảo, không thay thế chẩn đoán của bác sĩ."
+            }
           </p>
         )}
       </div>

@@ -12,8 +12,10 @@ export default function ChatInput({
   isResponding,
   specialtyId,
   onSpecialtyChange,
+  lang = 'vi',
 }) {
   const textareaRef = useRef(null)
+  const isEn = lang === 'en'
 
   useEffect(() => {
     const el = textareaRef.current
@@ -35,7 +37,7 @@ export default function ChatInput({
         <button
           type="button"
           className="chat-input__icon-btn"
-          title="Đính kèm tệp (sắp ra mắt)"
+          title={isEn ? "Attach file (coming soon)" : "Đính kèm tệp (sắp ra mắt)"}
           disabled
         >
           <PaperclipIcon />
@@ -43,7 +45,7 @@ export default function ChatInput({
         <textarea
           ref={textareaRef}
           rows={1}
-          placeholder="Mô tả triệu chứng hoặc đặt câu hỏi về sức khỏe..."
+          placeholder={isEn ? "Describe your symptoms or ask a health question..." : "Mô tả triệu chứng hoặc đặt câu hỏi về sức khỏe..."}
           value={value}
           onChange={(e) => onChange(e.target.value)}
           onKeyDown={handleKeyDown}
@@ -55,11 +57,12 @@ export default function ChatInput({
           direction="up"
           align="end"
           variant="pill"
+          lang={lang}
         />
         <button
           type="button"
           className="chat-input__icon-btn"
-          title="Nhập bằng giọng nói (sắp ra mắt)"
+          title={isEn ? "Voice input (coming soon)" : "Nhập bằng giọng nói (sắp ra mắt)"}
           disabled
         >
           <MicIcon />
@@ -69,7 +72,7 @@ export default function ChatInput({
             type="button"
             className="chat-input__send chat-input__send--stop"
             onClick={onStop}
-            title="Dừng phản hồi"
+            title={isEn ? "Stop response" : "Dừng phản hồi"}
           >
             <StopIcon />
           </button>
@@ -79,15 +82,17 @@ export default function ChatInput({
             className="chat-input__send"
             onClick={onSend}
             disabled={!value.trim()}
-            title="Gửi"
+            title={isEn ? "Send" : "Gửi"}
           >
             <SendIcon />
           </button>
         )}
       </div>
       <p className="chat-input__hint">
-        MedChat có thể đưa ra thông tin chưa chính xác. Đây không phải lời khuyên y tế chính thức —
-        hãy tham khảo bác sĩ khi cần.
+        {isEn 
+          ? "MedChat may provide inaccurate information. This is not official medical advice — consult a physician when necessary."
+          : "MedChat có thể đưa ra thông tin chưa chính xác. Đây không phải lời khuyên y tế chính thức — hãy tham khảo bác sĩ khi cần."
+        }
       </p>
     </div>
   )

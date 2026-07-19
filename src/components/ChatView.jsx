@@ -15,8 +15,11 @@ export default function ChatView({
   specialtyId,
   onSpecialtyChange,
   onOpenMenu,
+  lang = 'vi',
+  onToggleLang,
 }) {
   const scrollRef = useRef(null)
+  const isEn = lang === 'en'
 
   useEffect(() => {
     const el = scrollRef.current
@@ -27,19 +30,35 @@ export default function ChatView({
 
   return (
     <div className="chat-view">
-      <button
-        type="button"
-        className="chat-view__mobile-menu-btn"
-        onClick={onOpenMenu}
-        aria-label="Mở menu"
-      >
-        <MenuIcon />
-      </button>
+      <div className="chat-view__header-bar">
+        <button
+          type="button"
+          className="chat-view__mobile-menu-btn"
+          onClick={onOpenMenu}
+          aria-label={isEn ? "Open menu" : "Mở menu"}
+        >
+          <MenuIcon />
+        </button>
+        <div className="chat-view__header-title">
+          MedAI {isEn ? "Assistant" : "Trợ lý Y khoa"}
+        </div>
+        <button
+          type="button"
+          className="lang-toggle-btn"
+          onClick={onToggleLang}
+          title={isEn ? "Switch to Vietnamese" : "Chuyển sang Tiếng Anh"}
+        >
+          {isEn ? "🇬🇧 EN" : "🇻🇳 VI"}
+        </button>
+      </div>
 
       <div className="chat-disclaimer">
         <AlertIcon />
         <span>
-          MedChat cung cấp thông tin tham khảo, không thay thế chẩn đoán hay điều trị của bác sĩ.
+          {isEn
+            ? "MedChat provides reference information only, and does not replace professional medical diagnosis or treatment."
+            : "MedChat cung cấp thông tin tham khảo, không thay thế chẩn đoán hay điều trị của bác sĩ."
+          }
         </span>
       </div>
 
@@ -51,7 +70,7 @@ export default function ChatView({
             ))}
           </div>
         ) : (
-          <WelcomeScreen onPick={onSend} />
+          <WelcomeScreen onPick={onSend} lang={lang} />
         )}
       </div>
 
@@ -63,6 +82,7 @@ export default function ChatView({
         isResponding={isResponding}
         specialtyId={specialtyId}
         onSpecialtyChange={onSpecialtyChange}
+        lang={lang}
       />
     </div>
   )

@@ -23,9 +23,9 @@ const TOKEN_DELAY_RANGE = [16, 45]
  * @param {(chunk: string) => void} [params.onToken] - called with each incremental chunk of text
  * @returns {Promise<string>} the full reply text
  */
-export async function streamAssistantReply({ messages, specialtyId, signal, onToken }) {
+export async function streamAssistantReply({ messages, specialtyId, lang, signal, onToken }) {
   try {
-    return await streamFromBackend({ messages, specialtyId, signal, onToken })
+    return await streamFromBackend({ messages, specialtyId, lang, signal, onToken })
   } catch (err) {
     if (err.name === 'AbortError') throw err
     console.warn('Chat API unreachable, falling back to local mock reply:', err)
@@ -33,13 +33,13 @@ export async function streamAssistantReply({ messages, specialtyId, signal, onTo
   }
 }
 
-async function streamFromBackend({ messages, specialtyId, signal, onToken }) {
+async function streamFromBackend({ messages, specialtyId, lang, signal, onToken }) {
   const res = await fetch(`${API_URL}/api/chat`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     credentials: 'include',
     signal,
-    body: JSON.stringify({ messages, specialtyId }),
+    body: JSON.stringify({ messages, specialtyId, lang }),
   })
   if (!res.ok || !res.body) throw new Error(`Chat API request failed (${res.status})`)
 

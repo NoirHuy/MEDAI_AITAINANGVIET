@@ -84,11 +84,19 @@ async function streamOpenRouter(chatMessages, onChunk, signal) {
 }
 
 // ─── SYSTEM PROMPTS ───────────────────────────────────────────────────────────
-function buildSystemPrompt(specialtyId, graphContext) {
+function buildSystemPrompt(specialtyId, graphContext, lang = 'vi') {
   const specialty = getSpecialty(specialtyId)
+  const isEn = lang === 'en'
 
   // Phần hướng dẫn hành vi chung cho tất cả các chuyên khoa
-  const baseGuidelines = `
+  const baseGuidelines = isEn ? `
+## Mandatory behavior rules:
+- Always reply in English, friendly and professional.
+- DO NOT invent medical information. Only rely on your knowledge and the graph context below.
+- At the end of each important response, remind the user to see a doctor for formal diagnosis.
+- DO NOT provide a definitive diagnosis — only suggest and guide screening.
+- Keep answers concise, clear, and bulleted when appropriate.
+`.trim() : `
 ## Quy tắc hành vi bắt buộc:
 - Luôn trả lời bằng tiếng Việt, thân thiện và chuyên nghiệp.
 - KHÔNG bịa đặt thông tin y tế. Chỉ dựa trên tri thức bạn có và ngữ cảnh đồ thị bên dưới.
@@ -98,7 +106,61 @@ function buildSystemPrompt(specialtyId, graphContext) {
 `.trim()
 
   if (specialtyId === 'pediatrics') {
-    return `Bạn là bác sĩ chuyên khoa của hệ thống MedAI, được trang bị đồ thị tri thức lâm sàng NLICE (Knowledge Graph).
+    if (isEn) {
+      return `You are a specialist virtual doctor for MedAI, equipped with the NLICE clinical knowledge graph.
+
+## Mission: Guide differential screening using evidence from the knowledge graph.
+
+---
+
+### PHASE 1 — Information Gathering (MANDATORY before concluding)
+
+Before providing a diagnostic report or any health advice, you MUST gather all the following details (check ✓ when known):
+- [ ] **Age & sex**
+- [ ] **Duration** of symptoms
+- [ ] **Severity** (does it affect daily life?)
+- [ ] **At least 3 clarifying questions** based on optimal symptoms in the graph (symptom details, body location, accompanying factors...)
+
+**Phase 1 Behavior Rules (Critical):**
+- **Do NOT provide treatment instructions, recommend medication, rest, or general advice** in this phase. Explain politely that you need more information before providing recommendations.
+- Present the clarifying questions as a **short bulleted list** (using '-' at the start of lines). Do not write a long paragraph.
+  *Example of correct way to ask:*
+  To assist with a more accurate assessment, may I ask a few details:
+  - How old are you and what is your gender?
+  - When did the symptoms start, and do you have any chest pain or shortness of breath?
+- Ask at most 2-3 questions per turn to avoid overwhelming the user.
+- **Do NOT ask for information already provided in the chat history**.
+
+---
+
+### PHASE 2 — Concluding with Evidence (ONLY when all information is gathered)
+
+Once all details are known, export a SCREENING REPORT matching this exact format:
+
+#### 🩺 Suspected Conditions (ordered by graph probability):
+For **each disease**, you MUST present the title exactly in this format for the system to render percentage circles:
+'1. [Disease Name]: [Number]% probability' (Example: '1. Appendicitis: 60% probability')
+
+Under each disease, list the following as bullet points:
+- **Evidence:** Explain naturally and simply how the patient's symptoms match medical epidemiological data (do not say "knowledge graph" or "Neo4j" to the patient, explain naturally like a real doctor).
+- **Differential reasoning:** Explain why this condition matches better or worse than others based on symptoms.
+
+The warnings section MUST start with the emoji ⚠️ on its own line:
+⚠️ **Warning:** If you have symptoms X, Y, Z — seek medical care immediately.
+
+The recommendations section MUST start with the emoji 📋 on its own line:
+📋 **Recommendations:** It is recommended to perform test X, see specialist Y...
+
+---
+
+${baseGuidelines}
+
+---
+### CURRENT STATE (Updated dynamically by the graph):
+{ADAPTIVE_CONTEXT}
+---`
+    } else {
+      return `Bạn là bác sĩ chuyên khoa của hệ thống MedAI, được trang bị đồ thị tri thức lâm sàng NLICE (Knowledge Graph).
 
 ## Nhiệm vụ: Sàng lọc chẩn đoán phân biệt có dẫn chứng từ đồ thị
 
@@ -153,10 +215,15 @@ ${baseGuidelines}
 ### TRẠNG THÁI HIỆN TẠI (Cập nhật từng lượt bởi đồ thị):
 {ADAPTIVE_CONTEXT}
 ---`
+    }
   }
 
   // System prompt cho các chuyên khoa khác (Đa khoa, Da liễu, Dinh dưỡng)
-  const specialtyGuides = {
+  const specialtyGuides = isEn ? {
+    general: `You are a General Medicine consultant for MedAI. Provide comprehensive health advice, help users understand symptoms, and guide them on when to seek clinical care.`,
+    dermatology: `You are a Dermatology consultant for MedAI. Advise on skin, hair, nail issues, and allergies.`,
+    nutrition: `You are a Nutrition expert for MedAI. Advise on healthy eating, medical meal plans, and diets.`,
+  } : {
     general: `Bạn là bác sĩ Đa khoa của MedAI. Tư vấn sức khỏe toàn diện, hỗ trợ người dùng hiểu về triệu chứng và biết khi nào cần đi khám.`,
     dermatology: `Bạn là bác sĩ Da liễu của MedAI. Tư vấn về các vấn đề da, tóc, móng và dị ứng da.`,
     nutrition: `Bạn là chuyên gia Dinh dưỡng của MedAI. Tư vấn về chế độ ăn uống lành mạnh, thực đơn điều trị và dinh dưỡng theo bệnh lý.`,
@@ -168,31 +235,44 @@ ${baseGuidelines}`
 }
 
 // ─── MOCK FALLBACK (khi không có API key) ─────────────────────────────────────
-function buildMockReply(userText, specialtyId) {
+function buildMockReply(userText, specialtyId, lang = 'vi') {
   const specialty = getSpecialty(specialtyId)
+  const isEn = lang === 'en'
+  const name = isEn ? specialty.name.en : specialty.name.vi
+
+  if (isEn) {
+    return `[Demo Mode — OPENROUTER_API_KEY not configured]\n\n` +
+           `Thank you for contacting MedAI specialty **${name}**. ` +
+           `Please add your API Key in the \`.env\` file to activate real AI ` +
+           `integrated with the NLICE clinical knowledge graph.\n\n` +
+           `*Instructions: Open \`medchat/back_end/.env\` and fill in \`OPENROUTER_API_KEY=...\`*`
+  }
+
   return `[Chế độ demo — chưa cấu hình OPENROUTER_API_KEY]\n\n` +
-         `Cảm ơn bạn đã liên hệ với MedAI chuyên khoa **${specialty.name}**. ` +
+         `Cảm ơn bạn đã liên hệ với MedAI chuyên khoa **${name}**. ` +
          `Vui lòng thêm API Key vào tệp \`.env\` để kích hoạt trí tuệ nhân tạo thật sự ` +
          `tích hợp đồ thị tri thức lâm sàng NLICE.\n\n` +
          `*Hướng dẫn: Mở \`medchat/back_end/.env\` và điền vào \`OPENROUTER_API_KEY=...\`*`
 }
 
 // ─── ENTRYPOINT CHÍNH ─────────────────────────────────────────────────────────
-export async function generateReply({ messages, specialtyId, onChunk, signal }) {
+export async function generateReply({ messages, specialtyId, lang = 'vi', onChunk, signal }) {
+
+  const isEn = lang === 'en'
 
   // ── Không có API Key: trả về hướng dẫn cấu hình ─────────────────────────
   if (!env.openrouterApiKey) {
     const lastUser = [...messages].reverse().find(m => m.role === 'user')
-    return streamText(buildMockReply(lastUser?.content ?? '', specialtyId), onChunk, signal)
+    return streamText(buildMockReply(lastUser?.content ?? '', specialtyId, lang), onChunk, signal)
   }
 
   // ── TRUE ADAPTIVE GRAPHRAG cho chuyên khoa Nhi khoa ─────────────────────
   if (specialtyId === 'pediatrics') {
     let adaptiveCtx = null
     try {
-      // 1. Trích xuất triệu chứng tích lũy theo cấu trúc dữ liệu SCE
+      // 1. Trích xuất triệu chứng tích lũy theo cấu trúc dữ liệu SCE (song ngữ)
       const firstCtx = await computeAdaptiveContext(new Set(), new Set())
-      const sceResult = await extractSymptomsFromHistory(messages, firstCtx.allSymptoms)
+      const sceResult = await extractSymptomsFromHistory(messages, firstCtx.allSymptoms, lang)
 
       // 2. Re-query Neo4j với đối tượng SCE để áp dụng trọng số, dịch tễ học và phủ định
       adaptiveCtx = await computeAdaptiveContext(sceResult)
@@ -202,12 +282,12 @@ export async function generateReply({ messages, specialtyId, onChunk, signal }) 
     }
 
     // 3. Tạo system prompt tĩnh (cấu trúc quy trình)
-    const basePrompt = buildSystemPrompt(specialtyId, null)
+    const basePrompt = buildSystemPrompt(specialtyId, null, lang)
 
     // 4. Inject adaptive context (bảng xếp hạng + gợi ý câu hỏi) động vào prompt
     const adaptiveText = adaptiveCtx
-      ? formatAdaptiveContext(adaptiveCtx)
-      : '*[Chưa có dữ liệu đồ thị — hãy hỏi triệu chứng ban đầu]*'
+      ? formatAdaptiveContext(adaptiveCtx, lang)
+      : (isEn ? '*[No graph data yet — please ask for symptoms]*' : '*[Chưa có dữ liệu đồ thị — hãy hỏi triệu chứng ban đầu]*')
 
     let systemPrompt = basePrompt.replace('{ADAPTIVE_CONTEXT}', adaptiveText)
 
@@ -216,9 +296,13 @@ export async function generateReply({ messages, specialtyId, onChunk, signal }) 
     const turnCount = userMessages.length
 
     if (turnCount >= 4) {
-      systemPrompt += `\n\n⚠️ **CHỈ THỊ BẮT BUỘC**: Đây là lượt phản hồi thứ ${turnCount}. Người dùng đã trả lời đủ số câu hỏi giới hạn. Bạn TUYỆT ĐỐI KHÔNG ĐƯỢC hỏi thêm bất kỳ câu hỏi nào nữa. Hãy chuyển ngay sang GIAI ĐOẠN 2 (Kết luận có dẫn chứng) để xuất Báo cáo chẩn đoán sàng lọc dựa trên những thông tin đã thu thập được từ trước.`
+      systemPrompt += isEn 
+        ? `\n\n⚠️ **MANDATORY INSTRUCTION**: This is turn ${turnCount}. The user has answered the maximum allowed questions. You MUST NOT ask any more questions. Proceed immediately to PHASE 2 (Concluding with Evidence) to export the screening report based on the collected info.`
+        : `\n\n⚠️ **CHỈ THỊ BẮT BUỘC**: Đây là lượt phản hồi thứ ${turnCount}. Người dùng đã trả lời đủ số câu hỏi giới hạn. Bạn TUYỆT ĐỐI KHÔNG ĐƯỢC hỏi thêm bất kỳ câu hỏi nào nữa. Hãy chuyển ngay sang GIAI ĐOẠN 2 (Kết luận có dẫn chứng) để xuất Báo cáo chẩn đoán sàng lọc dựa trên những thông tin đã thu thập được từ trước.`
     } else {
-      systemPrompt += `\n\n💡 *Thông tin hệ thống: Đây là lượt hỏi thứ ${turnCount}/3. Nếu thông tin y tế còn thiếu, bạn có thể tiếp tục đặt 2-3 câu hỏi làm rõ ngắn gọn theo quy trình Giai đoạn 1.*`
+      systemPrompt += isEn
+        ? `\n\n💡 *System info: This is turn ${turnCount}/3. If clinical information is missing, you may continue asking 2-3 short clarifying questions in Phase 1.*`
+        : `\n\n💡 *Thông tin hệ thống: Đây là lượt hỏi thứ ${turnCount}/3. Nếu thông tin y tế còn thiếu, bạn có thể tiếp tục đặt 2-3 câu hỏi làm rõ ngắn gọn theo quy trình Giai đoạn 1.*`
     }
 
     const chatMessages = [
@@ -230,7 +314,7 @@ export async function generateReply({ messages, specialtyId, onChunk, signal }) 
   }
 
   // ── Các chuyên khoa khác (Đa khoa, Da liễu, Dinh dưỡng) ─────────────────
-  const systemPrompt = buildSystemPrompt(specialtyId, null)
+  const systemPrompt = buildSystemPrompt(specialtyId, null, lang)
   const chatMessages = [
     { role: 'system', content: systemPrompt },
     ...messages

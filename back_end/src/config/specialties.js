@@ -1,10 +1,8 @@
-// Mirrors src/data/specialties.js on the frontend. Only the fields the
-// reply generator needs are kept here.
 export const SPECIALTIES = [
-  { id: 'pediatrics', name: 'Tư vấn sức khỏe' },
-  { id: 'general', name: 'Đa khoa' },
-  { id: 'dermatology', name: 'Da liễu' },
-  { id: 'nutrition', name: 'Dinh dưỡng' },
+  { id: 'pediatrics', name: { vi: 'Tư vấn sức khỏe', en: 'Health Consultation' } },
+  { id: 'general', name: { vi: 'Đa khoa', en: 'General Medicine' } },
+  { id: 'dermatology', name: { vi: 'Da liễu', en: 'Dermatology' } },
+  { id: 'nutrition', name: { vi: 'Dinh dưỡng', en: 'Nutrition' } },
 ]
 
 export function getSpecialty(id) {
