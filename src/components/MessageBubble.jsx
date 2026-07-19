@@ -41,11 +41,6 @@ const SYMPTOM_TRANSLATIONS = {
   'difficulty walking': 'Khó đi lại', 'balance problems': 'Mất thăng bằng',
 }
 
-// ─── QUESTION TYPE KEYWORDS ───────────────────────────────────────────────────
-const SYMPTOM_KW_VI = ['triệu chứng', 'kèm theo', 'có bị', 'nào khác', 'chẳng hạn', 'ví dụ', 'đi kèm', 'xuất hiện', 'cụ thể', 'biểu hiện', 'dấu hiệu']
-const SYMPTOM_KW_EN = ['symptom', 'experience', 'accompanied', 'such as', 'any other', 'do you have', 'along with', 'notice', 'signs', 'also feel']
-
-// ─── HELPERS ─────────────────────────────────────────────────────────────────
 function getSymptomLabel(name, lang) {
   if (lang !== 'vi') return name
   const lower = name.toLowerCase().trim()
@@ -56,11 +51,49 @@ function getSymptomLabel(name, lang) {
   return name.charAt(0).toUpperCase() + name.slice(1)
 }
 
-function detectQuestionType(text, lang) {
-  const lower = text.toLowerCase()
-  const kws = lang === 'en' ? SYMPTOM_KW_EN : SYMPTOM_KW_VI
-  return kws.some(kw => lower.includes(kw)) ? 'symptom' : 'text'
+function removeAccents(str) {
+  return str
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .replace(/đ/g, 'd')
+    .replace(/Đ/g, 'D')
 }
+
+function getMatchedSymptomsForQuestion(questionText, symptoms, lang) {
+  if (!symptoms || symptoms.length === 0) return []
+  const lowerQuestion = questionText.toLowerCase()
+  const cleanQuestion = removeAccents(lowerQuestion)
+
+  return symptoms.filter(sym => {
+    const label = getSymptomLabel(sym.name, lang).toLowerCase()
+    const cleanLabel = removeAccents(label)
+    const name = sym.name.toLowerCase()
+
+    // 1. Direct match with or without accents
+    if (lowerQuestion.includes(label) || cleanQuestion.includes(cleanLabel) || lowerQuestion.includes(name)) {
+      return true
+    }
+
+    // 2. Split words and check chunks
+    const parts = label.split(/\s+(?:hoặc|or|với|and|,|\/)\s+/)
+    for (const part of parts) {
+      const cleanPart = removeAccents(part)
+      if (part.length >= 3 && (lowerQuestion.includes(part) || cleanQuestion.includes(cleanPart))) {
+        return true
+      }
+    }
+
+    // 3. Special clinical mappings
+    if (label.includes('đau ngực') && (lowerQuestion.includes('tức ngực') || cleanQuestion.includes('tuc nguc'))) return true
+    if (label.includes('sốt') && (lowerQuestion.includes('nóng') || cleanQuestion.includes('nong'))) return true
+    if (label.includes('co giật') && (lowerQuestion.includes('giật') || cleanQuestion.includes('giat'))) return true
+    if ((label.includes('nôn') || label.includes('nausea')) && (lowerQuestion.includes('ói') || cleanQuestion.includes('oi'))) return true
+    if (label.includes('u / cục') && (lowerQuestion.includes('cục') || cleanQuestion.includes('cuc') || lowerQuestion.includes('u '))) return true
+
+    return false
+  })
+}
+
 
 function countBulletQuestions(text) {
   if (!text) return 0
@@ -75,17 +108,19 @@ function buildCombinedMessage(inlineAnswers, metadata, lang) {
   Object.values(inlineAnswers).forEach(answer => {
     if (answer.type === 'symptom') {
       const ids = answer.value || []
-      const syms = metadata?.symptoms || []
+      const syms = answer.allSymptoms || []
+      if (syms.length === 0) return
+
       const confirmed = syms.filter(s => ids.includes(s.id)).map(s => getSymptomLabel(s.name, lang))
       const excluded = syms.filter(s => !ids.includes(s.id)).map(s => getSymptomLabel(s.name, lang))
       if (isEn) {
         if (confirmed.length) parts.push(`Symptoms I have: ${confirmed.join(', ')}`)
         if (excluded.length && confirmed.length) parts.push(`I do not have: ${excluded.join(', ')}`)
-        if (!confirmed.length) parts.push('I do not have any of those symptoms')
+        if (!confirmed.length) parts.push(`I do not have any of these: ${syms.map(s => getSymptomLabel(s.name, lang)).join(', ')}`)
       } else {
         if (confirmed.length) parts.push(`Triệu chứng tôi có: ${confirmed.join(', ')}`)
         if (excluded.length && confirmed.length) parts.push(`Tôi không bị: ${excluded.join(', ')}`)
-        if (!confirmed.length) parts.push('Tôi không có triệu chứng nào trong danh sách đó')
+        if (!confirmed.length) parts.push(`Tôi không bị các triệu chứng: ${syms.map(s => getSymptomLabel(s.name, lang)).join(', ')}`)
       }
     } else if (answer.type === 'text' && answer.value?.trim()) {
       parts.push(answer.value.trim())
@@ -216,8 +251,16 @@ export default function MessageBubble({ role, content, streaming, lang = 'vi', i
     }
   }
 
-  const updateAnswer = useCallback((qKey, type, value) => {
-    setInlineAnswers(prev => ({ ...prev, [qKey]: { type, value } }))
+  const updateAnswer = useCallback((qKey, type, value, allSymptoms) => {
+    setInlineAnswers(prev => ({
+      ...prev,
+      [qKey]: {
+        type,
+        value,
+        allSymptoms,
+        interacted: true
+      }
+    }))
   }, [])
 
   const handleSubmitAll = useCallback(() => {
@@ -234,7 +277,7 @@ export default function MessageBubble({ role, content, streaming, lang = 'vi', i
     : 0
 
   const answeredCount = Object.values(inlineAnswers).filter(a =>
-    a.type === 'symptom' ? a.value?.length > 0 : a.value?.trim()
+    a.type === 'symptom' ? a.interacted : a.value?.trim()
   ).length
 
   // Context passed to renderer
@@ -394,7 +437,10 @@ function renderBlock(block, key, ctx) {
               {lines.map((line, i) => {
                 const content = line.trim().replace(/^[-*]\s/, '')
                 const qKey = `q-${key}-${i}`
-                const qType = detectQuestionType(content, ctx.lang)
+                const matchedSymptoms = hasSymptoms
+                  ? getMatchedSymptomsForQuestion(content, ctx.metadata.symptoms, ctx.lang)
+                  : []
+                const isSymptomQuestion = matchedSymptoms.length > 0
                 const answerValue = ctx.inlineAnswers[qKey]?.value
 
                 return (
@@ -406,12 +452,12 @@ function renderBlock(block, key, ctx) {
                     </div>
 
                     {/* Inline widget */}
-                    {qType === 'symptom' && hasSymptoms ? (
+                    {isSymptomQuestion ? (
                       <InlineChipPicker
-                        symptoms={ctx.metadata.symptoms}
+                        symptoms={matchedSymptoms}
                         lang={ctx.lang}
                         selectedIds={answerValue || []}
-                        onChange={(ids) => ctx.updateAnswer(qKey, 'symptom', ids)}
+                        onChange={(ids) => ctx.updateAnswer(qKey, 'symptom', ids, matchedSymptoms)}
                       />
                     ) : (
                       <InlineTextInput
