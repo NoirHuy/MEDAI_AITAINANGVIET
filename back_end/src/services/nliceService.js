@@ -133,39 +133,8 @@ async function callOpenRouter(chatMessages) {
   }
 }
 
-// Hàm chuẩn hóa triệu chứng bụng/đặc điểm vị trí sang nút đặc hiệu trong SymCAT
+// Hàm chuẩn hóa triệu chứng (nay đã chuyển dịch ngữ nghĩa hoàn chỉnh lên tầng LLM trích xuất ở Giai đoạn 1)
 function normalizeSymptomTerm(sym) {
-  const termLower = (sym.term || '').toLowerCase()
-  const locLower = (sym.attributes?.bodyLocation || '').toLowerCase()
-  const sevLower = (sym.attributes?.severity || '').toLowerCase()
-
-  if (termLower.includes('abdominal pain') || termLower === 'abdominal pain') {
-    if (
-      locLower.includes('lower') || 
-      locLower.includes('hypogastric') || 
-      locLower.includes('pelvic') || 
-      locLower.includes('iliac') ||
-      locLower.includes('dưới rốn') ||
-      locLower.includes('hố chậu')
-    ) {
-      return 'lower abdominal pain'
-    }
-    if (
-      locLower.includes('upper') || 
-      locLower.includes('epigastric') || 
-      locLower.includes('epigastrium') ||
-      locLower.includes('thượng vị') ||
-      locLower.includes('trên rốn')
-    ) {
-      return 'upper abdominal pain'
-    }
-    if (locLower.includes('burning') || termLower.includes('burning') || sevLower.includes('burning')) {
-      return 'burning abdominal pain'
-    }
-    if (sevLower === 'severe' || termLower.includes('sharp') || termLower.includes('severe')) {
-      return 'sharp abdominal pain'
-    }
-  }
   return sym.term
 }
 
@@ -205,7 +174,7 @@ You MUST return ONLY a single valid JSON block matching the following structure 
   },
   "symptoms": [
     {
-      "term": "<atomic clinical symptom term in English, e.g. 'Headache', 'Nausea'>",
+      "term": "<atomic or composite clinical symptom term in English, e.g. 'Lower abdominal pain', 'Nausea'>",
       "status": "<'positive' if the patient confirms this symptom | 'negative' if the patient denies this symptom>",
       "role": "<'chief_complaint' if this is the primary reason for the medical visit | 'associated' if it is a secondary symptom>",
       "confidenceScore": <your extraction confidence score from 0.0 to 1.0>,
@@ -213,7 +182,7 @@ You MUST return ONLY a single valid JSON block matching the following structure 
         "severity": "<'mild' | 'moderate' | 'severe' | null>",
         "frequency": "<'constant' | 'episodic' | null>",
         "progression": "<'improving' | 'stable' | 'worsening' | null>",
-        "bodyLocation": "<specific anatomical location, e.g. 'occipital region', 'epigastrium', or null>",
+        "bodyLocation": "<specific anatomical location, e.g. 'lower abdomen', 'epigastrium', or null>",
         "exacerbatingFactors": <array of strings representing things that worsen the symptom, e.g. ["movement", "pressure"], or []>,
         "relievingFactors": <array of strings representing things that relieve the symptom, e.g. ["rest", "lying down"], or []>
       }
@@ -222,9 +191,15 @@ You MUST return ONLY a single valid JSON block matching the following structure 
 }
 
 Mandatory Clinical NLP Rules:
-1. Atomic Representation & No Disease Inference: Only extract symptoms at an atomic level. For example, "back of head pain" -> term "Headache" or "Occipital headache", bodyLocation "occipital region". Do NOT infer clinical diseases (e.g. do not output Tension headache, as disease classification belongs to the graph reasoning layer).
+1. Clinical Representation & No Disease Inference: Extract clinical symptoms accurately. Do NOT infer clinical diseases (e.g. do not output Tension headache, as disease classification belongs to the graph reasoning layer).
 2. Negation Detection: Extract negated symptoms mentioned by the patient. If the patient says "no vomiting", output term: "Vomiting", status: "negative".
 3. Hybrid Chief Complaint: The first symptom reported by the Patient in their first turn is the highest priority candidate. Verify if it is indeed the main reason for visit to set role: "chief_complaint". Mark subsequent symptoms as "associated".
+4. Composite Symptom Terms: When a body location, severity, or frequency drastically changes the clinical classification of a symptom, you MUST generate a composite clinical term in the "term" field (in English). For example:
+   - If abdominal pain is located in the 'lower abdomen' or 'hypogastric region', map "term" directly to 'Lower abdominal pain'.
+   - If abdominal pain is located in the 'upper abdomen' or 'epigastrium', map "term" directly to 'Upper abdominal pain'.
+   - If abdominal pain is 'burning', map "term" directly to 'Burning abdominal pain'.
+   - If abdominal pain is 'sharp' or 'severe', map "term" directly to 'Sharp abdominal pain'.
+   - Similarly, map 'Chest pain' + 'sharp' to 'Sharp chest pain', and 'Back pain' + 'low' to 'Low back pain'. Keep the attributes populated, but make sure the main "term" contains the composite description.
 
 Clinical Conversation:
 ${formattedHistory}
@@ -247,7 +222,7 @@ Bạn CHỈ được phép trả về duy nhất một khối JSON hợp lệ th
   },
   "symptoms": [
     {
-      "term": "<tên triệu chứng lâm sàng bằng tiếng Anh nguyên tử, ví dụ: 'Headache', 'Nausea'>",
+      "term": "<tên triệu chứng lâm sàng đơn lẻ hoặc từ ghép bằng tiếng Anh, ví dụ: 'Lower abdominal pain', 'Nausea'>",
       "status": "<'positive' nếu bệnh nhân xác nhận có triệu chứng này | 'negative' nếu bệnh nhân phủ nhận triệu chứng này>",
       "role": "<'chief_complaint' nếu đây là triệu chứng chính/lý do khám y khoa chính | 'associated' nếu đây là triệu chứng đi kèm>",
       "confidenceScore": <mức độ tự tin (confidence score) của bạn về việc trích xuất thực thể này từ 0.0 đến 1.0>,
@@ -264,9 +239,15 @@ Bạn CHỈ được phép trả về duy nhất một khối JSON hợp lệ th
 }
 
 Nguyên tắc lâm sàng bắt buộc (Clinical NLP Rules):
-1. Tách biệt trích xuất và suy luận: Bạn chỉ trích xuất triệu chứng ở mức nguyên tử (atomic representation). Ví dụ: "đau đầu sau gáy" -> term là "Headache" hoặc "Occipital headache", bodyLocation là "occipital region". TUYỆT ĐỐI không tự suy diễn bệnh lý (ví dụ: cấm quy đổi thành Tension headache, vì chẩn đoán bệnh là của tầng suy luận đồ thị).
+1. Tách biệt trích xuất và suy luận: Bạn chỉ trích xuất triệu chứng lâm sàng. TUYỆT ĐỐI không tự suy diễn bệnh lý (ví dụ: cấm quy đổi thành Tension headache, vì chẩn đoán bệnh là của tầng suy luận đồ thị).
 2. Phủ định (Negation): Phải trích xuất đầy đủ triệu chứng phủ định. Nếu bệnh nhân nói "không nôn, không buồn nôn", bạn phải ghi nhận term: "Nausea" và "Vomiting" với status: "negative".
 3. Xác định Chief Complaint lai: Triệu chứng đầu tiên mà Bệnh nhân khai báo trong lượt thoại đầu tiên là ứng viên ưu tiên cao nhất làm Chief Complaint. Bạn hãy kiểm tra xem đó có đúng là lý do chính khiến bệnh nhân đi khám không để gán role: "chief_complaint". Tất cả các triệu chứng phụ phát hiện sau đó gán role: "associated".
+4. Từ triệu chứng ghép (Composite Terms): Khi vị trí cơ thể, tính chất, hoặc mức độ làm thay đổi bản chất chẩn đoán của triệu chứng, bạn BẮT BUỘC phải tạo ra một thuật ngữ triệu chứng ghép hoàn chỉnh trong trường "term" (bằng tiếng Anh). Ví dụ:
+   - Nếu đau bụng ở vùng bụng dưới ('lower abdomen' hoặc 'hypogastric region'), hãy gán "term" trực tiếp là 'Lower abdominal pain'.
+   - Nếu đau bụng ở vùng bụng trên hoặc thượng vị ('upper abdomen' hoặc 'epigastrium'), hãy gán "term" trực tiếp là 'Upper abdominal pain'.
+   - Nếu đau bụng có tính chất nóng rát, hãy gán "term" trực tiếp là 'Burning abdominal pain'.
+   - Nếu đau bụng quặn, dữ dội, hãy gán "term" trực tiếp là 'Sharp abdominal pain'.
+   - Tương tự, nếu đau ngực dữ dội, gán "term" trực tiếp là 'Sharp chest pain'. Đau lưng dưới gán "term" trực tiếp là 'Low back pain'. Hãy giữ nguyên các thuộc tính con ở attributes, nhưng đảm bảo term chính là từ ghép hoàn chỉnh chuẩn y khoa.
 
 Hội thoại lâm sàng:
 ${formattedHistory}
