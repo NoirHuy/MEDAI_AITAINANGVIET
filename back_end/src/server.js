@@ -46,6 +46,21 @@ if (process.env.NODE_ENV === 'production') {
   })
 }
 
+app.get('/api/error-log', (req, res) => {
+  res.json({
+    ok: true,
+    env: {
+      NODE_ENV: process.env.NODE_ENV,
+      PORT: process.env.PORT,
+      __dirname: __dirname,
+      distPathResolved: path.resolve(__dirname, '../../dist'),
+      distExists: fs.existsSync(path.resolve(__dirname, '../../dist')),
+      indexExists: fs.existsSync(path.resolve(__dirname, '../../dist/index.html'))
+    },
+    errors: global.serverErrors || []
+  })
+})
+
 app.use(notFoundHandler)
 app.use(errorHandler)
 
