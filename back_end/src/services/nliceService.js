@@ -571,7 +571,7 @@ export async function computeAdaptiveContext(sceResult, excludedSymptoms = new S
       }).sort((a, b) => b.score - a.score)
     }
 
-    let bestNextSymptom = null
+    let bestNextSymptoms = []
     const knownSymptoms = [...symptomsArr, ...excludedArr]
 
     if (rankedDiseases.length >= 2) {
@@ -586,21 +586,19 @@ export async function computeAdaptiveContext(sceResult, excludedSymptoms = new S
              stdev(r.probability) AS prob_stdev,
              avg(r.probability) AS prob_avg
         WHERE disease_count >= 2
-        RETURN symptom, sym_id, disease_probs, disease_count, prob_stdev, prob_avg
+        RETURN symptom, sym_id, description, disease_probs, disease_count, prob_stdev, prob_avg
         ORDER BY prob_stdev DESC, prob_avg DESC
         LIMIT 3
       `, { topDiseases: topDiseaseNames, known: knownSymptoms })
 
-      if (discRes.records.length > 0) {
-        const rec = discRes.records[0]
-        bestNextSymptom = {
-          name: rec.get('symptom'),
-          id: rec.get('sym_id'),
-          stdev: rec.get('prob_stdev'),
-          avgProb: rec.get('prob_avg'),
-          byDisease: rec.get('disease_probs')
-        }
-      }
+      bestNextSymptoms = discRes.records.map(rec => ({
+        name: rec.get('symptom'),
+        id: rec.get('sym_id'),
+        description: rec.get('description') || '',
+        stdev: rec.get('prob_stdev'),
+        avgProb: rec.get('prob_avg'),
+        byDisease: rec.get('disease_probs')
+      }))
     }
 
     let diseaseOverview = null
@@ -614,7 +612,7 @@ export async function computeAdaptiveContext(sceResult, excludedSymptoms = new S
       confirmedSymptoms: symptomsArr, 
       excludedSymptoms: excludedArr, 
       rankedDiseases, 
-      bestNextSymptom, 
+      bestNextSymptoms, 
       diseaseOverview,
       sce: sceResult && typeof sceResult === 'object' && !(sceResult instanceof Set) ? sceResult : null
     }
@@ -626,7 +624,7 @@ export async function computeAdaptiveContext(sceResult, excludedSymptoms = new S
 
 // ─── FORMAT NGU CANH THANH VAN BAN CHO SYSTEM PROMPT ─────────────────────────
 export function formatAdaptiveContext(ctx, lang = 'vi') {
-  const { confirmedSymptoms, excludedSymptoms, rankedDiseases, bestNextSymptom, diseaseOverview, sce } = ctx
+  const { confirmedSymptoms, excludedSymptoms, rankedDiseases, bestNextSymptoms, diseaseOverview, sce } = ctx
   const isEn = lang === 'en'
 
   let text = isEn ? '## ADAPTIVE GRAPH CONTEXT (Current Turn)\n\n' : '## ADAPTIVE GRAPH CONTEXT (Cap nhat luot nay)\n\n'
@@ -716,16 +714,18 @@ export function formatAdaptiveContext(ctx, lang = 'vi') {
     })
   }
 
-  if (bestNextSymptom) {
-    const breakdown = bestNextSymptom.byDisease
-      .map(d => `${d.disease}: ${d.prob?.toFixed(1)}%`)
-      .join(' vs ')
-    text += isEn ? `\n### Optimal Differential Symptom (Clarification Suggested):\n`
+  if (bestNextSymptoms && bestNextSymptoms.length > 0) {
+    text += isEn ? `\n### Optimal Differential Symptoms (Clarification Suggested):\n`
                  : `\n### Trieu chung phan biet toi uu (goi y hoi tiep):\n`
-    const descText = bestNextSymptom.description ? ` - Desc: ${bestNextSymptom.description}` : ''
-    text += `**"${bestNextSymptom.name}"** (slug: ${bestNextSymptom.id}${descText}) — Probability gap between diseases: ${breakdown}\n`
-    text += isEn ? `-> Please ask the user about this symptom to differentiate effectively.\n`
-                 : `-> Hay hoi nguoi dung ve trieu chung nay de phan biet hieu qua nhat.\n`
+    bestNextSymptoms.forEach(sym => {
+      const breakdown = sym.byDisease
+        .map(d => `${d.disease}: ${d.prob?.toFixed(1)}%`)
+        .join(' vs ')
+      const descText = sym.description ? ` - Desc: ${sym.description}` : ''
+      text += `- **"${sym.name}"** (slug: ${sym.id}${descText}) — Probability gap between diseases: ${breakdown}\n`
+    })
+    text += isEn ? `-> Please ask the user about these symptoms to differentiate effectively.\n`
+                 : `-> Hay hoi nguoi dung ve cac trieu chung nay de phan biet hieu qua nhat.\n`
   } else if (rankedDiseases.length > 0) {
     text += isEn ? `\n-> Adequate differential data collected. Please summarize the screening report.\n`
                  : `\n-> Da co du du lieu phan biet. Hay tong ket bao cao chan doan sang loc.\n`
