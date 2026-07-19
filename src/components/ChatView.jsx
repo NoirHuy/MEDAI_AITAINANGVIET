@@ -30,27 +30,23 @@ export default function ChatView({
 
   return (
     <div className="chat-view">
-      <div className="chat-view__header-bar">
-        <button
-          type="button"
-          className="chat-view__mobile-menu-btn"
-          onClick={onOpenMenu}
-          aria-label={isEn ? "Open menu" : "Mở menu"}
-        >
-          <MenuIcon />
-        </button>
-        <div className="chat-view__header-title">
-          MedAI {isEn ? "Assistant" : "Trợ lý Y khoa"}
-        </div>
-        <button
-          type="button"
-          className="lang-toggle-btn"
-          onClick={onToggleLang}
-          title={isEn ? "Switch to Vietnamese" : "Chuyển sang Tiếng Anh"}
-        >
-          {isEn ? "English" : "Tiếng Việt"}
-        </button>
-      </div>
+      <button
+        type="button"
+        className="chat-view__mobile-menu-btn"
+        onClick={onOpenMenu}
+        aria-label={isEn ? "Open menu" : "Mở menu"}
+      >
+        <MenuIcon />
+      </button>
+
+      <button
+        type="button"
+        className="lang-toggle-btn"
+        onClick={onToggleLang}
+        title={isEn ? "Switch to Vietnamese" : "Chuyển sang Tiếng Anh"}
+      >
+        {isEn ? "English" : "Tiếng Việt"}
+      </button>
 
       <div className="chat-disclaimer">
         <AlertIcon />
