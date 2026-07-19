@@ -16,6 +16,6 @@ export const env = {
   umlsApiKey: process.env.UMLS_API_KEY || null,
   wChiefComplaint: Number(process.env.W_CHIEF_COMPLAINT) || 1.5,
   wAssociated: Number(process.env.W_ASSOCIATED) || 1.0,
-  penaltyMultiplier: Number(process.env.PENALTY_MULTIPLIER) || 0.4,
+  penaltyMultiplier: Number(process.env.PENALTY_MULTIPLIER) || 0.8,
   confidenceThreshold: Number(process.env.CONFIDENCE_THRESHOLD) || 0.7,
 }

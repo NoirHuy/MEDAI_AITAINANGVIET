@@ -256,7 +256,7 @@ function renderBlock(block, key) {
         return (
           <ol className="message-list" key={key}>
             {lines.map((line, i) => (
-              <li key={i}>{renderInline(line.trim().replace(/^\d+\.\s/, ''), `${key}-${i}`)}</li>
+              <li key={i}>{renderInlineNoBold(line.trim().replace(/^\d+\.\s/, ''), `${key}-${i}`)}</li>
             ))}
           </ol>
         )
@@ -265,7 +265,7 @@ function renderBlock(block, key) {
         return (
           <ul className="message-list" key={key}>
             {lines.map((line, i) => (
-              <li key={i}>{renderInline(line.trim().replace(/^[-*]\s/, ''), `${key}-${i}`)}</li>
+              <li key={i}>{renderInlineNoBold(line.trim().replace(/^[-*]\s/, ''), `${key}-${i}`)}</li>
             ))}
           </ul>
         )
@@ -335,6 +335,23 @@ function renderInline(text, keyPrefix) {
       const k = `${keyPrefix}-${i}`
       if (part.startsWith('**') && part.endsWith('**'))
         return <strong key={k}>{part.slice(2, -2)}</strong>
+      if (part.startsWith('_') && part.endsWith('_'))
+        return <em key={k}>{part.slice(1, -1)}</em>
+      if (part.startsWith('`') && part.endsWith('`'))
+        return <code key={k} className="msg-code">{part.slice(1, -1)}</code>
+      return <span key={k}>{part}</span>
+    })
+}
+
+// ─── INLINE RENDERER (no bold — dành cho danh sách câu hỏi Phase 1) ──────────
+function renderInlineNoBold(text, keyPrefix) {
+  // Strip ** trước, rồi render italic/code bình thường
+  const stripped = text.replace(/\*\*([^*]+)\*\*/g, '$1')
+  return stripped
+    .split(/(_[^_]+_|`[^`]+`)/g)
+    .filter(part => part.length > 0)
+    .map((part, i) => {
+      const k = `${keyPrefix}-${i}`
       if (part.startsWith('_') && part.endsWith('_'))
         return <em key={k}>{part.slice(1, -1)}</em>
       if (part.startsWith('`') && part.endsWith('`'))

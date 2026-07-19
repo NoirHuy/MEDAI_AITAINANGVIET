@@ -537,7 +537,7 @@ export async function computeAdaptiveContext(sceResult, excludedSymptoms = new S
     let rankedDiseases = []
 
     if (symptomsArr.length > 0) {
-      // Thực hiện truy vấn Neo4j với trọng số Bayesian phân vai triệu chứng
+      // Mở rộng pool ứng viên lên 15 trước khi áp dụng các hệ số dịch tễ/thời gian
       const diseaseRes = await session.run(`
         MATCH (d:Disease)-[r:HAS_SYMPTOM]->(s:Symptom)
         WITH d, collect({s_id: s.id, prob: r.probability, name: s.name, description: s.description}) AS all_symptoms
@@ -549,7 +549,7 @@ export async function computeAdaptiveContext(sceResult, excludedSymptoms = new S
              reduce(s = 0.0, x IN all_symptoms | s + x.prob) AS max_possible_score,
              [x IN matched_list | {symptom: x.name, prob: x.prob, description: x.description}] AS matched_details
         ORDER BY matched_count DESC, base_score DESC
-        LIMIT 8
+        LIMIT 15
         OPTIONAL MATCH (d)-[ra:AFFECTS_AGE]->(a:AgeGroup)
         OPTIONAL MATCH (d)-[rg:AFFECTS_SEX]->(g:Sex)
         WITH d, matched_count, base_score, max_possible_score, matched_details,
@@ -574,13 +574,43 @@ export async function computeAdaptiveContext(sceResult, excludedSymptoms = new S
         })
       }
 
+      // Tính hệ số thời gian (temporalMultiplier) từ onset
+      const onset = sceResult?.temporal?.onset || null
+      function computeTemporalMultiplier(diseaseName, onset) {
+        if (!onset) return 1.0
+        // Phân loại bệnh dựa trên tên (heuristic nhanh từ đồ thị)
+        const nameL = diseaseName.toLowerCase()
+        const isChronicByName =
+          nameL.includes('chronic') ||
+          nameL.includes('persistent') ||
+          nameL.includes('recurrent') ||
+          nameL.includes('long-term')
+        const isAcuteByName =
+          nameL.includes('acute') ||
+          nameL.includes('appendicitis') ||
+          nameL.includes('stroke') ||
+          nameL.includes('infarct') ||
+          nameL.includes('obstruction') ||
+          nameL.includes('perforation') ||
+          nameL.includes('peritonitis')
+
+        if (onset === 'acute') {
+          if (isChronicByName) return 0.6   // Giảm điểm bệnh mạn khi onset cấp
+          if (isAcuteByName)  return 1.2   // Tăng điểm bệnh cấp khi onset cấp
+        } else if (onset === 'chronic') {
+          if (isAcuteByName)  return 0.6   // Giảm điểm bệnh cấp khi onset mạn
+          if (isChronicByName) return 1.2  // Tăng điểm bệnh mạn khi onset mạn
+        }
+        return 1.0
+      }
+
       rankedDiseases = diseaseRes.records.map(r => {
         const name = r.get('disease')
         const baseScore = r.get('base_score')
         const maxPossibleScore = r.get('max_possible_score') || 100
         const penalty = (penaltyMap[name] || 0) * env.penaltyMultiplier
 
-        // Tích hợp dữ liệu dịch tễ học và giới tính (Odds Bayesian prior adjustment)
+        // Điều chỉnh dịch tễ học (tuổi & giới tính)
         let demographicMultiplier = 1.0
         if (demographics.age) {
           const matchedAgeGroup = findAgeGroup(demographics.age, r.get('ages') || [])
@@ -595,7 +625,10 @@ export async function computeAdaptiveContext(sceResult, excludedSymptoms = new S
           }
         }
 
-        const score = Math.max(0, baseScore * demographicMultiplier - penalty)
+        // Điều chỉnh thời gian khởi phát (temporalMultiplier)
+        const temporalMultiplier = computeTemporalMultiplier(name, onset)
+
+        const score = Math.max(0, baseScore * demographicMultiplier * temporalMultiplier - penalty)
 
         return {
           name,
@@ -612,7 +645,9 @@ export async function computeAdaptiveContext(sceResult, excludedSymptoms = new S
           ages: r.get('ages').filter(a => a.age && a.prob).sort((a, b) => b.prob - a.prob).slice(0, 2),
           sexes: r.get('sexes').filter(s => s.sex && s.prob)
         }
-      }).sort((a, b) => b.score - a.score)
+      })
+        .sort((a, b) => b.score - a.score)  // Re-sort sau khi áp dụng tất cả hệ số
+        .slice(0, 8)                         // Chỉ giữ top 8 sau ranking thực sự
     }
 
     let bestNextSymptoms = []
@@ -620,6 +655,8 @@ export async function computeAdaptiveContext(sceResult, excludedSymptoms = new S
 
     if (rankedDiseases.length >= 2) {
       const topDiseaseNames = rankedDiseases.slice(0, 4).map(d => d.name)
+      // Khi chỉ còn 2 bệnh cạnh tranh, bỏ lọc disease_count>=2 để bắt cả triệu chứng pathognomonic
+      const minDiseaseCount = rankedDiseases.length <= 2 ? 1 : 2
       const discRes = await session.run(`
         MATCH (d:Disease)-[r:HAS_SYMPTOM]->(s:Symptom)
         WHERE d.name IN $topDiseases
@@ -629,11 +666,11 @@ export async function computeAdaptiveContext(sceResult, excludedSymptoms = new S
              count(DISTINCT d) AS disease_count,
              stdev(r.probability) AS prob_stdev,
              avg(r.probability) AS prob_avg
-        WHERE disease_count >= 2
+        WHERE disease_count >= $minDiseaseCount
         RETURN symptom, sym_id, description, disease_probs, disease_count, prob_stdev, prob_avg
         ORDER BY prob_stdev DESC, prob_avg DESC
-        LIMIT 3
-      `, { topDiseases: topDiseaseNames, known: knownSymptoms })
+        LIMIT 5
+      `, { topDiseases: topDiseaseNames, known: knownSymptoms, minDiseaseCount })
 
       bestNextSymptoms = discRes.records.map(rec => ({
         name: rec.get('symptom'),
