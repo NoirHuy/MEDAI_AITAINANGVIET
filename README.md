@@ -1,4 +1,12 @@
-
+---
+title: MedAI - Trợ lý Y khoa Thông minh
+emoji: 🩺
+colorFrom: blue
+colorTo: indigo
+sdk: docker
+app_port: 7860
+pinned: false
+---
 
 # MedAI
 
