@@ -2,8 +2,9 @@ import { PulseIcon } from './Icons'
 import TypingDots from './TypingDots'
 import './MessageBubble.css'
 
-export default function MessageBubble({ role, content, streaming }) {
+export default function MessageBubble({ role, content, streaming, lang = 'vi' }) {
   const isUser = role === 'user'
+  const isEn = lang === 'en'
 
   return (
     <div className={`message-row ${isUser ? 'message-row--user' : 'message-row--assistant'}`}>
@@ -21,7 +22,10 @@ export default function MessageBubble({ role, content, streaming }) {
         </div>
         {!isUser && content && !streaming && (
           <p className="message-disclaimer">
-            AI có thể mắc sai sót. Hãy tham khảo bác sĩ khi cần thiết.
+            {isEn
+              ? "AI may make mistakes. Please consult a doctor if necessary."
+              : "AI có thể mắc sai sót. Hãy tham khảo bác sĩ khi cần thiết."
+            }
           </p>
         )}
       </div>

@@ -66,7 +66,7 @@ export default function ChatView({
         {hasMessages ? (
           <div className="chat-messages">
             {messages.map((m) => (
-              <MessageBubble key={m.id} role={m.role} content={m.content} streaming={m.streaming} />
+              <MessageBubble key={m.id} role={m.role} content={m.content} streaming={m.streaming} lang={lang} />
             ))}
           </div>
         ) : (
