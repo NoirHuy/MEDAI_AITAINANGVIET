@@ -1,10 +1,32 @@
+import { useState } from 'react'
 import { PulseIcon } from './Icons'
 import TypingDots from './TypingDots'
 import './MessageBubble.css'
 
-export default function MessageBubble({ role, content, streaming, lang = 'vi' }) {
+export default function MessageBubble({ role, content, streaming, lang = 'vi', onSend, isLast }) {
   const isUser = role === 'user'
   const isEn = lang === 'en'
+
+  // Kiểm tra và trích xuất danh sách hộp kiểm triệu chứng
+  const checklistMatch = !isUser && content ? content.match(/\[SymptomChecklist:\s*(.*?)\]/) : null
+  const hasChecklist = !!checklistMatch
+
+  const [checkedIds, setCheckedIds] = useState([])
+  const [submitted, setSubmitted] = useState(false)
+
+  let cleanContent = content
+  let checklistItems = []
+
+  if (hasChecklist) {
+    cleanContent = content.replace(/\[SymptomChecklist:\s*(.*?)\]/g, '').trim()
+    checklistItems = checklistMatch[1].split(',').map(item => {
+      const parts = item.split('=')
+      return {
+        id: parts[0]?.trim(),
+        name: parts[1]?.trim() || parts[0]?.trim()
+      }
+    }).filter(item => item.id)
+  }
 
   return (
     <div className={`message-row ${isUser ? 'message-row--user' : 'message-row--assistant'}`}>
@@ -17,8 +39,56 @@ export default function MessageBubble({ role, content, streaming, lang = 'vi' })
         <div
           className={`message-bubble ${isUser ? 'message-bubble--user' : 'message-bubble--assistant'}`}
         >
-          {content ? renderMessageContent(content) : streaming ? <TypingDots /> : null}
+          {cleanContent ? renderMessageContent(cleanContent) : streaming ? <TypingDots /> : null}
           {streaming && content && <span className="message-cursor" />}
+
+          {hasChecklist && !streaming && (
+            <div className="symptom-checklist-box">
+              <p className="symptom-checklist-title">
+                {isEn ? "Please check all symptoms you have:" : "Vui lòng chọn các triệu chứng bạn đang gặp phải:"}
+              </p>
+              <div className="symptom-checklist-grid">
+                {checklistItems.map(item => (
+                  <label key={item.id} className="symptom-checkbox-label">
+                    <input
+                      type="checkbox"
+                      disabled={!isLast || submitted}
+                      checked={checkedIds.includes(item.id)}
+                      onChange={(e) => {
+                        if (e.target.checked) {
+                          setCheckedIds([...checkedIds, item.id])
+                        } else {
+                          setCheckedIds(checkedIds.filter(id => id !== item.id))
+                        }
+                      }}
+                    />
+                    <span className="checkbox-custom-label">{item.name}</span>
+                  </label>
+                ))}
+              </div>
+              {isLast && !submitted && (
+                <button
+                  type="button"
+                  className="symptom-checklist-submit-btn"
+                  onClick={() => {
+                    setSubmitted(true)
+                    const present = checklistItems.filter(item => checkedIds.includes(item.id)).map(item => item.name)
+                    const absent = checklistItems.filter(item => !checkedIds.includes(item.id)).map(item => item.name)
+                    
+                    let text = ""
+                    if (isEn) {
+                      text = `I have the following symptoms: ${present.join(', ') || 'none'}. I do not have: ${absent.join(', ') || 'none'}.`
+                    } else {
+                      text = `Tôi có các triệu chứng: ${present.join(', ') || 'không có'}. Tôi không bị: ${absent.join(', ') || 'không có'}.`
+                    }
+                    onSend?.(text)
+                  }}
+                >
+                  {isEn ? "Confirm & Send" : "Xác nhận và Gửi"}
+                </button>
+              )}
+            </div>
+          )}
         </div>
         {!isUser && content && !streaming && (
           <p className="message-disclaimer">

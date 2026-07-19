@@ -61,8 +61,16 @@ export default function ChatView({
       <div className="chat-body" ref={scrollRef}>
         {hasMessages ? (
           <div className="chat-messages">
-            {messages.map((m) => (
-              <MessageBubble key={m.id} role={m.role} content={m.content} streaming={m.streaming} lang={lang} />
+            {messages.map((m, idx) => (
+              <MessageBubble
+                key={m.id}
+                role={m.role}
+                content={m.content}
+                streaming={m.streaming}
+                lang={lang}
+                onSend={onSend}
+                isLast={idx === messages.length - 1}
+              />
             ))}
           </div>
         ) : (

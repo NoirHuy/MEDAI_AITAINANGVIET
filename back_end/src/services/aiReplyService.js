@@ -146,6 +146,8 @@ Once all details are known, export a SCREENING REPORT matching this exact format
 For **each disease**, you MUST present the title exactly in this format for the system to render percentage circles:
 '1. [Disease Name]: [Number]% probability' (Example: '1. Appendicitis: 60% probability')
 
+**Strict Neo4j Data Source Rule**: You MUST ONLY list the conditions that are present in the Ranked Diseases list in the CURRENT STATE section below. DO NOT invent, infer, or add any other diseases outside this graph. Do NOT write phrases like 'not in the graph but inferred'. Only explain and evidence the diseases already provided in the graph.
+
 Under each disease, list the following as bullet points:
 - **Evidence:** Explain naturally and simply how the patient's symptoms match medical epidemiological data (do not say "knowledge graph" or "Neo4j" to the patient, explain naturally like a real doctor).
 - **Differential reasoning:** Explain why this condition matches better or worse than others based on symptoms.
@@ -205,6 +207,8 @@ Khi đã đủ thông tin, xuất BÁO CÁO SÀNG LỌC theo đúng cấu trúc 
 #### 🩺 Bệnh lý nghi ngờ (theo thứ tự xác suất từ đồ thị):
 Với **mỗi bệnh**, bạn bắt buộc phải trình bày tiêu đề bệnh theo đúng định dạng sau để hệ thống hiển thị vòng tròn phần trăm (không thêm dấu sao in đậm ở tiêu đề này):
 '1. [Tên bệnh]: [Số]% xác suất' (Ví dụ: '1. Mãn kinh (đối với phụ nữ): 60% xác suất')
+
+**Quy tắc nguồn dữ liệu 100% từ Neo4j**: Bạn BẮT BUỘC chỉ được liệt kê các bệnh lý có trong danh sách được cung cấp từ đồ thị Neo4j ở mục TRẠNG THÁI HIỆN TẠI dưới đây. TUYỆT ĐỐI KHÔNG tự bịa ra, suy diễn, hoặc bổ sung thêm bất kỳ bệnh lý nào khác nằm ngoài đồ thị. Không viết các câu kiểu 'không có trong đồ thị nhưng được suy luận', bạn chỉ được giải thích và dẫn chứng cho các bệnh có sẵn trong đồ thị.
 
 Dưới mỗi bệnh, liệt kê các thông tin sau dạng gạch đầu dòng (sử dụng dấu '-' ở đầu dòng) và bắt buộc phải in đậm nhãn bắt đầu bằng cặp dấu sao:
 - **Dẫn chứng:** Trình bày tự nhiên và dễ hiểu về các triệu chứng của bệnh nhân khớp với dữ liệu dịch tễ y khoa (không dùng từ "đồ thị tri thức" hay "Neo4j", hãy tư vấn tự nhiên như một bác sĩ thực thụ). Ví dụ: *"Biểu hiện bốc hỏa và đổ mồ hôi đêm của bạn rất đặc trưng cho giai đoạn này."*
@@ -306,14 +310,18 @@ export async function generateReply({ messages, specialtyId, lang = 'vi', onChun
     const userMessages = messages.filter((m) => m.role === 'user')
     const turnCount = userMessages.length
 
-    if (turnCount >= 4) {
+    if (turnCount >= 5) {
       systemPrompt += isEn 
-        ? `\n\n⚠️ **CRITICAL SYSTEM ENFORCEMENT**: You MUST immediately transition to PHASE 2 (Concluding with Evidence) now. DO NOT ask any further questions. Output the SCREENING REPORT using the information collected so far, even if some checklist items are incomplete.`
-        : `\n\n⚠️ **CHỈ THỊ HỆ THỐNG BẮT BUỘC**: Bạn BẮT BUỘC phải chuyển sang GIAI ĐOẠN 2 (Kết luận có dẫn chứng) ngay lập tức. TUYỆT ĐỐI KHÔNG ĐƯỢC hỏi thêm bất kỳ câu hỏi nào. Hãy xuất BÁO CÁO SÀNG LỌC dựa trên thông tin đã có, chấp nhận việc thiếu một số ô khảo sát.`
+        ? `\n\n⚠️ **CRITICAL SYSTEM ENFORCEMENT**: This is turn ${turnCount}. You MUST immediately transition to PHASE 2 (Concluding with Evidence) now. DO NOT ask any further questions or show any checkboxes. Output the SCREENING REPORT using the information collected so far, even if some checklist items are incomplete. You MUST strictly follow the rule to ONLY list diseases present in the Neo4j graph context.`
+        : `\n\n⚠️ **CHỈ THỊ HỆ THỐNG BẮT BUỘC**: Đây là lượt phản hồi thứ ${turnCount}. Bạn BẮT BUỘC phải chuyển sang GIAI ĐOẠN 2 (Kết luận có dẫn chứng) ngay lập tức. TUYỆT ĐỐI KHÔNG ĐƯỢC hỏi thêm bất kỳ câu hỏi nào hay hiển thị thêm hộp kiểm. Hãy xuất BÁO CÁO SÀNG LỌC dựa trên thông tin đã có. Bạn BẮT BUỘC chỉ được liệt kê các bệnh lý có trong danh sách được cung cấp từ đồ thị Neo4j ở phần TRẠNG THÁI HIỆN TẠI dưới đây.`
+    } else if (turnCount === 4) {
+      systemPrompt += isEn
+        ? `\n\n⚠️ **CRITICAL SYSTEM ENFORCEMENT**: This is turn 4/4. You MUST show a symptom checklist for the patient. Choose the top 3-5 optimal differential symptoms suggested in the CURRENT STATE section below, and append the following tag EXACTLY at the end of your response: \`[SymptomChecklist: slug1=Translated Name 1, slug2=Translated Name 2, ...]\` (e.g. \`[SymptomChecklist: fever=Fever, diarrhea=Diarrhea]\`). Ask the user to select the symptoms they are experiencing.`
+        : `\n\n⚠️ **CHỈ THỊ HỆ THỐNG BẮT BUỘC**: Đây là lượt hỏi thứ 4/4. Bạn BẮT BUỘC phải hiển thị một hộp kiểm khảo sát các triệu chứng cho người bệnh. Hãy chọn ra 3-5 triệu chứng phân biệt tối ưu nhất từ danh sách "Triệu chứng phân biệt tối ưu" ở phần TRẠNG THÁI HIỆN TẠI dưới đây, và chèn thẻ sau vào CUỐI CÙNG câu trả lời của bạn theo ĐÚNG ĐỊNH DẠNG: \`[SymptomChecklist: slug1=Tên tiếng Việt 1, slug2=Tên tiếng Việt 2, ...]\` (Ví dụ: \`[SymptomChecklist: fever=Sốt, diarrhea=Tiêu chảy]\`). Yêu cầu bệnh nhân tích chọn các triệu chứng họ đang có.`
     } else {
       systemPrompt += isEn
-        ? `\n\n💡 *System info: This is turn ${turnCount}/3. If clinical information is missing, you may continue asking 1-2 short clarifying questions in Phase 1.*`
-        : `\n\n💡 *Thông tin hệ thống: Đây là lượt hỏi thứ ${turnCount}/3. Bạn chỉ được phép hỏi tối đa 1 đến 2 câu hỏi ngắn gọn theo đúng quy trình Giai đoạn 1.*`
+        ? `\n\n💡 *System info: This is turn ${turnCount}/4. If clinical information is missing, you may continue asking 1-2 short clarifying questions in Phase 1.*`
+        : `\n\n💡 *Thông tin hệ thống: Đây là lượt hỏi thứ ${turnCount}/4. Bạn chỉ được phép hỏi tối đa 1 đến 2 câu hỏi ngắn gọn theo đúng quy trình Giai đoạn 1.*`
     }
 
     const chatMessages = [
