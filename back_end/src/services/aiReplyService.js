@@ -308,12 +308,12 @@ export async function generateReply({ messages, specialtyId, lang = 'vi', onChun
 
     if (turnCount >= 4) {
       systemPrompt += isEn 
-        ? `\n\n⚠️ **MANDATORY INSTRUCTION**: This is turn ${turnCount}. The user has answered the maximum allowed questions. You MUST NOT ask any more questions. Proceed immediately to PHASE 2 (Concluding with Evidence) to export the screening report based on the collected info.`
-        : `\n\n⚠️ **CHỈ THỊ BẮT BUỘC**: Đây là lượt phản hồi thứ ${turnCount}. Người dùng đã trả lời đủ số câu hỏi giới hạn. Bạn TUYỆT ĐỐI KHÔNG ĐƯỢC hỏi thêm bất kỳ câu hỏi nào nữa. Hãy chuyển ngay sang GIAI ĐOẠN 2 (Kết luận có dẫn chứng) để xuất Báo cáo chẩn đoán sàng lọc dựa trên những thông tin đã thu thập được từ trước.`
+        ? `\n\n⚠️ **CRITICAL SYSTEM ENFORCEMENT**: You MUST immediately transition to PHASE 2 (Concluding with Evidence) now. DO NOT ask any further questions. Output the SCREENING REPORT using the information collected so far, even if some checklist items are incomplete.`
+        : `\n\n⚠️ **CHỈ THỊ HỆ THỐNG BẮT BUỘC**: Bạn BẮT BUỘC phải chuyển sang GIAI ĐOẠN 2 (Kết luận có dẫn chứng) ngay lập tức. TUYỆT ĐỐI KHÔNG ĐƯỢC hỏi thêm bất kỳ câu hỏi nào. Hãy xuất BÁO CÁO SÀNG LỌC dựa trên thông tin đã có, chấp nhận việc thiếu một số ô khảo sát.`
     } else {
       systemPrompt += isEn
-        ? `\n\n💡 *System info: This is turn ${turnCount}/3. If clinical information is missing, you may continue asking 2-3 short clarifying questions in Phase 1.*`
-        : `\n\n💡 *Thông tin hệ thống: Đây là lượt hỏi thứ ${turnCount}/3. Nếu thông tin y tế còn thiếu, bạn có thể tiếp tục đặt 2-3 câu hỏi làm rõ ngắn gọn theo quy trình Giai đoạn 1.*`
+        ? `\n\n💡 *System info: This is turn ${turnCount}/3. If clinical information is missing, you may continue asking 1-2 short clarifying questions in Phase 1.*`
+        : `\n\n💡 *Thông tin hệ thống: Đây là lượt hỏi thứ ${turnCount}/3. Bạn chỉ được phép hỏi tối đa 1 đến 2 câu hỏi ngắn gọn theo đúng quy trình Giai đoạn 1.*`
     }
 
     const chatMessages = [
