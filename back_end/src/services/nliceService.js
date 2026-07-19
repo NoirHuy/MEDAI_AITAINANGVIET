@@ -284,7 +284,7 @@ Kết quả JSON:`
       }
     } catch (err) {
       console.error(`[Audit Log][UMLS_SEARCH][Error] UMLS search failed for "${sym.term}":`, err.message)
-      throw err
+      // Tiếp tục vòng lặp, bỏ qua triệu chứng lỗi để tránh làm sập toàn bộ request
     }
 
     // Kiểm tra ngưỡng tự tin trích xuất của mô hình (Confidence Score)
@@ -396,7 +396,7 @@ Chỉ trả về danh sách các slug khớp chính xác nhất từ danh sách 
       }
     } catch (err) {
       console.error(`[Audit Log][LLM_TRANSLATION][Error] Fallback LLM mapping failed:`, err.message)
-      throw err
+      // Không ném lỗi để giữ tính bền vững cho hệ thống chẩn đoán
     }
   }
 

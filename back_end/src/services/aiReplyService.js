@@ -281,7 +281,8 @@ export async function generateReply({ messages, specialtyId, lang = 'vi', onChun
       adaptiveCtx = await computeAdaptiveContext(sceResult)
     } catch (err) {
       console.error('[Adaptive GraphRAG] Lỗi:', err.message)
-      throw err
+      // Không ném lỗi ra ngoài để tránh làm sập luồng hội thoại
+      // Hệ thống sẽ tự động hạ cấp xuống dùng prompt không có ngữ cảnh đồ thị thích ứng
     }
 
     // 3. Tạo system prompt tĩnh (cấu trúc quy trình)
