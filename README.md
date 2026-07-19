@@ -1,3 +1,21 @@
+---
+title: MedChat AI
+emoji: 🩺
+colorFrom: blue
+colorTo: indigo
+sdk: docker
+app_port: 4000
+tags:
+  - health
+  - medical
+  - knowledge-graph
+  - neo4j
+  - bayesian
+  - differential-diagnosis
+  - vietnamese
+license: mit
+short_description: Hệ thống trợ lý chẩn đoán phân biệt tích hợp Knowledge Graph
+---
 
 
 # MedAI
