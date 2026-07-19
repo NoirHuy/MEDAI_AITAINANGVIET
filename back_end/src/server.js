@@ -38,6 +38,17 @@ if (process.env.NODE_ENV === 'production') {
   })
 }
 
+app.get('/api/error-log', (req, res) => {
+  res.json({
+    ok: true,
+    env: {
+      NODE_ENV: process.env.NODE_ENV,
+      PORT: process.env.PORT,
+    },
+    errors: global.serverErrors || []
+  })
+})
+
 app.use(notFoundHandler)
 app.use(errorHandler)
 
