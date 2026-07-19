@@ -240,19 +240,63 @@
   margin: 4px 0 0;
 }
 
-/* ─── Symptom Checkbox Panel ────────────────────────────────── */
+/* ─── Symptom Panel (redesigned) ───────────────────────────── */
+@keyframes symptomPanelIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes chipCheck {
+  0%   { transform: scale(0.5); opacity: 0; }
+  60%  { transform: scale(1.15); }
+  100% { transform: scale(1); opacity: 1; }
+}
+
 .symptom-panel {
-  margin-top: 14px;
-  background: var(--bg-surface-hover);
-  border: 1px solid var(--border-light);
+  margin-top: 16px;
+  background: var(--bg-surface);
+  border: 1px solid var(--border-subtle);
   border-radius: var(--radius-md);
-  padding: 14px;
-  max-width: 600px;
+  padding: 16px;
+  max-width: 560px;
   display: flex;
   flex-direction: column;
-  gap: 12px;
-  animation: fadeIn 0.3s ease;
-  box-shadow: var(--shadow-sm);
+  gap: 14px;
+  animation: symptomPanelIn 0.35s cubic-bezier(0.22, 1, 0.36, 1);
+  box-shadow: var(--shadow-md);
+  position: relative;
+  overflow: hidden;
+}
+
+/* Top accent bar */
+.symptom-panel::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 3px;
+  background: linear-gradient(90deg, var(--bg-accent), #4da3ff);
+  border-radius: var(--radius-md) var(--radius-md) 0 0;
+}
+
+/* ── Header row ─── */
+.symptom-panel__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding-top: 4px;
+}
+
+.symptom-panel__title-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex: 1;
+}
+
+.symptom-panel__icon {
+  font-size: 16px;
+  flex-shrink: 0;
 }
 
 .symptom-panel__title {
@@ -260,79 +304,231 @@
   font-weight: 600;
   color: var(--text-primary);
   margin: 0;
+  line-height: 1.4;
 }
 
-.symptom-panel__grid {
+.symptom-count-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 22px;
+  height: 22px;
+  padding: 0 7px;
+  border-radius: 99px;
+  background: var(--bg-accent);
+  color: #fff;
+  font-size: 11.5px;
+  font-weight: 700;
+  flex-shrink: 0;
+  animation: chipCheck 0.25s ease;
+  line-height: 1;
+}
+
+:root[data-theme='dark'] .symptom-count-badge {
+  color: var(--text-on-accent);
+}
+
+/* ── Quick actions ─── */
+.symptom-quick-actions {
   display: flex;
-  flex-direction: column;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.symptom-quick-btn {
+  padding: 4px 12px;
+  border-radius: 99px;
+  border: 1px solid var(--border-subtle);
+  background: transparent;
+  color: var(--text-secondary);
+  font-size: 12px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.18s ease;
+  line-height: 1.5;
+}
+
+.symptom-quick-btn:hover {
+  background: var(--bg-surface-hover);
+  border-color: var(--border-strong);
+  color: var(--text-primary);
+}
+
+.symptom-quick-btn--danger {
+  color: var(--danger);
+  border-color: color-mix(in srgb, var(--danger) 35%, transparent);
+}
+
+.symptom-quick-btn--danger:hover {
+  background: var(--danger-bg);
+  border-color: var(--danger);
+}
+
+/* ── Chip Grid ─── */
+.symptom-chip-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
   gap: 8px;
 }
 
-.symptom-checkbox-row {
+@media (max-width: 480px) {
+  .symptom-chip-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.symptom-chip {
   display: flex;
   align-items: center;
-  gap: 10px;
-  padding: 8px 12px;
+  gap: 9px;
+  padding: 9px 13px;
   border-radius: var(--radius-sm);
-  background: var(--bg-surface);
-  border: 1px solid var(--border-light);
-  cursor: pointer;
-  transition: all 0.2s ease;
-  user-select: none;
-}
-
-.symptom-checkbox-row:hover {
+  border: 1.5px solid var(--border-subtle);
   background: var(--bg-app);
-  border-color: var(--text-muted);
-}
-
-.symptom-checkbox-row--selected {
-  background: var(--bg-accent-soft);
-  border-color: var(--bg-accent);
-}
-
-.symptom-checkbox-row input {
   cursor: pointer;
-  width: 16px;
-  height: 16px;
-  accent-color: var(--bg-accent);
+  text-align: left;
+  font-family: inherit;
+  transition: border-color 0.18s ease, background 0.18s ease, box-shadow 0.18s ease;
+  user-select: none;
+  width: 100%;
 }
 
-.symptom-checkbox-label {
-  font-size: 13.5px;
-  color: var(--text-secondary);
+.symptom-chip:hover {
+  border-color: var(--border-strong);
+  background: var(--bg-surface-hover);
+  box-shadow: var(--shadow-sm);
+}
+
+.symptom-chip--selected {
+  border-color: var(--bg-accent);
+  background: var(--bg-accent-soft);
+  box-shadow: 0 0 0 1px color-mix(in srgb, var(--bg-accent) 25%, transparent);
+}
+
+.symptom-chip__check {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  border: 1.5px solid var(--border-strong);
+  background: var(--bg-surface);
+  color: transparent;
+  transition: all 0.18s ease;
+}
+
+.symptom-chip--selected .symptom-chip__check {
+  background: var(--bg-accent);
+  border-color: var(--bg-accent);
+  color: #fff;
+  animation: chipCheck 0.22s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+:root[data-theme='dark'] .symptom-chip--selected .symptom-chip__check {
+  color: var(--text-on-accent);
+}
+
+.symptom-chip__circle {
+  display: block;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--border-strong);
+  transition: background 0.15s;
+}
+
+.symptom-chip__label {
+  font-size: 13px;
   font-weight: 500;
-  flex: 1;
+  color: var(--text-secondary);
+  line-height: 1.4;
+  transition: color 0.18s;
 }
 
-.symptom-checkbox-row--selected .symptom-checkbox-label {
+.symptom-chip--selected .symptom-chip__label {
   color: var(--text-primary);
   font-weight: 600;
 }
 
+/* ── Footer ─── */
+.symptom-panel__footer {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+  padding-top: 2px;
+  border-top: 1px solid var(--border-subtle);
+}
+
+.symptom-none-btn {
+  padding: 7px 14px;
+  border-radius: 99px;
+  border: 1.5px solid var(--border-subtle);
+  background: transparent;
+  color: var(--text-muted);
+  font-size: 12.5px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.18s ease;
+  white-space: nowrap;
+}
+
+.symptom-none-btn:hover {
+  border-color: var(--danger);
+  color: var(--danger);
+  background: var(--danger-bg);
+}
+
 .symptom-submit-btn {
+  flex: 1;
+  min-width: 160px;
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  padding: 8px 16px;
-  border-radius: var(--radius-pill);
+  padding: 9px 20px;
+  border-radius: 99px;
   border: none;
-  background: var(--bg-accent);
+  background: linear-gradient(135deg, var(--bg-accent) 0%, #4da3ff 100%);
   color: #fff;
   font-size: 13.5px;
   font-weight: 600;
   cursor: pointer;
-  transition: all 0.2s ease;
-  align-self: flex-start;
-  box-shadow: var(--shadow-sm);
+  transition: all 0.22s ease;
+  box-shadow: 0 2px 8px color-mix(in srgb, var(--bg-accent) 35%, transparent);
+  letter-spacing: 0.01em;
 }
 
-.symptom-submit-btn:hover {
-  background: var(--bg-accent-dark, #0266cc);
+.symptom-submit-btn:hover:not(.symptom-submit-btn--disabled) {
   transform: translateY(-1px);
-  box-shadow: var(--shadow-md);
+  box-shadow: 0 4px 14px color-mix(in srgb, var(--bg-accent) 45%, transparent);
 }
 
-.symptom-submit-btn:active {
+.symptom-submit-btn:active:not(.symptom-submit-btn--disabled) {
   transform: translateY(0);
+}
+
+.symptom-submit-btn--disabled {
+  background: var(--bg-surface-hover);
+  color: var(--text-muted);
+  cursor: not-allowed;
+  box-shadow: none;
+}
+
+:root[data-theme='dark'] .symptom-submit-btn:not(.symptom-submit-btn--disabled) {
+  color: var(--text-on-accent);
+}
+
+/* ── Submitted state ─── */
+.symptom-panel--submitted {
+  padding: 12px 16px;
+}
+
+.symptom-panel__done {
+  margin: 0;
+  font-size: 13.5px;
+  font-weight: 600;
+  color: #34a853;
+  padding-top: 4px;
 }

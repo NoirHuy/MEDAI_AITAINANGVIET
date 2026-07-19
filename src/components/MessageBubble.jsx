@@ -3,32 +3,104 @@ import { PulseIcon } from './Icons'
 import TypingDots from './TypingDots'
 import './MessageBubble.css'
 
+// ─── SYMPTOM TRANSLATIONS (VI) ────────────────────────────────────────────────
 const SYMPTOM_TRANSLATIONS = {
+  // General
   'fever': 'Sốt',
-  'nausea and vomiting': 'Buồn nôn hoặc nôn',
+  'chills': 'Ớn lạnh / Rét run',
+  'fatigue': 'Mệt mỏi',
+  'weakness': 'Suy nhược cơ thể',
+  'weight loss': 'Sút cân',
+  'weight gain': 'Tăng cân',
+  'night sweats': 'Đổ mồ hôi đêm',
+  'loss of appetite': 'Chán ăn',
+  'malaise': 'Khó chịu toàn thân',
+  // Head & Neuro
+  'headache': 'Đau đầu',
+  'dizziness': 'Chóng mặt',
+  'vertigo': 'Hoa mắt / Chóng mặt quay',
+  'confusion': 'Lú lẫn / Mơ hồ',
+  'seizures': 'Co giật',
+  'fainting': 'Ngất xỉu',
+  'neck stiffness': 'Cứng cổ / Cứng gáy',
+  'photophobia': 'Sợ ánh sáng',
+  'memory loss': 'Mất trí nhớ',
+  'numbness': 'Tê bì',
+  'tingling': 'Cảm giác châm chích',
+  // ENT
+  'ear pain': 'Đau tai',
+  'hearing loss': 'Giảm thính lực',
+  'ringing in ears': 'Ù tai',
+  'nasal congestion': 'Nghẹt mũi',
+  'runny nose': 'Chảy nước mũi',
+  'sore throat': 'Đau họng',
+  'hoarseness': 'Khàn giọng',
+  'difficulty swallowing': 'Khó nuốt',
+  // Respiratory
+  'cough': 'Ho',
+  'dry cough': 'Ho khan',
+  'productive cough': 'Ho có đờm',
+  'shortness of breath': 'Khó thở',
+  'wheezing': 'Thở khò khè',
+  'chest pain': 'Đau ngực',
+  'chest tightness': 'Tức ngực',
+  'hemoptysis': 'Ho ra máu',
+  // Cardiovascular
+  'palpitations': 'Hồi hộp / Tim đập nhanh',
+  'rapid heartbeat': 'Nhịp tim nhanh',
+  'swelling': 'Phù nề',
+  'leg swelling': 'Phù chân',
+  // GI
   'nausea': 'Buồn nôn',
   'vomiting': 'Nôn mửa',
-  'neck stiffness': 'Cứng cổ / Cứng gáy',
-  'headache': 'Đau đầu',
-  'cough': 'Ho',
-  'fatigue': 'Mệt mỏi',
-  'sore throat': 'Đau họng',
-  'runny nose': 'Chảy nước mũi',
-  'shortness of breath': 'Khó thở',
-  'chest pain': 'Đau ngực',
+  'nausea and vomiting': 'Buồn nôn hoặc nôn',
   'abdominal pain': 'Đau bụng',
+  'stomach pain': 'Đau dạ dày',
+  'bloating': 'Đầy hơi / Chướng bụng',
   'diarrhea': 'Tiêu chảy',
-  'skin rash': 'Phát ban ngoài da',
-  'rash': 'Phát ban',
+  'constipation': 'Táo bón',
+  'bloody stool': 'Đi ngoài ra máu',
+  'heartburn': 'Ợ nóng / Trào ngược',
+  'acid reflux': 'Trào ngược axit',
+  'loss of bowel control': 'Không kiểm soát đại tiện',
+  // Urinary
+  'frequent urination': 'Tiểu thường xuyên',
+  'painful urination': 'Tiểu buốt / Tiểu khó',
+  'blood in urine': 'Tiểu ra máu',
+  'urinary retention': 'Bí tiểu',
+  // MSK
   'joint pain': 'Đau khớp',
   'muscle pain': 'Đau cơ',
   'muscle aches': 'Đau mỏi cơ',
-  'photophobia': 'Sợ ánh sáng',
-  'confusion': 'Lú lẫn / mơ hồ',
-  'seizures': 'Co giật',
-  'ear pain': 'Đau tai',
-  'nasal congestion': 'Nghẹt mũi',
-  'loss of appetite': 'Chán ăn',
+  'back pain': 'Đau lưng',
+  'lower back pain': 'Đau lưng dưới',
+  'neck pain': 'Đau cổ',
+  'stiffness': 'Cứng khớp',
+  // Skin
+  'skin rash': 'Phát ban ngoài da',
+  'rash': 'Phát ban',
+  'itching': 'Ngứa',
+  'jaundice': 'Vàng da',
+  'bruising': 'Bầm tím',
+  'hives': 'Nổi mề đay',
+  // Specific
+  'knee lump or mass': 'U / Cục ở đầu gối',
+  'knee pain': 'Đau đầu gối',
+  'pain during pregnancy': 'Đau trong thai kỳ',
+  'vaginal discharge': 'Khí hư bất thường',
+  'irregular periods': 'Rối loạn kinh nguyệt',
+  'hot flashes': 'Bốc hỏa',
+  'erectile dysfunction': 'Rối loạn cương dương',
+  'swollen lymph nodes': 'Nổi hạch',
+  'eye pain': 'Đau mắt',
+  'blurred vision': 'Mờ mắt',
+  'red eyes': 'Mắt đỏ',
+  'excessive thirst': 'Khát nước nhiều',
+  'excessive hunger': 'Đói nhiều bất thường',
+  'increased urination': 'Đi tiểu nhiều',
+  'tremor': 'Run tay / Run cơ',
+  'difficulty walking': 'Khó đi lại',
+  'balance problems': 'Mất thăng bằng',
 }
 
 function getSymptomLabel(name, lang) {
@@ -38,43 +110,32 @@ function getSymptomLabel(name, lang) {
   for (const [key, val] of Object.entries(SYMPTOM_TRANSLATIONS)) {
     if (lower.includes(key) || key.includes(lower)) return val
   }
-  return name
+  // Fallback: capitalize and return as-is if no translation found
+  return name.charAt(0).toUpperCase() + name.slice(1)
 }
 
-export default function MessageBubble({ role, content, streaming, lang = 'vi', isLastAssistant, onSend }) {
-  const isUser = role === 'user'
+// ─── SYMPTOM PANEL COMPONENT ─────────────────────────────────────────────────
+function SymptomPanel({ symptoms, lang, onSend }) {
   const isEn = lang === 'en'
-  const [checkedSymptomIds, setCheckedSymptomIds] = useState([])
-
-  let visibleContent = content
-  let metadata = null
-  const metaIndex = content ? content.indexOf('\n[METADATA]:') : -1
-  if (metaIndex !== -1) {
-    visibleContent = content.substring(0, metaIndex)
-    const metadataStr = content.substring(metaIndex + '\n[METADATA]:'.length)
-    if (!streaming && metadataStr.trim()) {
-      try {
-        metadata = JSON.parse(metadataStr)
-      } catch (e) {
-        console.error(e)
-      }
-    }
-  }
+  const [checkedIds, setCheckedIds] = useState([])
+  const [submitted, setSubmitted] = useState(false)
 
   const toggleSymptom = (id) => {
-    setCheckedSymptomIds(prev =>
+    setCheckedIds(prev =>
       prev.includes(id) ? prev.filter(x => x !== id) : [...prev, id]
     )
   }
 
+  const selectAll = () => setCheckedIds(symptoms.map(s => s.id))
+  const clearAll = () => setCheckedIds([])
+
   const handleSubmit = () => {
-    if (!metadata || !metadata.symptoms) return
     const confirmedNames = []
     const excludedNames = []
 
-    metadata.symptoms.forEach(sym => {
+    symptoms.forEach(sym => {
       const label = getSymptomLabel(sym.name, lang)
-      if (checkedSymptomIds.includes(sym.id)) {
+      if (checkedIds.includes(sym.id)) {
         confirmedNames.push(label)
       } else {
         excludedNames.push(label)
@@ -90,7 +151,7 @@ export default function MessageBubble({ role, content, streaming, lang = 'vi', i
         responseText += ` I do not have: ${excludedNames.join(', ')}.`
       }
       if (confirmedNames.length === 0 && excludedNames.length === 0) {
-        responseText = `I do not have any of the symptoms mentioned above.`
+        responseText = 'I do not have any of the symptoms mentioned above.'
       }
     } else {
       if (confirmedNames.length > 0) {
@@ -100,10 +161,144 @@ export default function MessageBubble({ role, content, streaming, lang = 'vi', i
         responseText += ` Tôi không bị: ${excludedNames.join(', ')}.`
       }
       if (confirmedNames.length === 0 && excludedNames.length === 0) {
-        responseText = `Tôi không có bất kỳ triệu chứng nào nêu trên.`
+        responseText = 'Tôi không có bất kỳ triệu chứng nào nêu trên.'
       }
     }
+    setSubmitted(true)
     onSend?.(responseText)
+  }
+
+  const handleNone = () => {
+    const text = isEn
+      ? 'I do not have any of the symptoms mentioned above.'
+      : 'Tôi không có bất kỳ triệu chứng nào nêu trên.'
+    setSubmitted(true)
+    onSend?.(text)
+  }
+
+  if (submitted) {
+    return (
+      <div className="symptom-panel symptom-panel--submitted">
+        <p className="symptom-panel__done">
+          {isEn ? '✓ Response submitted' : '✓ Đã gửi phản hồi'}
+        </p>
+      </div>
+    )
+  }
+
+  const selectedCount = checkedIds.length
+  const allSelected = selectedCount === symptoms.length
+
+  return (
+    <div className="symptom-panel">
+      {/* Header */}
+      <div className="symptom-panel__header">
+        <div className="symptom-panel__title-row">
+          <span className="symptom-panel__icon">🩺</span>
+          <p className="symptom-panel__title">
+            {isEn ? 'Select symptoms you are experiencing:' : 'Chọn triệu chứng bạn đang gặp phải:'}
+          </p>
+        </div>
+        {selectedCount > 0 && (
+          <span className="symptom-count-badge">
+            {selectedCount}
+          </span>
+        )}
+      </div>
+
+      {/* Quick actions */}
+      <div className="symptom-quick-actions">
+        <button
+          type="button"
+          className="symptom-quick-btn"
+          onClick={allSelected ? clearAll : selectAll}
+        >
+          {allSelected
+            ? (isEn ? 'Deselect all' : 'Bỏ chọn tất cả')
+            : (isEn ? 'Select all' : 'Chọn tất cả')}
+        </button>
+        {selectedCount > 0 && (
+          <button
+            type="button"
+            className="symptom-quick-btn symptom-quick-btn--danger"
+            onClick={clearAll}
+          >
+            {isEn ? 'Clear' : 'Xóa lựa chọn'}
+          </button>
+        )}
+      </div>
+
+      {/* Chip Grid */}
+      <div className="symptom-chip-grid">
+        {symptoms.map(sym => {
+          const label = getSymptomLabel(sym.name, lang)
+          const isSelected = checkedIds.includes(sym.id)
+          return (
+            <button
+              key={sym.id}
+              type="button"
+              className={`symptom-chip ${isSelected ? 'symptom-chip--selected' : ''}`}
+              onClick={() => toggleSymptom(sym.id)}
+              aria-pressed={isSelected}
+            >
+              <span className="symptom-chip__check">
+                {isSelected ? (
+                  <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+                    <polyline points="2,7 5.5,10.5 12,3.5" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                  </svg>
+                ) : (
+                  <span className="symptom-chip__circle" />
+                )}
+              </span>
+              <span className="symptom-chip__label">{label}</span>
+            </button>
+          )
+        })}
+      </div>
+
+      {/* Footer actions */}
+      <div className="symptom-panel__footer">
+        <button
+          type="button"
+          className="symptom-none-btn"
+          onClick={handleNone}
+        >
+          {isEn ? '✗ None of the above' : '✗ Không có triệu chứng nào'}
+        </button>
+        <button
+          type="button"
+          className={`symptom-submit-btn ${selectedCount === 0 ? 'symptom-submit-btn--disabled' : ''}`}
+          onClick={handleSubmit}
+          disabled={selectedCount === 0}
+        >
+          {selectedCount > 0
+            ? (isEn ? `Confirm ${selectedCount} symptom${selectedCount > 1 ? 's' : ''}` : `Xác nhận ${selectedCount} triệu chứng`)
+            : (isEn ? 'Select at least one' : 'Vui lòng chọn triệu chứng')
+          }
+        </button>
+      </div>
+    </div>
+  )
+}
+
+// ─── MAIN MESSAGE BUBBLE ──────────────────────────────────────────────────────
+export default function MessageBubble({ role, content, streaming, lang = 'vi', isLastAssistant, onSend }) {
+  const isUser = role === 'user'
+  const isEn = lang === 'en'
+
+  let visibleContent = content
+  let metadata = null
+  const metaIndex = content ? content.indexOf('\n[METADATA]:') : -1
+  if (metaIndex !== -1) {
+    visibleContent = content.substring(0, metaIndex)
+    const metadataStr = content.substring(metaIndex + '\n[METADATA]:'.length)
+    if (!streaming && metadataStr.trim()) {
+      try {
+        metadata = JSON.parse(metadataStr)
+      } catch (e) {
+        console.error(e)
+      }
+    }
   }
 
   return (
@@ -130,40 +325,18 @@ export default function MessageBubble({ role, content, streaming, lang = 'vi', i
         )}
 
         {isLastAssistant && metadata && metadata.symptoms && metadata.symptoms.length > 0 && (
-          <div className="symptom-panel">
-            <p className="symptom-panel__title">
-              {isEn ? "Select symptoms that apply to you:" : "Chọn các triệu chứng bạn gặp phải:"}
-            </p>
-            <div className="symptom-panel__grid">
-              {metadata.symptoms.map(sym => {
-                const label = getSymptomLabel(sym.name, lang)
-                const isSelected = checkedSymptomIds.includes(sym.id)
-                return (
-                  <label
-                    key={sym.id}
-                    className={`symptom-checkbox-row ${isSelected ? 'symptom-checkbox-row--selected' : ''}`}
-                  >
-                    <input
-                      type="checkbox"
-                      checked={isSelected}
-                      onChange={() => toggleSymptom(sym.id)}
-                    />
-                    <span className="symptom-checkbox-label">{label}</span>
-                  </label>
-                )
-              })}
-            </div>
-            <button className="symptom-submit-btn" onClick={handleSubmit}>
-              {isEn ? "Submit Checked Symptoms" : "Xác nhận triệu chứng đã chọn"}
-            </button>
-          </div>
+          <SymptomPanel
+            symptoms={metadata.symptoms}
+            lang={lang}
+            onSend={onSend}
+          />
         )}
       </div>
     </div>
   )
 }
 
-// ─── MAIN RENDERER ───────────────────────────────────────────────────────────
+// ─── MAIN RENDERER ────────────────────────────────────────────────────────────
 function renderMessageContent(text) {
   // Chia text theo dòng và gom thành các block có ngữ nghĩa
   const lines = text.split('\n')
@@ -394,4 +567,3 @@ function renderInline(text, keyPrefix) {
       return <span key={k}>{part}</span>
     })
 }
-
