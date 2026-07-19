@@ -1,108 +1,51 @@
-import { useState } from 'react'
+import { useState, useCallback } from 'react'
 import { PulseIcon } from './Icons'
 import TypingDots from './TypingDots'
 import './MessageBubble.css'
 
 // ─── SYMPTOM TRANSLATIONS (VI) ────────────────────────────────────────────────
 const SYMPTOM_TRANSLATIONS = {
-  // General
-  'fever': 'Sốt',
-  'chills': 'Ớn lạnh / Rét run',
-  'fatigue': 'Mệt mỏi',
-  'weakness': 'Suy nhược cơ thể',
-  'weight loss': 'Sút cân',
-  'weight gain': 'Tăng cân',
-  'night sweats': 'Đổ mồ hôi đêm',
-  'loss of appetite': 'Chán ăn',
-  'malaise': 'Khó chịu toàn thân',
-  // Head & Neuro
-  'headache': 'Đau đầu',
-  'dizziness': 'Chóng mặt',
-  'vertigo': 'Hoa mắt / Chóng mặt quay',
-  'confusion': 'Lú lẫn / Mơ hồ',
-  'seizures': 'Co giật',
-  'fainting': 'Ngất xỉu',
-  'neck stiffness': 'Cứng cổ / Cứng gáy',
-  'photophobia': 'Sợ ánh sáng',
-  'memory loss': 'Mất trí nhớ',
-  'numbness': 'Tê bì',
-  'tingling': 'Cảm giác châm chích',
-  // ENT
-  'ear pain': 'Đau tai',
-  'hearing loss': 'Giảm thính lực',
-  'ringing in ears': 'Ù tai',
-  'nasal congestion': 'Nghẹt mũi',
-  'runny nose': 'Chảy nước mũi',
-  'sore throat': 'Đau họng',
-  'hoarseness': 'Khàn giọng',
-  'difficulty swallowing': 'Khó nuốt',
-  // Respiratory
-  'cough': 'Ho',
-  'dry cough': 'Ho khan',
-  'productive cough': 'Ho có đờm',
-  'shortness of breath': 'Khó thở',
-  'wheezing': 'Thở khò khè',
-  'chest pain': 'Đau ngực',
-  'chest tightness': 'Tức ngực',
-  'hemoptysis': 'Ho ra máu',
-  // Cardiovascular
-  'palpitations': 'Hồi hộp / Tim đập nhanh',
-  'rapid heartbeat': 'Nhịp tim nhanh',
-  'swelling': 'Phù nề',
-  'leg swelling': 'Phù chân',
-  // GI
-  'nausea': 'Buồn nôn',
-  'vomiting': 'Nôn mửa',
-  'nausea and vomiting': 'Buồn nôn hoặc nôn',
-  'abdominal pain': 'Đau bụng',
-  'stomach pain': 'Đau dạ dày',
-  'bloating': 'Đầy hơi / Chướng bụng',
-  'diarrhea': 'Tiêu chảy',
-  'constipation': 'Táo bón',
-  'bloody stool': 'Đi ngoài ra máu',
-  'heartburn': 'Ợ nóng / Trào ngược',
-  'acid reflux': 'Trào ngược axit',
-  'loss of bowel control': 'Không kiểm soát đại tiện',
-  // Urinary
-  'frequent urination': 'Tiểu thường xuyên',
-  'painful urination': 'Tiểu buốt / Tiểu khó',
-  'blood in urine': 'Tiểu ra máu',
-  'urinary retention': 'Bí tiểu',
-  // MSK
-  'joint pain': 'Đau khớp',
-  'muscle pain': 'Đau cơ',
-  'muscle aches': 'Đau mỏi cơ',
-  'back pain': 'Đau lưng',
-  'lower back pain': 'Đau lưng dưới',
-  'neck pain': 'Đau cổ',
-  'stiffness': 'Cứng khớp',
-  // Skin
-  'skin rash': 'Phát ban ngoài da',
-  'rash': 'Phát ban',
-  'itching': 'Ngứa',
-  'jaundice': 'Vàng da',
-  'bruising': 'Bầm tím',
-  'hives': 'Nổi mề đay',
-  // Specific
-  'knee lump or mass': 'U / Cục ở đầu gối',
-  'knee pain': 'Đau đầu gối',
-  'pain during pregnancy': 'Đau trong thai kỳ',
-  'vaginal discharge': 'Khí hư bất thường',
-  'irregular periods': 'Rối loạn kinh nguyệt',
-  'hot flashes': 'Bốc hỏa',
-  'erectile dysfunction': 'Rối loạn cương dương',
-  'swollen lymph nodes': 'Nổi hạch',
-  'eye pain': 'Đau mắt',
-  'blurred vision': 'Mờ mắt',
-  'red eyes': 'Mắt đỏ',
-  'excessive thirst': 'Khát nước nhiều',
-  'excessive hunger': 'Đói nhiều bất thường',
-  'increased urination': 'Đi tiểu nhiều',
-  'tremor': 'Run tay / Run cơ',
-  'difficulty walking': 'Khó đi lại',
-  'balance problems': 'Mất thăng bằng',
+  'fever': 'Sốt', 'chills': 'Ớn lạnh / Rét run', 'fatigue': 'Mệt mỏi',
+  'weakness': 'Suy nhược cơ thể', 'weight loss': 'Sút cân', 'weight gain': 'Tăng cân',
+  'night sweats': 'Đổ mồ hôi đêm', 'loss of appetite': 'Chán ăn', 'malaise': 'Khó chịu toàn thân',
+  'headache': 'Đau đầu', 'dizziness': 'Chóng mặt', 'vertigo': 'Hoa mắt / Chóng mặt quay',
+  'confusion': 'Lú lẫn / Mơ hồ', 'seizures': 'Co giật', 'fainting': 'Ngất xỉu',
+  'neck stiffness': 'Cứng cổ / Cứng gáy', 'photophobia': 'Sợ ánh sáng',
+  'memory loss': 'Mất trí nhớ', 'numbness': 'Tê bì', 'tingling': 'Cảm giác châm chích',
+  'ear pain': 'Đau tai', 'hearing loss': 'Giảm thính lực', 'ringing in ears': 'Ù tai',
+  'nasal congestion': 'Nghẹt mũi', 'runny nose': 'Chảy nước mũi', 'sore throat': 'Đau họng',
+  'hoarseness': 'Khàn giọng', 'difficulty swallowing': 'Khó nuốt',
+  'cough': 'Ho', 'dry cough': 'Ho khan', 'productive cough': 'Ho có đờm',
+  'shortness of breath': 'Khó thở', 'wheezing': 'Thở khò khè',
+  'chest pain': 'Đau ngực', 'chest tightness': 'Tức ngực', 'hemoptysis': 'Ho ra máu',
+  'palpitations': 'Hồi hộp / Tim đập nhanh', 'rapid heartbeat': 'Nhịp tim nhanh',
+  'swelling': 'Phù nề', 'leg swelling': 'Phù chân',
+  'nausea': 'Buồn nôn', 'vomiting': 'Nôn mửa', 'nausea and vomiting': 'Buồn nôn hoặc nôn',
+  'abdominal pain': 'Đau bụng', 'stomach pain': 'Đau dạ dày',
+  'bloating': 'Đầy hơi / Chướng bụng', 'diarrhea': 'Tiêu chảy', 'constipation': 'Táo bón',
+  'bloody stool': 'Đi ngoài ra máu', 'heartburn': 'Ợ nóng / Trào ngược', 'acid reflux': 'Trào ngược axit',
+  'frequent urination': 'Tiểu thường xuyên', 'painful urination': 'Tiểu buốt / Tiểu khó',
+  'blood in urine': 'Tiểu ra máu', 'urinary retention': 'Bí tiểu',
+  'joint pain': 'Đau khớp', 'muscle pain': 'Đau cơ', 'muscle aches': 'Đau mỏi cơ',
+  'back pain': 'Đau lưng', 'lower back pain': 'Đau lưng dưới',
+  'neck pain': 'Đau cổ', 'stiffness': 'Cứng khớp',
+  'skin rash': 'Phát ban ngoài da', 'rash': 'Phát ban', 'itching': 'Ngứa',
+  'jaundice': 'Vàng da', 'bruising': 'Bầm tím', 'hives': 'Nổi mề đay',
+  'knee lump or mass': 'U / Cục ở đầu gối', 'knee pain': 'Đau đầu gối',
+  'pain during pregnancy': 'Đau trong thai kỳ', 'vaginal discharge': 'Khí hư bất thường',
+  'irregular periods': 'Rối loạn kinh nguyệt', 'hot flashes': 'Bốc hỏa',
+  'swollen lymph nodes': 'Nổi hạch', 'eye pain': 'Đau mắt',
+  'blurred vision': 'Mờ mắt', 'red eyes': 'Mắt đỏ',
+  'excessive thirst': 'Khát nước nhiều', 'excessive hunger': 'Đói nhiều bất thường',
+  'increased urination': 'Đi tiểu nhiều', 'tremor': 'Run tay / Run cơ',
+  'difficulty walking': 'Khó đi lại', 'balance problems': 'Mất thăng bằng',
 }
 
+// ─── QUESTION TYPE KEYWORDS ───────────────────────────────────────────────────
+const SYMPTOM_KW_VI = ['triệu chứng', 'kèm theo', 'có bị', 'nào khác', 'chẳng hạn', 'ví dụ', 'đi kèm', 'xuất hiện', 'cụ thể', 'biểu hiện', 'dấu hiệu']
+const SYMPTOM_KW_EN = ['symptom', 'experience', 'accompanied', 'such as', 'any other', 'do you have', 'along with', 'notice', 'signs', 'also feel']
+
+// ─── HELPERS ─────────────────────────────────────────────────────────────────
 function getSymptomLabel(name, lang) {
   if (lang !== 'vi') return name
   const lower = name.toLowerCase().trim()
@@ -110,141 +53,104 @@ function getSymptomLabel(name, lang) {
   for (const [key, val] of Object.entries(SYMPTOM_TRANSLATIONS)) {
     if (lower.includes(key) || key.includes(lower)) return val
   }
-  // Fallback: capitalize and return as-is if no translation found
   return name.charAt(0).toUpperCase() + name.slice(1)
 }
 
-// ─── SYMPTOM PANEL COMPONENT ─────────────────────────────────────────────────
-function SymptomPanel({ symptoms, lang, onSend }) {
+function detectQuestionType(text, lang) {
+  const lower = text.toLowerCase()
+  const kws = lang === 'en' ? SYMPTOM_KW_EN : SYMPTOM_KW_VI
+  return kws.some(kw => lower.includes(kw)) ? 'symptom' : 'text'
+}
+
+function countBulletQuestions(text) {
+  if (!text) return 0
+  const bullets = text.split('\n').filter(l => /^[-*]\s/.test(l.trim()))
+  return bullets.length > 1 ? bullets.length : 0
+}
+
+function buildCombinedMessage(inlineAnswers, metadata, lang) {
   const isEn = lang === 'en'
-  const [checkedIds, setCheckedIds] = useState([])
-  const [submitted, setSubmitted] = useState(false)
+  const parts = []
 
-  const toggleSymptom = (id) => {
-    setCheckedIds(prev =>
-      prev.includes(id) ? prev.filter(x => x !== id) : [...prev, id]
-    )
-  }
-
-  const selectAll = () => setCheckedIds(symptoms.map(s => s.id))
-  const clearAll = () => setCheckedIds([])
-
-  const handleSubmit = () => {
-    const confirmedNames = []
-    const excludedNames = []
-
-    symptoms.forEach(sym => {
-      const label = getSymptomLabel(sym.name, lang)
-      if (checkedIds.includes(sym.id)) {
-        confirmedNames.push(label)
+  Object.values(inlineAnswers).forEach(answer => {
+    if (answer.type === 'symptom') {
+      const ids = answer.value || []
+      const syms = metadata?.symptoms || []
+      const confirmed = syms.filter(s => ids.includes(s.id)).map(s => getSymptomLabel(s.name, lang))
+      const excluded = syms.filter(s => !ids.includes(s.id)).map(s => getSymptomLabel(s.name, lang))
+      if (isEn) {
+        if (confirmed.length) parts.push(`Symptoms I have: ${confirmed.join(', ')}`)
+        if (excluded.length && confirmed.length) parts.push(`I do not have: ${excluded.join(', ')}`)
+        if (!confirmed.length) parts.push('I do not have any of those symptoms')
       } else {
-        excludedNames.push(label)
+        if (confirmed.length) parts.push(`Triệu chứng tôi có: ${confirmed.join(', ')}`)
+        if (excluded.length && confirmed.length) parts.push(`Tôi không bị: ${excluded.join(', ')}`)
+        if (!confirmed.length) parts.push('Tôi không có triệu chứng nào trong danh sách đó')
       }
-    })
-
-    let responseText = ''
-    if (isEn) {
-      if (confirmedNames.length > 0) {
-        responseText += `I have the following symptoms: ${confirmedNames.join(', ')}.`
-      }
-      if (excludedNames.length > 0) {
-        responseText += ` I do not have: ${excludedNames.join(', ')}.`
-      }
-      if (confirmedNames.length === 0 && excludedNames.length === 0) {
-        responseText = 'I do not have any of the symptoms mentioned above.'
-      }
-    } else {
-      if (confirmedNames.length > 0) {
-        responseText += `Tôi có các triệu chứng: ${confirmedNames.join(', ')}.`
-      }
-      if (excludedNames.length > 0) {
-        responseText += ` Tôi không bị: ${excludedNames.join(', ')}.`
-      }
-      if (confirmedNames.length === 0 && excludedNames.length === 0) {
-        responseText = 'Tôi không có bất kỳ triệu chứng nào nêu trên.'
-      }
+    } else if (answer.type === 'text' && answer.value?.trim()) {
+      parts.push(answer.value.trim())
     }
-    setSubmitted(true)
-    onSend?.(responseText)
-  }
+  })
 
-  const handleNone = () => {
-    const text = isEn
-      ? 'I do not have any of the symptoms mentioned above.'
-      : 'Tôi không có bất kỳ triệu chứng nào nêu trên.'
-    setSubmitted(true)
-    onSend?.(text)
-  }
+  return parts.join('. ')
+}
 
-  if (submitted) {
-    return (
-      <div className="symptom-panel symptom-panel--submitted">
-        <p className="symptom-panel__done">
-          {isEn ? '✓ Response submitted' : '✓ Đã gửi phản hồi'}
-        </p>
-      </div>
-    )
-  }
+// ─── INLINE CHIP PICKER (CONTROLLED — no own state) ──────────────────────────
+function InlineChipPicker({ symptoms, lang, selectedIds, onChange }) {
+  const isEn = lang === 'en'
+  const allSelected = selectedIds.length === symptoms.length && symptoms.length > 0
 
-  const selectedCount = checkedIds.length
-  const allSelected = selectedCount === symptoms.length
+  const toggle = (id) => {
+    const next = selectedIds.includes(id)
+      ? selectedIds.filter(x => x !== id)
+      : [...selectedIds, id]
+    onChange(next)
+  }
 
   return (
-    <div className="symptom-panel">
-      {/* Header */}
-      <div className="symptom-panel__header">
-        <div className="symptom-panel__title-row">
-          <span className="symptom-panel__icon">🩺</span>
-          <p className="symptom-panel__title">
-            {isEn ? 'Select symptoms you are experiencing:' : 'Chọn triệu chứng bạn đang gặp phải:'}
-          </p>
-        </div>
-        {selectedCount > 0 && (
-          <span className="symptom-count-badge">
-            {selectedCount}
-          </span>
-        )}
-      </div>
-
-      {/* Quick actions */}
-      <div className="symptom-quick-actions">
+    <div className="inline-chip-picker">
+      {/* Quick action row */}
+      <div className="inline-chip-actions">
         <button
           type="button"
           className="symptom-quick-btn"
-          onClick={allSelected ? clearAll : selectAll}
+          onClick={() => onChange(allSelected ? [] : symptoms.map(s => s.id))}
         >
           {allSelected
             ? (isEn ? 'Deselect all' : 'Bỏ chọn tất cả')
             : (isEn ? 'Select all' : 'Chọn tất cả')}
         </button>
-        {selectedCount > 0 && (
-          <button
-            type="button"
-            className="symptom-quick-btn symptom-quick-btn--danger"
-            onClick={clearAll}
-          >
-            {isEn ? 'Clear' : 'Xóa lựa chọn'}
-          </button>
+        {selectedIds.length > 0 && (
+          <>
+            <span className="symptom-count-badge">{selectedIds.length}</span>
+            <button
+              type="button"
+              className="symptom-quick-btn symptom-quick-btn--danger"
+              onClick={() => onChange([])}
+            >
+              {isEn ? 'Clear' : 'Xóa'}
+            </button>
+          </>
         )}
       </div>
 
-      {/* Chip Grid */}
-      <div className="symptom-chip-grid">
+      {/* Chip grid */}
+      <div className="inline-chip-grid">
         {symptoms.map(sym => {
           const label = getSymptomLabel(sym.name, lang)
-          const isSelected = checkedIds.includes(sym.id)
+          const isSel = selectedIds.includes(sym.id)
           return (
             <button
               key={sym.id}
               type="button"
-              className={`symptom-chip ${isSelected ? 'symptom-chip--selected' : ''}`}
-              onClick={() => toggleSymptom(sym.id)}
-              aria-pressed={isSelected}
+              className={`symptom-chip ${isSel ? 'symptom-chip--selected' : ''}`}
+              onClick={() => toggle(sym.id)}
+              aria-pressed={isSel}
             >
               <span className="symptom-chip__check">
-                {isSelected ? (
+                {isSel ? (
                   <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
-                    <polyline points="2,7 5.5,10.5 12,3.5" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                    <polyline points="2,7 5.5,10.5 12,3.5" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
                   </svg>
                 ) : (
                   <span className="symptom-chip__circle" />
@@ -256,36 +162,49 @@ function SymptomPanel({ symptoms, lang, onSend }) {
         })}
       </div>
 
-      {/* Footer actions */}
-      <div className="symptom-panel__footer">
-        <button
-          type="button"
-          className="symptom-none-btn"
-          onClick={handleNone}
-        >
-          {isEn ? '✗ None of the above' : '✗ Không có triệu chứng nào'}
-        </button>
-        <button
-          type="button"
-          className={`symptom-submit-btn ${selectedCount === 0 ? 'symptom-submit-btn--disabled' : ''}`}
-          onClick={handleSubmit}
-          disabled={selectedCount === 0}
-        >
-          {selectedCount > 0
-            ? (isEn ? `Confirm ${selectedCount} symptom${selectedCount > 1 ? 's' : ''}` : `Xác nhận ${selectedCount} triệu chứng`)
-            : (isEn ? 'Select at least one' : 'Vui lòng chọn triệu chứng')
-          }
-        </button>
-      </div>
+      {/* None shortcut */}
+      <button
+        type="button"
+        className={`symptom-none-btn ${selectedIds.length === 0 ? 'symptom-none-btn--none-active' : ''}`}
+        onClick={() => onChange([])}
+      >
+        {isEn ? '✗ None of the above' : '✗ Không có triệu chứng nào'}
+      </button>
     </div>
   )
 }
 
-// ─── MAIN MESSAGE BUBBLE ──────────────────────────────────────────────────────
+// ─── INLINE TEXT INPUT (CONTROLLED — no own state) ───────────────────────────
+function InlineTextInput({ lang, value, onChange }) {
+  const isEn = lang === 'en'
+  return (
+    <div className="inline-text-input">
+      <input
+        type="text"
+        className={`inline-text-field ${value?.trim() ? 'inline-text-field--filled' : ''}`}
+        placeholder={isEn ? 'Type your answer here...' : 'Nhập câu trả lời của bạn...'}
+        value={value}
+        onChange={e => onChange(e.target.value)}
+        autoComplete="off"
+        spellCheck={false}
+      />
+      {value?.trim() && (
+        <span className="inline-text-indicator" aria-label="answered">✓</span>
+      )}
+    </div>
+  )
+}
+
+// ─── MAIN COMPONENT ───────────────────────────────────────────────────────────
 export default function MessageBubble({ role, content, streaming, lang = 'vi', isLastAssistant, onSend }) {
   const isUser = role === 'user'
   const isEn = lang === 'en'
 
+  // All inline widget answers keyed by question ID
+  const [inlineAnswers, setInlineAnswers] = useState({})
+  const [panelDone, setPanelDone] = useState(false)
+
+  // Parse metadata out of content
   let visibleContent = content
   let metadata = null
   const metaIndex = content ? content.indexOf('\n[METADATA]:') : -1
@@ -293,12 +212,39 @@ export default function MessageBubble({ role, content, streaming, lang = 'vi', i
     visibleContent = content.substring(0, metaIndex)
     const metadataStr = content.substring(metaIndex + '\n[METADATA]:'.length)
     if (!streaming && metadataStr.trim()) {
-      try {
-        metadata = JSON.parse(metadataStr)
-      } catch (e) {
-        console.error(e)
-      }
+      try { metadata = JSON.parse(metadataStr) } catch (e) { console.error(e) }
     }
+  }
+
+  const updateAnswer = useCallback((qKey, type, value) => {
+    setInlineAnswers(prev => ({ ...prev, [qKey]: { type, value } }))
+  }, [])
+
+  const handleSubmitAll = useCallback(() => {
+    const message = buildCombinedMessage(inlineAnswers, metadata, lang)
+    if (message.trim()) {
+      setPanelDone(true)
+      onSend?.(message)
+    }
+  }, [inlineAnswers, metadata, lang, onSend])
+
+  // Detect question count (only when last assistant, not streaming, not done)
+  const questionCount = isLastAssistant && !streaming && !panelDone
+    ? countBulletQuestions(visibleContent)
+    : 0
+
+  const answeredCount = Object.values(inlineAnswers).filter(a =>
+    a.type === 'symptom' ? a.value?.length > 0 : a.value?.trim()
+  ).length
+
+  // Context passed to renderer
+  const ctx = {
+    metadata,
+    lang,
+    isLastAssistant: isLastAssistant && !panelDone,
+    streaming,
+    inlineAnswers,
+    updateAnswer,
   }
 
   return (
@@ -309,36 +255,55 @@ export default function MessageBubble({ role, content, streaming, lang = 'vi', i
         </div>
       )}
       <div className="message-col">
-        <div
-          className={`message-bubble ${isUser ? 'message-bubble--user' : 'message-bubble--assistant'}`}
-        >
-          {visibleContent ? renderMessageContent(visibleContent) : streaming ? <TypingDots /> : null}
+        <div className={`message-bubble ${isUser ? 'message-bubble--user' : 'message-bubble--assistant'}`}>
+          {visibleContent
+            ? renderMessageContent(visibleContent, ctx)
+            : streaming ? <TypingDots /> : null}
           {streaming && visibleContent && <span className="message-cursor" />}
         </div>
+
         {!isUser && visibleContent && !streaming && (
           <p className="message-disclaimer">
             {isEn
-              ? "AI may make mistakes. Please consult a doctor if necessary."
-              : "AI có thể mắc sai sót. Hãy tham khảo bác sĩ khi cần thiết."
-            }
+              ? 'AI may make mistakes. Please consult a doctor if necessary.'
+              : 'AI có thể mắc sai sót. Hãy tham khảo bác sĩ khi cần thiết.'}
           </p>
         )}
 
-        {isLastAssistant && metadata && metadata.symptoms && metadata.symptoms.length > 0 && (
-          <SymptomPanel
-            symptoms={metadata.symptoms}
-            lang={lang}
-            onSend={onSend}
-          />
+        {/* ── Unified submit bar ── */}
+        {questionCount > 0 && (
+          <div className="question-submit-bar">
+            <span className="question-submit-progress">
+              {answeredCount > 0
+                ? `${answeredCount}/${questionCount} ${isEn ? 'answered' : 'đã trả lời'}`
+                : (isEn ? 'Fill in the answers above' : 'Điền câu trả lời bên trên')}
+            </span>
+            <button
+              type="button"
+              className={`question-submit-btn ${answeredCount === 0 ? 'question-submit-btn--disabled' : ''}`}
+              onClick={handleSubmitAll}
+              disabled={answeredCount === 0}
+            >
+              {isEn ? 'Send all answers' : 'Gửi tất cả câu trả lời'}
+              {answeredCount > 0 && <span className="question-submit-arrow">→</span>}
+            </button>
+          </div>
+        )}
+
+        {/* ── Done confirmation ── */}
+        {panelDone && (
+          <div className="questions-done">
+            <span className="questions-done__icon">✓</span>
+            <span>{isEn ? 'Answers submitted' : 'Đã gửi câu trả lời'}</span>
+          </div>
         )}
       </div>
     </div>
   )
 }
 
-// ─── MAIN RENDERER ────────────────────────────────────────────────────────────
-function renderMessageContent(text) {
-  // Chia text theo dòng và gom thành các block có ngữ nghĩa
+// ─── RENDERER ─────────────────────────────────────────────────────────────────
+function renderMessageContent(text, ctx) {
   const lines = text.split('\n')
   const blocks = []
   let buffer = []
@@ -354,122 +319,54 @@ function renderMessageContent(text) {
     const line = lines[i]
     const trimmed = line.trim()
 
-    // Heading: # ## ### ####
     if (/^#{1,4}\s/.test(trimmed)) {
       flushBuffer()
       const level = trimmed.match(/^(#{1,4})\s/)[1].length
       blocks.push({ type: 'heading', level, text: trimmed.replace(/^#{1,4}\s/, '') })
       continue
     }
-
-    // Alert block: lines starting with ⚠️ or 🔴 → warning, 📋 → info, ✅ → success
-    if (/^(⚠️|🔴|🚨)/.test(trimmed)) {
-      flushBuffer()
-      blocks.push({ type: 'alert', variant: 'danger', text: trimmed })
-      continue
-    }
-    if (/^(📋|💡|ℹ️)/.test(trimmed)) {
-      flushBuffer()
-      blocks.push({ type: 'alert', variant: 'info', text: trimmed })
-      continue
-    }
-    if (/^(✅|🟢)/.test(trimmed)) {
-      flushBuffer()
-      blocks.push({ type: 'alert', variant: 'success', text: trimmed })
-      continue
-    }
-
-    // Horizontal rule ---
-    if (/^---+$/.test(trimmed)) {
-      flushBuffer()
-      blocks.push({ type: 'divider' })
-      continue
-    }
-
-    // Empty line → flush paragraph buffer
-    if (trimmed === '') {
-      flushBuffer()
-      continue
-    }
-
+    if (/^(⚠️|🔴|🚨)/.test(trimmed)) { flushBuffer(); blocks.push({ type: 'alert', variant: 'danger', text: trimmed }); continue }
+    if (/^(📋|💡|ℹ️)/.test(trimmed)) { flushBuffer(); blocks.push({ type: 'alert', variant: 'info', text: trimmed }); continue }
+    if (/^(✅|🟢)/.test(trimmed)) { flushBuffer(); blocks.push({ type: 'alert', variant: 'success', text: trimmed }); continue }
+    if (/^---+$/.test(trimmed)) { flushBuffer(); blocks.push({ type: 'divider' }); continue }
+    if (trimmed === '') { flushBuffer(); continue }
     buffer.push(line)
   }
   flushBuffer()
 
-  return blocks.map((block, i) => renderBlock(block, i))
+  return blocks.map((block, i) => renderBlock(block, i, ctx))
 }
 
 function renderPercentCircle(percent) {
   const radius = 14
   const circumference = 2 * Math.PI * radius
   const strokeDashoffset = circumference - (percent / 100) * circumference
-
-  // Xác định màu sắc tương ứng với mức độ nguy cơ (%)
-  let color = '#1a73e8' // Blue (Thấp)
-  if (percent >= 60) {
-    color = '#ea4335' // Red (Cao)
-  } else if (percent >= 30) {
-    color = '#f9ab00' // Yellow/Orange (Trung bình)
-  } else {
-    color = '#34a853' // Green (Rất thấp / An toàn)
-  }
+  let color = '#1a73e8'
+  if (percent >= 60) color = '#ea4335'
+  else if (percent >= 30) color = '#f9ab00'
+  else color = '#34a853'
 
   return (
     <div className="disease-pct-circle-wrapper">
       <svg className="disease-pct-svg" width="36" height="36">
-        <circle
-          className="disease-pct-bg"
-          cx="18"
-          cy="18"
-          r={radius}
-          stroke="var(--border-subtle)"
-          strokeWidth="3"
-          fill="transparent"
-        />
-        <circle
-          className="disease-pct-fg"
-          cx="18"
-          cy="18"
-          r={radius}
-          stroke={color}
-          strokeWidth="3"
-          strokeDasharray={circumference}
-          strokeDashoffset={strokeDashoffset}
-          strokeLinecap="round"
-          fill="transparent"
-          transform="rotate(-90 18 18)"
-        />
-        <text
-          x="18"
-          y="22"
-          textAnchor="middle"
-          fontSize="10"
-          fontWeight="bold"
-          fill="var(--text-primary)"
-        >
-          {percent}%
-        </text>
+        <circle className="disease-pct-bg" cx="18" cy="18" r={radius} stroke="var(--border-subtle)" strokeWidth="3" fill="transparent" />
+        <circle className="disease-pct-fg" cx="18" cy="18" r={radius} stroke={color} strokeWidth="3"
+          strokeDasharray={circumference} strokeDashoffset={strokeDashoffset}
+          strokeLinecap="round" fill="transparent" transform="rotate(-90 18 18)" />
+        <text x="18" y="22" textAnchor="middle" fontSize="10" fontWeight="bold" fill="var(--text-primary)">{percent}%</text>
       </svg>
     </div>
   )
 }
 
-function renderBlock(block, key) {
+function renderBlock(block, key, ctx) {
   switch (block.type) {
     case 'heading': {
       const Tag = block.level <= 2 ? 'h2' : block.level === 3 ? 'h3' : 'h4'
-      const cls = `msg-heading msg-heading--${block.level}`
-      return <Tag key={key} className={cls}>{renderInline(block.text, `${key}`)}</Tag>
+      return <Tag key={key} className={`msg-heading msg-heading--${block.level}`}>{renderInline(block.text, `${key}`)}</Tag>
     }
-
-    case 'alert': {
-      return (
-        <div key={key} className={`msg-alert msg-alert--${block.variant}`}>
-          {renderInline(block.text, `${key}`)}
-        </div>
-      )
-    }
-
+    case 'alert':
+      return <div key={key} className={`msg-alert msg-alert--${block.variant}`}>{renderInline(block.text, `${key}`)}</div>
     case 'divider':
       return <hr key={key} className="msg-divider" />
 
@@ -487,7 +384,50 @@ function renderBlock(block, key) {
           </ol>
         )
       }
+
       if (isBulleted) {
+        // ── Render with inline widgets for last assistant message ──
+        if (ctx.isLastAssistant && !ctx.streaming) {
+          const hasSymptoms = ctx.metadata?.symptoms?.length > 0
+          return (
+            <div key={key} className="question-list">
+              {lines.map((line, i) => {
+                const content = line.trim().replace(/^[-*]\s/, '')
+                const qKey = `q-${key}-${i}`
+                const qType = detectQuestionType(content, ctx.lang)
+                const answerValue = ctx.inlineAnswers[qKey]?.value
+
+                return (
+                  <div key={i} className="question-item">
+                    {/* Question text */}
+                    <div className="question-bullet">
+                      <span className="question-dot">●</span>
+                      <span className="question-text">{renderInline(content, `${key}-${i}`)}</span>
+                    </div>
+
+                    {/* Inline widget */}
+                    {qType === 'symptom' && hasSymptoms ? (
+                      <InlineChipPicker
+                        symptoms={ctx.metadata.symptoms}
+                        lang={ctx.lang}
+                        selectedIds={answerValue || []}
+                        onChange={(ids) => ctx.updateAnswer(qKey, 'symptom', ids)}
+                      />
+                    ) : (
+                      <InlineTextInput
+                        lang={ctx.lang}
+                        value={answerValue || ''}
+                        onChange={(text) => ctx.updateAnswer(qKey, 'text', text)}
+                      />
+                    )}
+                  </div>
+                )
+              })}
+            </div>
+          )
+        }
+
+        // ── Plain bulleted list (non-last or streaming) ──
         return (
           <ul className="message-list" key={key}>
             {lines.map((line, i) => (
@@ -497,36 +437,26 @@ function renderBlock(block, key) {
         )
       }
 
-      // Xử lý khối hỗn hợp (Ví dụ: Danh sách bệnh có triệu chứng đi kèm)
+      // ── Mixed block (disease items with %) ──
       return (
         <div key={key} className="msg-mixed-block">
           {lines.map((line, i) => {
             const trimmed = line.trim()
-
-            // 1. Kiểm tra dòng tên bệnh kèm xác suất:
-            // Match các dạng: "1. Tên bệnh: 60% xác suất" hoặc "1. Tên bệnh: ~60% xác suất"
             const diseaseMatch = trimmed.match(/^(\d+)\.\s*(.*?):\s*~?(\d+)%\s*(xác suất|khả năng|ước tính)?/i)
             if (diseaseMatch) {
-              const num = diseaseMatch[1]
-              const name = diseaseMatch[2].trim()
-              const percent = parseInt(diseaseMatch[3], 10)
+              const [, num, name, pctStr] = diseaseMatch
+              const percent = parseInt(pctStr, 10)
               return (
                 <div key={i} className="disease-item-header">
                   <span className="disease-num">{num}.</span>
-                  <span className="disease-name">{name}</span>
+                  <span className="disease-name">{name.trim()}</span>
                   {renderPercentCircle(percent)}
                 </div>
               )
             }
-
-            // 2. Kiểm tra dòng bắt đầu bằng bullet point "-"
             if (trimmed.startsWith('-')) {
-              // Bỏ dấu gạch ngang đầu dòng
               const content = trimmed.substring(1).trim()
-              
-              // Nếu là dòng "Dẫn chứng từ đồ thị" hoặc "Dẫn chứng"
               const isEvidence = content.toLowerCase().includes('dẫn chứng')
-              
               return (
                 <div key={i} className={`disease-detail-line ${isEvidence ? 'disease-detail-line--evidence' : ''}`}>
                   <span className="bullet-dot">{isEvidence ? '📋' : '•'}</span>
@@ -534,36 +464,26 @@ function renderBlock(block, key) {
                 </div>
               )
             }
-
-            // Dòng thường
-            return (
-              <p key={i} className="detail-plain-line">
-                {renderInline(line, `${key}-${i}`)}
-              </p>
-            )
+            return <p key={i} className="detail-plain-line">{renderInline(line, `${key}-${i}`)}</p>
           })}
         </div>
       )
     }
-
     default:
       return null
   }
 }
 
-// ─── INLINE RENDERER (bold, italic, code) ────────────────────────────────────
+// ─── INLINE RENDERER ─────────────────────────────────────────────────────────
 function renderInline(text, keyPrefix) {
   return text
     .split(/(\*\*[^*]+\*\*|_[^_]+_|`[^`]+`)/g)
     .filter(part => part.length > 0)
     .map((part, i) => {
       const k = `${keyPrefix}-${i}`
-      if (part.startsWith('**') && part.endsWith('**'))
-        return <strong key={k}>{part.slice(2, -2)}</strong>
-      if (part.startsWith('_') && part.endsWith('_'))
-        return <em key={k}>{part.slice(1, -1)}</em>
-      if (part.startsWith('`') && part.endsWith('`'))
-        return <code key={k} className="msg-code">{part.slice(1, -1)}</code>
+      if (part.startsWith('**') && part.endsWith('**')) return <strong key={k}>{part.slice(2, -2)}</strong>
+      if (part.startsWith('_') && part.endsWith('_')) return <em key={k}>{part.slice(1, -1)}</em>
+      if (part.startsWith('`') && part.endsWith('`')) return <code key={k} className="msg-code">{part.slice(1, -1)}</code>
       return <span key={k}>{part}</span>
     })
 }
