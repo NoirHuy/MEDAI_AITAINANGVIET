@@ -1,34 +1,34 @@
 export const SUGGESTIONS = [
   {
-    title: { vi: 'Đau đầu và sốt nhẹ', en: 'Headache & Mild Fever' },
-    detail: { vi: 'Tôi nên làm gì và khi nào cần đi khám?', en: 'What should I do and when to see a doctor?' },
+    title: { vi: 'Chẩn đoán Nhi khoa (GraphRAG)', en: 'Pediatric Diagnosis (GraphRAG)' },
+    detail: { vi: 'Trải nghiệm quy trình hỏi bệnh thông minh NLICE', en: 'Experience the smart NLICE clinical process' },
     prompt: {
-      vi: 'Tôi bị đau đầu và sốt nhẹ 2 ngày nay, tôi nên làm gì và khi nào cần đi khám?',
-      en: 'I have had a headache and a mild fever for 2 days. What should I do and when should I see a doctor?'
+      vi: 'Con tôi 4 tuổi, là bé trai, bị sốt cao đột ngột và đau đầu từ tối qua (khoảng 12 tiếng rồi).',
+      en: 'My child is a 4-year-old boy, he has a sudden high fever and headache since last night (about 12 hours now).'
     },
   },
   {
-    title: { vi: 'Tác dụng phụ của thuốc', en: 'Drug Side Effects' },
-    detail: { vi: 'Giải thích các tác dụng phụ thường gặp', en: 'Explain common side effects' },
+    title: { vi: 'Khám Da liễu & Dị ứng', en: 'Dermatology & Allergy' },
+    detail: { vi: 'Tư vấn ngứa, nổi ban đỏ và mề đay', en: 'Consult on itching, rash, and hives' },
     prompt: {
-      vi: 'Thuốc paracetamol có những tác dụng phụ thường gặp nào cần lưu ý?',
-      en: 'What are the common side effects of paracetamol that I should be aware of?'
+      vi: 'Tôi bị nổi nhiều nốt ban đỏ và ngứa ở cánh tay sau khi ăn hải sản khoảng 2 tiếng, tôi cần xử lý thế nào?',
+      en: 'I have red rash and severe itching on my arm about 2 hours after eating seafood, what should I do?'
     },
   },
   {
-    title: { vi: 'Chế độ ăn cho người tiểu đường', en: 'Diabetic Diet' },
-    detail: { vi: 'Gợi ý thực đơn lành mạnh trong tuần', en: 'Healthy weekly meal plan ideas' },
+    title: { vi: 'Tư vấn Dinh dưỡng', en: 'Nutrition & Dietetics' },
+    detail: { vi: 'Lên thực đơn ăn uống điều trị bệnh lý', en: 'Create healthy clinical diets' },
     prompt: {
-      vi: 'Gợi ý giúp tôi một thực đơn trong tuần phù hợp cho người bị tiểu đường type 2.',
-      en: 'Please suggest a weekly meal plan suitable for someone with type 2 diabetes.'
+      vi: 'Lên giúp tôi thực đơn dinh dưỡng lành mạnh cho người trung niên bị cao huyết áp.',
+      en: 'Please create a healthy nutritional diet plan for a middle-aged person with high blood pressure.'
     },
   },
   {
-    title: { vi: 'Giải thích kết quả xét nghiệm', en: 'Explain Test Results' },
-    detail: { vi: 'Hiểu rõ các chỉ số xét nghiệm máu cơ bản', en: 'Understand basic blood test values' },
+    title: { vi: 'Hướng dẫn Tài khoản & Gói cước', en: 'Account & Subscription Guide' },
+    detail: { vi: 'Cách nâng cấp gói Pro và xem lượng Token đã dùng', en: 'How to upgrade Pro and view token usage' },
     prompt: {
-      vi: 'Chỉ số đường huyết lúc đói và HbA1c trong xét nghiệm máu nói lên điều gì?',
-      en: 'What do fasting blood glucose and HbA1c levels in a blood test indicate?'
+      vi: 'Làm thế nào để tôi nâng cấp lên gói Pro (giả lập) và làm sao xem lượng token mà tài khoản tôi đã sử dụng?',
+      en: 'How can I upgrade to the Pro plan (simulated) and check the number of tokens my account has used?'
     },
   },
 ]
