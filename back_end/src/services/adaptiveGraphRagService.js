@@ -703,22 +703,21 @@ export async function computeAdaptiveContext(sceResult, excludedSymptoms = new S
 
     if (rankedDiseases.length >= 2) {
       const topDiseaseNames = rankedDiseases.slice(0, 4).map(d => d.name)
-      // Khi chỉ còn 2 bệnh cạnh tranh, bỏ lọc disease_count>=2 để bắt cả triệu chứng pathognomonic
-      const minDiseaseCount = rankedDiseases.length <= 2 ? 1 : 2
       const discRes = await session.run(`
-        MATCH (d:Disease)-[r:HAS_SYMPTOM]->(s:Symptom)
+        MATCH (d:Disease)
         WHERE d.name IN $topDiseases
-          AND NOT s.id IN $known
+        OPTIONAL MATCH (d)-[r:HAS_SYMPTOM]->(s:Symptom)
+        WHERE NOT s.id IN $known
+        WITH s, d, coalesce(r.probability, 0.0) AS prob
+        WHERE s IS NOT NULL
         WITH s.name AS symptom, s.id AS sym_id, s.description AS description,
-             collect({disease: d.name, prob: r.probability}) AS disease_probs,
-             count(DISTINCT d) AS disease_count,
-             stdev(r.probability) AS prob_stdev,
-             avg(r.probability) AS prob_avg
-        WHERE disease_count >= $minDiseaseCount
-        RETURN symptom, sym_id, description, disease_probs, disease_count, prob_stdev, prob_avg
+             collect({disease: d.name, prob: prob}) AS disease_probs,
+             stdev(prob) AS prob_stdev,
+             avg(prob) AS prob_avg
+        RETURN symptom, sym_id, description, disease_probs, size(disease_probs) AS disease_count, prob_stdev, prob_avg
         ORDER BY prob_stdev DESC, prob_avg DESC
         LIMIT 5
-      `, { topDiseases: topDiseaseNames, known: knownSymptoms, minDiseaseCount })
+      `, { topDiseases: topDiseaseNames, known: knownSymptoms })
 
       bestNextSymptoms = discRes.records.map(rec => ({
         name: rec.get('symptom'),

@@ -332,14 +332,14 @@ export async function generateReply({ messages, specialtyId, lang = 'vi', onChun
     const userMessages = messages.filter((m) => m.role === 'user')
     const turnCount = userMessages.length
 
-    if (turnCount >= 4) {
+    if (turnCount >= 3) {
       systemPrompt += isEn
-        ? `\n\n⚠️ **CRITICAL SYSTEM ENFORCEMENT**: This is turn ${turnCount}. You MUST immediately transition to PHASE 2 (Concluding with Evidence) now. DO NOT ask any further questions. Output the SCREENING REPORT using the information collected so far, even if some details are incomplete. You MUST strictly follow the rule to ONLY list diseases present in the Neo4j graph context.`
-        : `\n\n⚠️ **CHỈ THỊ HỆ THỐNG BẮT BUỘC**: Đây là lượt phản hồi thứ ${turnCount}. Bạn BẮT BUỘC phải chuyển sang GIAI ĐOẠN 2 (Kết luận có dẫn chứng) ngay lập tức. TUYỆT ĐỐI KHÔNG ĐƯỢC hỏi thêm bất kỳ câu hỏi nào. Hãy xuất BÁO CÁO SÀNG LỌC dựa trên thông tin đã có. Bạn BẮT BUỘC chỉ được liệt kê các bệnh lý có trong danh sách được cung cấp từ đồ thị Neo4j ở phần TRẠNG THÁI HIỆN TẠI dưới đây.`
+        ? `\n\n⚠️ **CRITICAL SYSTEM ENFORCEMENT**: This is turn ${turnCount}. You MUST immediately transition to PHASE 2 (Detailed Screening Report) now. DO NOT ask any further questions. Output the SCREENING REPORT using the information collected so far. You MUST strictly follow the rule to ONLY list diseases present in the Neo4j graph context.`
+        : `\n\n⚠️ **CHỈ THỊ HỆ THỐNG BẮT BUỘC**: Đây là lượt phản hồi thứ ${turnCount}. Bạn BẮT BUỘC phải chuyển sang GIAI ĐOẠN 2 (Báo cáo sàng lọc chi tiết) ngay lập tức. TUYỆT ĐỐI KHÔNG ĐƯỢC hỏi thêm bất kỳ câu hỏi nào. Hãy xuất BÁO CÁO SÀNG LỌC dựa trên thông tin đã có. Bạn BẮT BUỘC chỉ được liệt kê các bệnh lý có trong danh sách được cung cấp từ đồ thị Neo4j ở phần TRẠNG THÁI HIỆN TẠI dưới đây.`
     } else {
       systemPrompt += isEn
-        ? `\n\n💡 *System info: This is turn ${turnCount}/3. Ask 3 to 5 focused clarifying questions in Phase 1.*`
-        : `\n\n💡 *Thông tin hệ thống: Đây là lượt hỏi thứ ${turnCount}/3. Hãy hỏi từ 3 đến 5 câu hỏi ngắn gọn, tập trung theo đúng quy trình Giai đoạn 1.*`
+        ? `\n\n⚠️ **CRITICAL SYSTEM ENFORCEMENT**: This is turn ${turnCount}/2. You are strictly in PHASE 1 (Information Gathering). You MUST NOT output the screening report or make a diagnosis yet. You MUST ask 3 to 5 focused clarifying questions based on the optimal differential symptoms provided below. DO NOT output any suspected conditions or make conclusions.`
+        : `\n\n⚠️ **CHỈ THỊ HỆ THỐNG BẮT BUỘC**: Đây là lượt hỏi thứ ${turnCount}/2. Bạn BẮT BUỘC đang ở GIAI ĐOẠN 1 (Thu thập thông tin). Bạn TUYỆT ĐỐI KHÔNG ĐƯỢC xuất báo cáo sàng lọc nghi ngờ hoặc đưa ra kết luận bệnh lý trong lượt này. Bạn BẮT BUỘC phải đặt từ 3 đến 5 câu hỏi ngắn gọn để làm rõ các triệu chứng phân biệt tối ưu được cung cấp ở phần TRẠNG THÁI HIỆN TẠI dưới đây.`
     }
 
     const chatMessages = [
