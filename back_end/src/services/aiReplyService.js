@@ -93,19 +93,18 @@ function buildSystemPrompt(specialtyId, graphContext, lang = 'vi') {
   const specialty = getSpecialty(specialtyId)
   const isEn = lang === 'en'
 
-  // Phần hướng dẫn hành vi chung cho tất cả các chuyên khoa
   const baseGuidelines = isEn ? `
 ## Mandatory behavior rules:
 - Always reply in English, friendly and professional.
 - DO NOT invent medical information. Only rely on your knowledge and the graph context below.
-- At the end of each important response, remind the user to see a doctor for formal diagnosis.
+- Only remind the user to see a doctor for formal diagnosis when concluding in Phase 2. DO NOT append doctor disclaimers during the questioning process of Phase 1.
 - DO NOT provide a definitive diagnosis — only suggest and guide screening.
 - Keep responses professional, clear, and structured with bullet points when appropriate.
 `.trim() : `
 ## Quy tắc hành vi bắt buộc:
 - Luôn trả lời bằng tiếng Việt, thân thiện và chuyên nghiệp.
 - KHÔNG bịa đặt thông tin y tế. Chỉ dựa trên tri thức bạn có và ngữ cảnh đồ thị bên dưới.
-- Cuối mỗi phản hồi quan trọng, nhắc nhở người dùng đến gặp bác sĩ để được chẩn đoán chính thức.
+- Chỉ nhắc nhở người dùng đến gặp bác sĩ để được chẩn đoán chính thức khi đưa ra kết luận (Giai đoạn 2). KHÔNG tự động chèn câu lưu ý đi khám bác sĩ vào cuối các câu hỏi ở Giai đoạn 1.
 - KHÔNG cung cấp chẩn đoán xác định — chỉ gợi ý và hướng dẫn sàng lọc.
 - Trình bày câu trả lời rõ ràng, đầy đủ, khoa học và chuyên nghiệp.
 `.trim()
