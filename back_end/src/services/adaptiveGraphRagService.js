@@ -677,6 +677,8 @@ export async function computeAdaptiveContext(sceResult, excludedSymptoms = new S
         const coverageRatio = matchedCount / symptomsArr.length
 
         const score = Math.max(0, (baseScore * dampenedDemoMult * temporalMultiplier) * Math.pow(coverageRatio, 1.5) - penalty)
+        const matchRatio = score / maxPossibleScore
+        const pct = Math.min(95, Math.max(5, Math.round(matchRatio * 100)))
 
         return {
           name,
@@ -685,6 +687,7 @@ export async function computeAdaptiveContext(sceResult, excludedSymptoms = new S
           matchedCount: r.get('matched_count').toNumber(),
           score: score,
           maxPossibleScore: maxPossibleScore,
+          pct: pct,
           matchedDetails: r.get('matched_details').map(s => ({
             symptom: s.symptom,
             prob: s.prob,
@@ -694,7 +697,7 @@ export async function computeAdaptiveContext(sceResult, excludedSymptoms = new S
           sexes: r.get('sexes').filter(s => s.sex && s.prob)
         }
       })
-        .sort((a, b) => b.score - a.score)  // Re-sort sau khi áp dụng tất cả hệ số
+        .sort((a, b) => b.pct - a.pct || b.score - a.score)  // Sắp xếp theo phần trăm pct giảm dần, nếu bằng nhau thì so score
         .slice(0, 8)                         // Chỉ giữ top 8 sau ranking thực sự
     }
 
@@ -820,8 +823,7 @@ export function formatAdaptiveContext(ctx, lang = 'vi') {
                  : `*Chua du trieu chung de xep hang benh — hay hoi them.*\n`
   } else {
     rankedDiseases.slice(0, 5).forEach((d, idx) => {
-      const matchRatio = d.score / d.maxPossibleScore
-      const pct = Math.min(95, Math.max(5, Math.round(matchRatio * 100)))
+      const pct = d.pct !== undefined ? d.pct : Math.min(95, Math.max(5, Math.round((d.score / d.maxPossibleScore) * 100)))
       const symList = d.matchedDetails.map(s => `${s.symptom} (${s.prob.toFixed(1)}%${s.description ? ` - Desc: ${s.description}` : ''})`).join(', ')
       const ageInfo = d.ages.length > 0 ? (isEn ? ` | Common age: ` : ` | Tuoi pho bien: `) + d.ages.map(a => `${a.age} (${a.prob?.toFixed(1)}%)`).join(', ') : ''
       const sexInfo = d.sexes.length > 0 ? (isEn ? ` | Gender: ` : ` | Gioi tinh: `) + d.sexes.map(s => `${s.sex} (${s.prob?.toFixed(1)}%)`).join(', ') : ''
