@@ -218,6 +218,8 @@ Khi đã đủ thông tin, xuất BÁO CÁO SÀNG LỌC ĐẦY ĐỦ theo đúng
 Với **mỗi bệnh**, trình bày tiêu đề ĐÚNG ĐỊNH DẠNG sau (bắt buộc để hiển thị vòng tròn %):
 '1. [Tên bệnh]: [Số]% xác suất'
 
+**⚠️ Quy tắc dịch tên bệnh BẮT BUỘC**: Tên bệnh trong đồ thị được lưu bằng tiếng Anh (ví dụ: "Malaria", "Meningitis", "Mononucleosis"). Bạn BẮT BUỘC phải dịch tên bệnh sang tiếng Việt khi viết tiêu đề (ví dụ: "Sốt rét", "Viêm màng não", "Bạch cầu đơn nhân nhiễm khuẩn"). Nếu không có tên tiếng Việt thông dụng, hãy ghi tên tiếng Việt y khoa trước, rồi kèm tên tiếng Anh trong ngoặc đơn.
+
 **Quy tắc nguồn dữ liệu**: CHỈ liệt kê các bệnh có trong danh sách từ TRẠNG THÁI HIỆN TẠI. TUYỆT ĐỐI KHÔNG tự suy diễn thêm bệnh ngoài đồ thị.
 
 Với **mỗi bệnh**, cung cấp phân tích chi tiết và đầy đủ gồm các phần sau:
