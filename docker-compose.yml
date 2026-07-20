@@ -25,6 +25,8 @@ services:
       - backend
     env_file:
       - ./back_end/.env
+    environment:
+      - PORT=7860
     ports:
       - '8080:7860'
     restart: unless-stopped
