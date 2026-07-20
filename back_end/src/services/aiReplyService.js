@@ -322,18 +322,14 @@ export async function generateReply({ messages, specialtyId, lang = 'vi', onChun
     const userMessages = messages.filter((m) => m.role === 'user')
     const turnCount = userMessages.length
 
-    if (turnCount >= 5) {
+    if (turnCount >= 4) {
       systemPrompt += isEn 
-        ? `\n\n⚠️ **CRITICAL SYSTEM ENFORCEMENT**: This is turn ${turnCount}. You MUST immediately transition to PHASE 2 (Concluding with Evidence) now. DO NOT ask any further questions or show any checkboxes. Output the SCREENING REPORT using the information collected so far, even if some checklist items are incomplete. You MUST strictly follow the rule to ONLY list diseases present in the Neo4j graph context.`
-        : `\n\n⚠️ **CHỈ THỊ HỆ THỐNG BẮT BUỘC**: Đây là lượt phản hồi thứ ${turnCount}. Bạn BẮT BUỘC phải chuyển sang GIAI ĐOẠN 2 (Kết luận có dẫn chứng) ngay lập tức. TUYỆT ĐỐI KHÔNG ĐƯỢC hỏi thêm bất kỳ câu hỏi nào hay hiển thị thêm hộp kiểm. Hãy xuất BÁO CÁO SÀNG LỌC dựa trên thông tin đã có. Bạn BẮT BUỘC chỉ được liệt kê các bệnh lý có trong danh sách được cung cấp từ đồ thị Neo4j ở phần TRẠNG THÁI HIỆN TẠI dưới đây.`
-    } else if (turnCount === 4) {
-      systemPrompt += isEn
-        ? `\n\n⚠️ **CRITICAL SYSTEM ENFORCEMENT — TURN 4**: You MUST show a symptom checklist ONLY. DO NOT write any diagnosis, conclusion, SCREENING REPORT, or suspected conditions list. ONLY write 1 short sentence asking the patient to review the symptoms below, then append the checklist tag EXACTLY at the end: \`[SymptomChecklist: slug1=Translated Name 1, slug2=Translated Name 2, ...]\` (e.g. \`[SymptomChecklist: fever=Fever, diarrhea=Diarrhea]\`). Choose the top 3-5 optimal differential symptoms from the CURRENT STATE section below.`
-        : `\n\n⚠️ **CHỈ THỊ HỆ THỐNG BẮT BUỘC — LƯỢT 4**: Bạn BẮT BUỘC chỉ được hiển thị hộp kiểm triệu chứng, TUYỆT ĐỐI KHÔNG viết bất kỳ kết luận, báo cáo sàng lọc, hay danh sách bệnh nghi ngờ nào. Bạn CHỈ được viết 1 câu ngắn mời bệnh nhân xem lại triệu chứng, rồi chèn thẻ sau vào CUỐI CÙNG câu trả lời theo ĐÚNG ĐỊNH DẠNG: \`[SymptomChecklist: slug1=Tên tiếng Việt 1, slug2=Tên tiếng Việt 2, ...]\` (Ví dụ: \`[SymptomChecklist: fever=Sốt, diarrhea=Tiêu chảy]\`). Chọn 3-5 triệu chứng phân biệt tối ưu nhất từ TRẠNG THÁI HIỆN TẠI dưới đây.`
+        ? `\n\n⚠️ **CRITICAL SYSTEM ENFORCEMENT**: This is turn ${turnCount}. You MUST immediately transition to PHASE 2 (Concluding with Evidence) now. DO NOT ask any further questions. Output the SCREENING REPORT using the information collected so far, even if some details are incomplete. You MUST strictly follow the rule to ONLY list diseases present in the Neo4j graph context.`
+        : `\n\n⚠️ **CHỈ THỊ HỆ THỐNG BẮT BUỘC**: Đây là lượt phản hồi thứ ${turnCount}. Bạn BẮT BUỘC phải chuyển sang GIAI ĐOẠN 2 (Kết luận có dẫn chứng) ngay lập tức. TUYỆT ĐỐI KHÔNG ĐƯỢC hỏi thêm bất kỳ câu hỏi nào. Hãy xuất BÁO CÁO SÀNG LỌC dựa trên thông tin đã có. Bạn BẮT BUỘC chỉ được liệt kê các bệnh lý có trong danh sách được cung cấp từ đồ thị Neo4j ở phần TRẠNG THÁI HIỆN TẠI dưới đây.`
     } else {
       systemPrompt += isEn
-        ? `\n\n💡 *System info: This is turn ${turnCount}/4. Ask 3 to 5 focused clarifying questions in Phase 1.*`
-        : `\n\n💡 *Thông tin hệ thống: Đây là lượt hỏi thứ ${turnCount}/4. Hãy hỏi từ 3 đến 5 câu hỏi ngắn gọn, tập trung theo đúng quy trình Giai đoạn 1.*`
+        ? `\n\n💡 *System info: This is turn ${turnCount}/3. Ask 3 to 5 focused clarifying questions in Phase 1.*`
+        : `\n\n💡 *Thông tin hệ thống: Đây là lượt hỏi thứ ${turnCount}/3. Hãy hỏi từ 3 đến 5 câu hỏi ngắn gọn, tập trung theo đúng quy trình Giai đoạn 1.*`
     }
 
     const chatMessages = [
