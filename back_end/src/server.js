@@ -52,8 +52,8 @@ app.get('/api/error-log', (req, res) => {
 app.use(notFoundHandler)
 app.use(errorHandler)
 
-app.listen(env.port, () => {
-  console.log(`MedChat backend listening on http://localhost:${env.port}`)
+app.listen(env.port, '0.0.0.0', () => {
+  console.log(`MedChat backend listening on http://0.0.0.0:${env.port}`)
   if (!env.openrouterApiKey) {
     console.log('OPENROUTER_API_KEY not set — /api/chat is using the mock reply generator.')
   } else {
