@@ -4,7 +4,7 @@ import {
   computeAdaptiveContext,
   extractSymptomsFromHistory,
   formatAdaptiveContext
-} from './nliceService.js'
+} from './adaptiveGraphRagService.js'
 
 // ─── CONSTANTS ───────────────────────────────────────────────────────────────
 const THINKING_DELAY_RANGE = [300, 700]
