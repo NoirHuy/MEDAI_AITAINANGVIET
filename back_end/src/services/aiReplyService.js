@@ -360,8 +360,8 @@ export async function generateReply({ messages, specialtyId, lang = 'vi', onChun
         : `\n\n⚠️ **CHỈ THỊ HỆ THỐNG BẮT BUỘC**: Đây là lượt hỏi thứ ${turnCount} (tối thiểu 2 lượt hỏi). Bạn BẮT BUỘC đang ở GIAI ĐOẠN 1 (Thu thập thông tin). Bạn TUYỆT ĐỐI KHÔNG ĐƯỢC xuất báo cáo sàng lọc nghi ngờ hoặc đưa ra kết luận bệnh lý trong lượt này. Bạn BẮT BUỘC phải đặt từ 3 đến 5 câu hỏi ngắn gọn để làm rõ các triệu chứng phân biệt tối ưu được cung cấp ở phần TRẠNG THÁI HIỆN TẠI dưới đây.`
     } else {
       systemPrompt += isEn
-        ? `\n\n💡 *System info: This is turn ${turnCount}/3. You have completed the minimum of 2 questioning turns. You may now EITHER: (1) transition to PHASE 2 and output the detailed screening report if you have enough information, OR (2) ask 3 to 5 clarifying questions for one final turn if key differential details are still missing.*`
-        : `\n\n💡 *Thông tin hệ thống: Đây là lượt hỏi thứ ${turnCount}/3. Bạn đã hoàn thành tối thiểu 2 lượt hỏi làm rõ. Bạn có quyền LỰA CHỌN: (1) chuyển sang GIAI ĐOẠN 2 để xuất Báo cáo sàng lọc chi tiết nếu thông tin đã đủ rõ ràng, HOẶC (2) đặt từ 3 đến 5 câu hỏi làm rõ lượt cuối cùng (tối đa 3 lượt hỏi) nếu thấy các triệu chứng phân biệt quan trọng vẫn chưa được làm rõ.*`
+        ? `\n\n💡 *System info: This is turn ${turnCount}/3. Evaluate the gathered information carefully. If the user provided too few symptoms, or if details regarding symptom characteristics, duration, and severity are still missing (checklist items above are not marked [x]), you MUST choose option (2) to ask 3 to 5 clarifying questions for one final turn. Only transition to PHASE 2 if the core medical details are fully gathered.*`
+        : `\n\n💡 *Thông tin hệ thống: Đây là lượt hỏi thứ ${turnCount}/3. Hãy đánh giá cẩn thận lượng thông tin bạn có. Nếu người dùng cung cấp quá ít triệu chứng hoặc thông tin về vị trí, tính chất, thời gian và mức độ chưa đầy đủ (các mục checklist ở trên chưa được tích [x]), bạn BẮT BUỘC phải chọn phương án (2) để tiếp tục hỏi lượt thứ 3 làm rõ. Chỉ chuyển sang GIAI ĐOẠN 2 nếu các thông tin y tế cốt lõi đã được thu thập đầy đủ.*`
     }
 
     const chatMessages = [
