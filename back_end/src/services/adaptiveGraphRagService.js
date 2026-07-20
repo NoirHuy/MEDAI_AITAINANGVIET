@@ -91,7 +91,7 @@ async function tryCallOpenRouter(chatMessages, modelName, timeoutMs = 15000) {
       model: modelName,
       messages: chatMessages,
       temperature: 0.1,
-      max_tokens: 1000, // Đã giảm xuống 1000 để tránh lỗi hết credit của OpenRouter
+      max_tokens: 1500, // Tăng lên 1500 để tránh bị cắt cụt JSON khi danh sách triệu chứng dài
       reasoning: (modelName.includes('gemini-3') || modelName.includes('gemini-2.5') || modelName.includes('deepseek')) ? {
         effort: 'low',
         exclude: true
