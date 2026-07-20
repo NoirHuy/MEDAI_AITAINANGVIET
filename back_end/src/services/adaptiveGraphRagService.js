@@ -197,8 +197,9 @@ You MUST return ONLY a single valid JSON block matching the following structure 
 Mandatory Clinical NLP Rules:
 1. Clinical Representation & No Disease Inference: Extract clinical symptoms accurately. Do NOT infer clinical diseases (e.g. do not output Tension headache, as disease classification belongs to the graph reasoning layer).
 2. Negation Detection: Extract negated symptoms mentioned by the patient. If the patient says "no vomiting", output term: "Vomiting", status: "negative".
-3. Hybrid Chief Complaint: The first symptom reported by the Patient in their first turn is the highest priority candidate. Verify if it is indeed the main reason for visit to set role: "chief_complaint". Mark subsequent symptoms as "associated".
-4. Composite Symptom Terms: When a body location, severity, or frequency drastically changes the clinical classification of a symptom, you MUST generate a composite clinical term in the "term" field (in English). For example:
+3. Strict Explicit Mention Rule (Critical): ONLY extract symptoms that the Patient explicitly mentions as present or absent. If the Doctor asks about a symptom (e.g., "Do you have a cough, runny nose, or chest pain?") but the Patient ignores it or does NOT answer it, you MUST NOT extract it. Do NOT assume it is negative. Only output status "negative" when the Patient explicitly denies it (e.g., "no cough", "không ho").
+4. Hybrid Chief Complaint: The first symptom reported by the Patient in their first turn is the highest priority candidate. Verify if it is indeed the main reason for visit to set role: "chief_complaint". Mark subsequent symptoms as "associated".
+5. Composite Symptom Terms: When a body location, severity, or frequency drastically changes the clinical classification of a symptom, you MUST generate a composite clinical term in the "term" field (in English). For example:
    - If abdominal pain is located in the 'lower abdomen' or 'hypogastric region', map "term" directly to 'Lower abdominal pain'.
    - If abdominal pain is located in the 'upper abdomen' or 'epigastrium', map "term" directly to 'Upper abdominal pain'.
    - If abdominal pain is 'burning', map "term" directly to 'Burning abdominal pain'.
@@ -245,8 +246,9 @@ Bạn CHỈ được phép trả về duy nhất một khối JSON hợp lệ th
 Nguyên tắc lâm sàng bắt buộc (Clinical NLP Rules):
 1. Tách biệt trích xuất và suy luận: Bạn chỉ trích xuất triệu chứng lâm sàng. TUYỆT ĐỐI không tự suy diễn bệnh lý (ví dụ: cấm quy đổi thành Tension headache, vì chẩn đoán bệnh là của tầng suy luận đồ thị).
 2. Phủ định (Negation): Phải trích xuất đầy đủ triệu chứng phủ định. Nếu bệnh nhân nói "không nôn, không buồn nôn", bạn phải ghi nhận term: "Nausea" và "Vomiting" với status: "negative".
-3. Xác định Chief Complaint lai: Triệu chứng đầu tiên mà Bệnh nhân khai báo trong lượt thoại đầu tiên là ứng viên ưu tiên cao nhất làm Chief Complaint. Bạn hãy kiểm tra xem đó có đúng là lý do chính khiến bệnh nhân đi khám không để gán role: "chief_complaint". Tất cả các triệu chứng phụ phát hiện sau đó gán role: "associated".
-4. Từ triệu chứng ghép (Composite Terms): Khi vị trí cơ thể, tính chất, hoặc mức độ làm thay đổi bản chất chẩn đoán của triệu chứng, bạn BẮT BUỘC phải tạo ra một thuật ngữ triệu chứng ghép hoàn chỉnh trong trường "term" (bằng tiếng Anh). Ví dụ:
+3. Quy tắc chỉ trích xuất khi được đề cập (Cực kỳ quan trọng): Chỉ trích xuất các triệu chứng mà Bệnh nhân thực sự đề cập (có hoặc không có). Nếu Bác sĩ hỏi về một triệu chứng (Ví dụ: "Bé có ho hay chảy mũi không?") nhưng Bệnh nhân im lặng hoặc KHÔNG nhắc gì đến nó trong phản hồi, bạn TUYỆT ĐỐI KHÔNG được trích xuất triệu chứng đó và không được coi nó là "negative". Chỉ gán "status: 'negative'" khi Bệnh nhân chủ động phủ nhận (Ví dụ: "không ho", "không nôn", "không phát ban").
+4. Xác định Chief Complaint lai: Triệu chứng đầu tiên mà Bệnh nhân khai báo trong lượt thoại đầu tiên là ứng viên ưu tiên cao nhất làm Chief Complaint. Bạn hãy kiểm tra xem đó có đúng là lý do chính khiến bệnh nhân đi khám không để gán role: "chief_complaint". Tất cả các triệu chứng phụ phát hiện sau đó gán role: "associated".
+5. Từ triệu chứng ghép (Composite Terms): Khi vị trí cơ thể, tính chất, hoặc mức độ làm thay đổi bản chất chẩn đoán của triệu chứng, bạn BẮT BUỘC phải tạo ra một thuật ngữ triệu chứng ghép hoàn chỉnh trong trường "term" (bằng tiếng Anh). Ví dụ:
    - Nếu đau bụng ở vùng bụng dưới ('lower abdomen' hoặc 'hypogastric region'), hãy gán "term" trực tiếp là 'Lower abdominal pain'.
    - Nếu đau bụng ở vùng bụng trên hoặc thượng vị ('upper abdomen' hoặc 'epigastrium'), hãy gán "term" trực tiếp là 'Upper abdominal pain'.
    - Nếu đau bụng có tính chất nóng rát, hãy gán "term" trực tiếp là 'Burning abdominal pain'.
