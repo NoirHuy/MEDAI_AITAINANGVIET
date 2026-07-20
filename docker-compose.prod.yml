@@ -14,7 +14,7 @@ services:
   frontend:
     ports: !reset []
     expose:
-      - '80'
+      - '7860'
 
   caddy:
     image: caddy:2-alpine
