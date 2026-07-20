@@ -12,8 +12,6 @@ import { DEFAULT_SPECIALTY_ID } from './data/specialties'
 import './App.css'
 
 function App() {
-  const chat = useChat()
-  const { theme, toggleTheme } = useTheme()
   const {
     account,
     signUpForm,
@@ -24,6 +22,8 @@ function App() {
     signOut,
     fetchUsage,
   } = useAccount()
+  const chat = useChat(account)
+  const { theme, toggleTheme } = useTheme()
   const { message: toastMessage, showToast } = useToast()
 
   const [inputValue, setInputValue] = useState('')

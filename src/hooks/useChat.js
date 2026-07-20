@@ -1,4 +1,4 @@
-import { useCallback, useMemo, useRef, useState } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { createId } from '../utils/id'
 import { streamAssistantReply } from '../services/aiService'
 import { DEFAULT_SPECIALTY_ID } from '../data/specialties'
@@ -19,11 +19,42 @@ function titleFromText(text) {
   return `${trimmed.slice(0, 42)}…`
 }
 
-export function useChat() {
+export function useChat(account) {
   const [conversations, setConversations] = useState([])
   const [activeId, setActiveId] = useState(null)
   const [isResponding, setIsResponding] = useState(false)
   const abortRef = useRef(null)
+
+  // Load conversations from MongoDB when logged in
+  useEffect(() => {
+    if (!account) {
+      setConversations([])
+      setActiveId(null)
+      return
+    }
+
+    let cancelled = false
+    fetch('/api/chat/conversations')
+      .then((res) => {
+        if (!res.ok) throw new Error()
+        return res.json()
+      })
+      .then((data) => {
+        if (!cancelled && data.conversations) {
+          setConversations(data.conversations)
+          if (data.conversations.length > 0) {
+            setActiveId(data.conversations[0].id)
+          }
+        }
+      })
+      .catch((err) => {
+        console.error('Không thể tải lịch sử trò chuyện:', err)
+      })
+
+    return () => {
+      cancelled = true
+    }
+  }, [account])
 
   const activeConversation = useMemo(
     () => conversations.find((c) => c.id === activeId) ?? null,
@@ -44,13 +75,34 @@ export function useChat() {
   const deleteConversation = useCallback((id) => {
     setConversations((prev) => prev.filter((c) => c.id !== id))
     setActiveId((current) => (current === id ? null : current))
-  }, [])
+    if (account) {
+      fetch(`/api/chat/conversations/${id}`, { method: 'DELETE' }).catch((err) =>
+        console.error('Không thể xóa cuộc trò chuyện:', err),
+      )
+    }
+  }, [account])
 
   const setSpecialty = useCallback((convId, specialtyId) => {
-    setConversations((prev) =>
-      prev.map((c) => (c.id === convId ? { ...c, specialtyId } : c)),
-    )
-  }, [])
+    setConversations((prev) => {
+      const updated = prev.map((c) => (c.id === convId ? { ...c, specialtyId } : c))
+      if (account) {
+        const conv = updated.find((c) => c.id === convId)
+        if (conv) {
+          fetch('/api/chat/conversations', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              id: conv.id,
+              title: conv.title,
+              specialtyId: conv.specialtyId,
+              messages: conv.messages,
+            }),
+          }).catch((err) => console.error('Không thể lưu chuyên khoa:', err))
+        }
+      }
+      return updated
+    })
+  }, [account])
 
   const stopResponding = useCallback(() => {
     abortRef.current?.abort()
@@ -136,8 +188,8 @@ export function useChat() {
           appendToken(lang === 'en' ? '\n\n_An error occurred while fetching the response. Please try again._' : '\n\n_Đã xảy ra lỗi khi lấy phản hồi. Vui lòng thử lại._')
         }
       } finally {
-        setConversations((prev) =>
-          prev.map((c) =>
+        setConversations((prev) => {
+          const updated = prev.map((c) =>
             c.id === convId
               ? {
                   ...c,
@@ -146,13 +198,31 @@ export function useChat() {
                   ),
                 }
               : c,
-          ),
-        )
+          )
+
+          if (account) {
+            const conv = updated.find((c) => c.id === convId)
+            if (conv) {
+              fetch('/api/chat/conversations', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                  id: conv.id,
+                  title: conv.title,
+                  specialtyId: conv.specialtyId,
+                  messages: conv.messages,
+                }),
+              }).catch((err) => console.error('Không thể lưu cuộc trò chuyện:', err))
+            }
+          }
+
+          return updated
+        })
         setIsResponding(false)
         abortRef.current = null
       }
     },
-    [activeId, activeConversation, isResponding],
+    [activeId, activeConversation, isResponding, account],
   )
 
   return {

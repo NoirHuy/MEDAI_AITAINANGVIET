@@ -1,9 +1,10 @@
 import { Router } from 'express'
 import { asyncHandler } from '../utils/asyncHandler.js'
 import { HttpError } from '../utils/httpError.js'
-import { attachUserIfPresent } from '../middleware/auth.js'
+import { attachUserIfPresent, requireAuth } from '../middleware/auth.js'
 import { generateReply, estimateTokens } from '../services/aiReplyService.js'
 import { incrementUsage } from '../db/usersRepo.js'
+import { ConversationModel } from '../db/conversation.model.js'
 
 const router = Router()
 
@@ -68,6 +69,58 @@ router.post(
 
     res.end()
   }),
+)
+
+// Get all conversations for the logged-in user
+router.get(
+  '/conversations',
+  requireAuth,
+  asyncHandler(async (req, res) => {
+    const list = await ConversationModel.find({ userId: req.userId })
+      .sort({ createdAt: -1 })
+      .lean()
+    res.json({ conversations: list })
+  })
+)
+
+// Save or update a conversation
+router.post(
+  '/conversations',
+  requireAuth,
+  asyncHandler(async (req, res) => {
+    const { id, title, specialtyId, messages } = req.body ?? {}
+    if (!id || !title || !specialtyId || !Array.isArray(messages)) {
+      throw new HttpError(400, 'Thiếu thông tin hội thoại.')
+    }
+
+    const conversation = await ConversationModel.findOneAndUpdate(
+      { id, userId: req.userId },
+      {
+        $set: {
+          title,
+          specialtyId,
+          messages,
+        }
+      },
+      { new: true, upsert: true, setDefaultsOnInsert: true }
+    ).lean()
+
+    res.json({ conversation })
+  })
+)
+
+// Delete a conversation
+router.delete(
+  '/conversations/:id',
+  requireAuth,
+  asyncHandler(async (req, res) => {
+    const { id } = req.params
+    const result = await ConversationModel.deleteOne({ id, userId: req.userId })
+    if (result.deletedCount === 0) {
+      throw new HttpError(404, 'Không tìm thấy cuộc hội thoại hoặc không có quyền xóa.')
+    }
+    res.json({ ok: true })
+  })
 )
 
 export default router
