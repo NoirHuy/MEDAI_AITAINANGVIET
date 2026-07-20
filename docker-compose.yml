@@ -27,5 +27,15 @@ services:
       - '8080:80'
     restart: unless-stopped
 
+  mongodb:
+    image: mongo:6.0
+    container_name: medchat-mongodb
+    ports:
+      - '27018:27017'
+    volumes:
+      - mongodb_data:/data/db
+    restart: unless-stopped
+
 volumes:
   backend_data:
+  mongodb_data:
