@@ -24,6 +24,17 @@ short_description: Hệ thống trợ lý chẩn đoán phân biệt tích hợp
 
 ---
 
+## 🔗 Liên kết hệ thống (System Links)
+
+*   **Link Deploy trực tuyến**: [MedChat AI - Hugging Face Spaces](https://noirhuy-medchat.hf.space/)
+*   **Trình quản trị Đồ thị tri thức (Neo4j Cloud DB)**:
+    *   **Công cụ xem trực quan**: [Neo4j Workspace](https://workspace.neo4j.io/) (chọn Connect to a database)
+    *   **URI kết nối**: `neo4j+s://01ebae5f.databases.neo4j.io`
+    *   **Tên tài khoản**: `neo4j`
+    *   **Mật khẩu đăng nhập**: `1owqwBTQblzpNLGHg1VQFvF4dEH3yxn36lxro7C7ll8`
+
+---
+
 ## 🩺 Cấu trúc Đồ thị Tri thức Y khoa (Knowledge Graph)
 Hệ thống vận hành trên nền tảng cơ sở dữ liệu đồ thị tri thức **Neo4j** (grounded trên tập dữ liệu SymCAT/Synthea) bao gồm:
 *   **474 Nút Triệu chứng (Symptom nodes)**: Mô tả các biểu hiện lâm sàng chuẩn hóa.
