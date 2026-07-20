@@ -6,6 +6,8 @@ export const env = {
   jwtSecret: process.env.JWT_SECRET || 'dev-only-insecure-secret-change-me',
   openrouterApiKey: process.env.OPENROUTER_API_KEY || null,
   openrouterModel: process.env.OPENROUTER_MODEL || 'deepseek/deepseek-v4-flash',
+  openrouterModelNer: process.env.OPENROUTER_MODEL_NER || 'google/gemini-2.5-flash-lite',
+  openrouterModelChat: process.env.OPENROUTER_MODEL_CHAT || 'google/gemini-3-flash-preview',
   googleClientId: process.env.GOOGLE_CLIENT_ID || null,
   // Mark the session cookie Secure once this is actually served over HTTPS.
   cookieSecure: process.env.COOKIE_SECURE === 'true',

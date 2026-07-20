@@ -338,7 +338,7 @@ export async function generateReply({ messages, specialtyId, lang = 'vi', onChun
       ...messages
     ]
 
-    return streamOpenRouter(chatMessages, onChunk, signal, 'google/gemini-3-flash-preview')
+    return streamOpenRouter(chatMessages, onChunk, signal, env.openrouterModelChat)
   }
 
   // ── Các chuyên khoa khác (Đa khoa, Da liễu, Dinh dưỡng) ─────────────────
