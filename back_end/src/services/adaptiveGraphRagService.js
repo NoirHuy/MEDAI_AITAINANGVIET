@@ -111,10 +111,10 @@ async function tryCallOpenRouter(chatMessages, modelName, timeoutMs = 15000) {
 }
 
 // Helper gọi OpenRouter Completion chính hỗ trợ chuyển đổi phòng thủ (Active Failover)
-async function callOpenRouter(chatMessages) {
+async function callOpenRouter(chatMessages, modelOverride = null) {
   if (!env.openrouterApiKey) return ""
   
-  const primaryModel = env.openrouterModel
+  const primaryModel = modelOverride || env.openrouterModel
   const fallbackModel = 'google/gemini-2.5-flash'
 
   try {
@@ -259,7 +259,7 @@ Kết quả JSON:`
     rawTranslation = await callOpenRouter([
       { role: 'system', content: isEn ? 'You are a medical extraction robot that only returns valid JSON.' : 'Bạn là robot trích xuất y khoa chỉ trả về định dạng JSON hợp lệ.' },
       { role: 'user', content: translationPrompt }
-    ])
+    ], 'google/gemini-2.5-flash-lite')
   } catch (err) {
     console.error('[Audit Log][LLM_TRANSLATION][Error] OpenRouter connection failed:', err.message)
     throw err
@@ -404,7 +404,7 @@ Chỉ trả về danh sách các slug khớp chính xác nhất từ danh sách 
       const verifiedRaw = await callOpenRouter([
         { role: 'system', content: 'Bạn là chuyên viên chuẩn hóa y khoa. Chỉ trả về danh sách các slug hợp lệ ngăn cách bằng dấu phẩy.' },
         { role: 'user', content: verificationPrompt }
-      ])
+      ], 'google/gemini-2.5-flash-lite')
 
       if (verifiedRaw && !verifiedRaw.toLowerCase().includes('none')) {
         const verifiedSlugs = verifiedRaw.split(',').map(s => s.trim().toLowerCase()).filter(Boolean)

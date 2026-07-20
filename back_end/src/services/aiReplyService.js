@@ -34,7 +34,8 @@ async function streamText(text, onChunk, signal) {
 }
 
 // ─── OPENROUTER STREAM CLIENT ─────────────────────────────────────────────────
-async function streamOpenRouter(chatMessages, onChunk, signal) {
+async function streamOpenRouter(chatMessages, onChunk, signal, modelOverride = null) {
+  const modelName = modelOverride || env.openrouterModel
   const response = await fetch('https://openrouter.ai/api/v1/chat/completions', {
     method: 'POST',
     headers: {
@@ -44,7 +45,7 @@ async function streamOpenRouter(chatMessages, onChunk, signal) {
       'X-Title': 'MedChat'
     },
     body: JSON.stringify({
-      model: env.openrouterModel,
+      model: modelName,
       messages: chatMessages,
       stream: true,
       max_tokens: 3000
@@ -333,7 +334,7 @@ export async function generateReply({ messages, specialtyId, lang = 'vi', onChun
       ...messages
     ]
 
-    return streamOpenRouter(chatMessages, onChunk, signal)
+    return streamOpenRouter(chatMessages, onChunk, signal, 'google/gemini-3-flash-preview')
   }
 
   // ── Các chuyên khoa khác (Đa khoa, Da liễu, Dinh dưỡng) ─────────────────
