@@ -34,7 +34,7 @@ async function streamText(text, onChunk, signal) {
 }
 
 // ─── OPENROUTER STREAM CLIENT ─────────────────────────────────────────────────
-async function streamOpenRouter(chatMessages, onChunk, signal, modelOverride = null) {
+async function streamOpenRouter(chatMessages, onChunk, signal, modelOverride = null, maxTokens = 1500) {
   const modelName = modelOverride || env.openrouterModel
   const response = await fetch('https://openrouter.ai/api/v1/chat/completions', {
     method: 'POST',
@@ -48,7 +48,7 @@ async function streamOpenRouter(chatMessages, onChunk, signal, modelOverride = n
       model: modelName,
       messages: chatMessages,
       stream: true,
-      max_tokens: 3000, // Tăng lên 3000 để đảm bảo báo cáo sàng lọc chi tiết không bị cắt cụt giữa chừng
+      max_tokens: maxTokens,
       reasoning: (modelName.includes('gemini-3') || modelName.includes('deepseek')) ? {
         effort: 'low',
         exclude: true
@@ -369,7 +369,8 @@ export async function generateReply({ messages, specialtyId, lang = 'vi', onChun
       ...messages
     ]
 
-    return streamOpenRouter(chatMessages, onChunk, signal, env.openrouterModelChat)
+    const maxTokens = turnCount < 3 ? 800 : 2500
+    return streamOpenRouter(chatMessages, onChunk, signal, env.openrouterModelChat, maxTokens)
   }
 
   // ── Các chuyên khoa khác (Đa khoa, Da liễu, Dinh dưỡng) ─────────────────
@@ -378,7 +379,7 @@ export async function generateReply({ messages, specialtyId, lang = 'vi', onChun
     { role: 'system', content: systemPrompt },
     ...messages
   ]
-  return streamOpenRouter(chatMessages, onChunk, signal)
+  return streamOpenRouter(chatMessages, onChunk, signal, null, 1500)
 }
 
 export function estimateTokens(text) {
