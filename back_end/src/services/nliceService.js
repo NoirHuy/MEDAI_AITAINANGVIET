@@ -115,7 +115,7 @@ async function callOpenRouter(chatMessages) {
   if (!env.openrouterApiKey) return ""
   
   const primaryModel = env.openrouterModel
-  const fallbackModel = 'qwen/qwen3.5-flash-02-23'
+  const fallbackModel = 'google/gemini-2.5-flash'
 
   try {
     console.log(`[Audit Log][LLM_TRANSLATION][Info] Calling primary model: "${primaryModel}"`)
