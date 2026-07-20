@@ -3,7 +3,10 @@ import { SPECIALTIES } from '../data/specialties'
 // Nullish (not ||) so an explicitly empty string means "same origin" (the
 // production Docker setup proxies /api/* through nginx to the backend) —
 // falling through to the dev default only when the var is unset entirely.
-const API_URL = import.meta.env.VITE_API_URL ?? 'http://localhost:4000'
+const envApiUrl = import.meta.env.VITE_API_URL
+const API_URL = (envApiUrl && envApiUrl !== 'http://localhost:4000')
+  ? envApiUrl
+  : (import.meta.env.DEV ? 'http://localhost:4000' : '')
 
 // Simulated "thinking" delay before the first token arrives, in ms.
 const THINKING_DELAY_RANGE = [500, 1100]
