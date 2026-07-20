@@ -33,6 +33,17 @@ export default function ChatInput({
 
   return (
     <div className="chat-input">
+      <div className="chat-input__header">
+        <SpecialtyPicker
+          specialties={SPECIALTIES}
+          value={specialtyId}
+          onChange={onSpecialtyChange}
+          direction="up"
+          align="start"
+          variant="pill"
+          lang={lang}
+        />
+      </div>
       <div className="chat-input__box">
         <button
           type="button"
@@ -49,15 +60,6 @@ export default function ChatInput({
           value={value}
           onChange={(e) => onChange(e.target.value)}
           onKeyDown={handleKeyDown}
-        />
-        <SpecialtyPicker
-          specialties={SPECIALTIES}
-          value={specialtyId}
-          onChange={onSpecialtyChange}
-          direction="up"
-          align="end"
-          variant="pill"
-          lang={lang}
         />
         <button
           type="button"
