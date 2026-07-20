@@ -738,21 +738,12 @@ export function formatAdaptiveContext(ctx, lang = 'vi') {
     }
   }
 
-  if (confirmedSymptoms.length === 0 && diseaseOverview) {
+  if (confirmedSymptoms.length === 0) {
     if (isEn) {
-      text += `**Status:** Conversation start — no symptoms confirmed yet.\n\n`
-      text += `**All diseases in NLICE graph and their characteristic symptoms:**\n`
+      text += `**Status:** Conversation start — no symptoms confirmed yet. Politely invite the user to describe their current symptoms.\n\n`
     } else {
-      text += `**Trang thai:** Dau hoi thoai — chua xac nhan trieu chung nao.\n\n`
-      text += `**Toan bộ benh trong do thi NLICE va cac trieu chung dac trung:**\n`
+      text += `**Trang thai:** Dau hoi thoai — chua xac nhan trieu chung nao. Hay lich su moi nguoi dung chia se cac trieu chung hoac bieu hien bat thuong dang gap phai.\n\n`
     }
-    diseaseOverview.slice(0, 15).forEach(d => {
-      const symList = d.symptoms.map(s => `${s.symptom} (${s.prob.toFixed(1)}%${s.description ? ` - Desc: ${s.description}` : ''})`).join(', ')
-      text += `- **${d.name}**: ${symList}\n`
-      if (d.remarks) text += isEn ? `  (Epidemiology: ${d.remarks})\n` : `  (Dich te: ${d.remarks})\n`
-    })
-    text += isEn ? `\n**Mission:** Ask the user to describe symptoms. Then refer to the list above to guide clarification.\n`
-                 : `\n**Nhiem vu:** Hoi nguoi dung mo ta trieu chung. Sau do doc bang tren de xac dinh nhom benh va hoi cau phan biet.\n`
     return text
   }
 
