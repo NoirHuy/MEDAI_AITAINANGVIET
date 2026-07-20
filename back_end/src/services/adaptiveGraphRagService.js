@@ -137,6 +137,37 @@ async function callOpenRouter(chatMessages, modelOverride = null) {
   }
 }
 
+// Hàm cố gắng sửa chữa chuỗi JSON bị cắt cụt/thiếu dấu ngoặc do chạm max_tokens
+function tryRepairJson(jsonStr) {
+  try {
+    return JSON.parse(jsonStr)
+  } catch (e) {
+    console.warn('[Audit Log][JSON_REPAIR] Attempting to repair truncated JSON...')
+    let clean = jsonStr.trim()
+    
+    // Tìm vị trí bắt đầu của danh sách triệu chứng
+    const symptomsIndex = clean.lastIndexOf('symptoms')
+    if (symptomsIndex === -1) return null
+
+    // Duyệt ngược từ cuối chuỗi để tìm dấu đóng ngoặc nhọn '}' hợp lệ
+    for (let i = clean.length - 1; i >= 0; i--) {
+      if (clean[i] === '}') {
+        const testSub = clean.substring(0, i + 1)
+        const testClean = testSub.replace(/,\s*$/, '').trim()
+        const testJson = testClean + '\n]\n}'
+        try {
+          const parsed = JSON.parse(testJson)
+          console.log('[Audit Log][JSON_REPAIR][Success] Repaired truncated JSON successfully!')
+          return parsed
+        } catch {
+          // Tiếp tục duyệt tiếp
+        }
+      }
+    }
+    return null
+  }
+}
+
 // Hàm chuẩn hóa triệu chứng (nay đã chuyển dịch ngữ nghĩa hoàn chỉnh lên tầng LLM trích xuất ở Giai đoạn 1)
 function normalizeSymptomTerm(sym) {
   return sym.term
@@ -282,7 +313,10 @@ Kết quả JSON:`
     // Loại bỏ dấu phẩy thừa trước dấu đóng ngoặc (trailing commas)
     cleanJson = cleanJson.replace(/,\s*([\]}])/g, '$1')
     
-    extractedPayload = JSON.parse(cleanJson)
+    extractedPayload = tryRepairJson(cleanJson)
+    if (!extractedPayload) {
+      throw new Error('Chuỗi JSON không thể phục hồi hoặc phân tích cú pháp.')
+    }
     console.log('[Audit Log][LLM_TRANSLATION][Success] Parsed SCE JSON successfully.')
   } catch (err) {
     console.error('[Audit Log][LLM_TRANSLATION][Error] JSON parsing failed:', err.message)
