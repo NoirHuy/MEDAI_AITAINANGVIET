@@ -4,7 +4,12 @@ export function notFoundHandler(req, res) {
 
 // eslint-disable-next-line no-unused-vars
 export function errorHandler(err, req, res, next) {
-  console.error(err)
+  const status = err.status ?? 500
+  if (status >= 500) {
+    console.error(err)
+  } else {
+    console.warn(`[Client Error ${status}] ${err.message} - Path: ${req.method} ${req.path}`)
+  }
 
   global.serverErrors = global.serverErrors || []
   global.serverErrors.push({
@@ -16,6 +21,5 @@ export function errorHandler(err, req, res, next) {
   })
   if (global.serverErrors.length > 50) global.serverErrors.shift()
 
-  const status = err.status ?? 500
   res.status(status).json({ error: err.message || 'Đã xảy ra lỗi máy chủ.' })
 }
