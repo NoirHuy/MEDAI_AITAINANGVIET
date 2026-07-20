@@ -89,9 +89,13 @@ async function streamOpenRouter(chatMessages, onChunk, signal, modelOverride = n
 }
 
 // ─── SYSTEM PROMPTS ───────────────────────────────────────────────────────────
-function buildSystemPrompt(specialtyId, graphContext, lang = 'vi') {
+function buildSystemPrompt(specialtyId, graphContext, lang = 'vi', checklistStatus = { hasAgeSex: false, hasDuration: false, hasSeverity: false }) {
   const specialty = getSpecialty(specialtyId)
   const isEn = lang === 'en'
+
+  const ageSexBox = checklistStatus.hasAgeSex ? '[x]' : '[ ]'
+  const durationBox = checklistStatus.hasDuration ? '[x]' : '[ ]'
+  const severityBox = checklistStatus.hasSeverity ? '[x]' : '[ ]'
 
   const baseGuidelines = isEn ? `
 ## Mandatory behavior rules:
@@ -124,9 +128,9 @@ function buildSystemPrompt(specialtyId, graphContext, lang = 'vi') {
 ### PHASE 1 — Information Gathering (3 turns max)
 
 Your goal is to gather the following details through natural, friendly conversation:
-- [ ] **Age & sex** (first turn)
-- [ ] **Duration** of symptoms
-- [ ] **Severity** (impact on daily life)
+- ${ageSexBox} **Age & sex** (first turn)
+- ${durationBox} **Duration** of symptoms
+- ${severityBox} **Severity** (impact on daily life)
 - [ ] **Key clarifying details** from the graph (location, character, accompanying symptoms)
 
 **Phase 1 Behavior Rules:**
@@ -177,7 +181,7 @@ ${baseGuidelines}
 {ADAPTIVE_CONTEXT}
 ---`
     } else {
-      return `Bạn là bác sĩ thân thiện và ấm áp của hệ thống MedAI, được trang bị đồ thị tri thức lâm sàng NLICE.
+      return `Bạn là bác sĩ thân thiện và ấm áp của hệ thống MedAI, được trang bị đồ thị tri thức lâm sàng.
 
 ## Nhiệm vụ: Sàng lọc bệnh lý qua trò chuyện tự nhiên trong tối đa 3 lượt hỏi.
 
@@ -186,9 +190,9 @@ ${baseGuidelines}
 ### GIAI ĐOẠN 1 — Thu thập thông tin (Tối đa 3 lượt)
 
 Mục tiêu là thu thập đủ thông tin qua trò chuyện thân thiện:
-- [ ] **Tuổi & giới tính** (lượt đầu)
-- [ ] **Thời gian** triệu chứng kéo dài
-- [ ] **Mức độ** ảnh hưởng đến sinh hoạt
+- ${ageSexBox} **Tuổi & giới tính** (lượt đầu)
+- ${durationBox} **Thời gian** triệu chứng kéo dài
+- ${severityBox} **Mức độ** ảnh hưởng đến sinh hoạt
 - [ ] **Chi tiết phân biệt** từ đồ thị (vị trí, tính chất, triệu chứng kèm theo)
 
 **Quy tắc hành vi Giai đoạn 1:**
@@ -267,17 +271,17 @@ function buildMockReply(userText, specialtyId, lang = 'vi') {
 
   if (isEn) {
     return `[Demo Mode — OPENROUTER_API_KEY not configured]\n\n` +
-           `Thank you for contacting MedAI specialty **${name}**. ` +
-           `Please add your API Key in the \`.env\` file to activate real AI ` +
-           `integrated with the NLICE clinical knowledge graph.\n\n` +
-           `*Instructions: Open \`medchat/back_end/.env\` and fill in \`OPENROUTER_API_KEY=...\`*`
+      `Thank you for contacting MedAI specialty **${name}**. ` +
+      `Please add your API Key in the \`.env\` file to activate real AI ` +
+      `integrated with the NLICE clinical knowledge graph.\n\n` +
+      `*Instructions: Open \`medchat/back_end/.env\` and fill in \`OPENROUTER_API_KEY=...\`*`
   }
 
   return `[Chế độ demo — chưa cấu hình OPENROUTER_API_KEY]\n\n` +
-         `Cảm ơn bạn đã liên hệ với MedAI chuyên khoa **${name}**. ` +
-         `Vui lòng thêm API Key vào tệp \`.env\` để kích hoạt trí tuệ nhân tạo thật sự ` +
-         `tích hợp đồ thị tri thức lâm sàng NLICE.\n\n` +
-         `*Hướng dẫn: Mở \`medchat/back_end/.env\` và điền vào \`OPENROUTER_API_KEY=...\`*`
+    `Cảm ơn bạn đã liên hệ với MedAI chuyên khoa **${name}**. ` +
+    `Vui lòng thêm API Key vào tệp \`.env\` để kích hoạt trí tuệ nhân tạo thật sự ` +
+    `tích hợp đồ thị tri thức lâm sàng NLICE.\n\n` +
+    `*Hướng dẫn: Mở \`medchat/back_end/.env\` và điền vào \`OPENROUTER_API_KEY=...\`*`
 }
 
 // ─── ENTRYPOINT CHÍNH ─────────────────────────────────────────────────────────
@@ -306,8 +310,15 @@ export async function generateReply({ messages, specialtyId, lang = 'vi', onChun
       throw err
     }
 
-    // 3. Tạo system prompt tĩnh (cấu trúc quy trình)
-    const basePrompt = buildSystemPrompt(specialtyId, null, lang)
+    // 3. Tạo checklist status dựa trên dữ liệu trích xuất thực tế để tránh hỏi trùng
+    const checklistStatus = {
+      hasAgeSex: !!(sceResult?.demographics?.age || sceResult?.demographics?.sex),
+      hasDuration: !!(sceResult?.temporal?.durationValue),
+      hasSeverity: !!(sceResult?.symptoms?.some(s => s.status === 'positive' && s.attributes?.severity))
+    }
+
+    // 3b. Tạo system prompt tĩnh (cấu trúc quy trình) với trạng thái checklist động
+    const basePrompt = buildSystemPrompt(specialtyId, null, lang, checklistStatus)
 
     // 4. Inject adaptive context (bảng xếp hạng + gợi ý câu hỏi) động vào prompt
     const adaptiveText = adaptiveCtx
@@ -321,7 +332,7 @@ export async function generateReply({ messages, specialtyId, lang = 'vi', onChun
     const turnCount = userMessages.length
 
     if (turnCount >= 4) {
-      systemPrompt += isEn 
+      systemPrompt += isEn
         ? `\n\n⚠️ **CRITICAL SYSTEM ENFORCEMENT**: This is turn ${turnCount}. You MUST immediately transition to PHASE 2 (Concluding with Evidence) now. DO NOT ask any further questions. Output the SCREENING REPORT using the information collected so far, even if some details are incomplete. You MUST strictly follow the rule to ONLY list diseases present in the Neo4j graph context.`
         : `\n\n⚠️ **CHỈ THỊ HỆ THỐNG BẮT BUỘC**: Đây là lượt phản hồi thứ ${turnCount}. Bạn BẮT BUỘC phải chuyển sang GIAI ĐOẠN 2 (Kết luận có dẫn chứng) ngay lập tức. TUYỆT ĐỐI KHÔNG ĐƯỢC hỏi thêm bất kỳ câu hỏi nào. Hãy xuất BÁO CÁO SÀNG LỌC dựa trên thông tin đã có. Bạn BẮT BUỘC chỉ được liệt kê các bệnh lý có trong danh sách được cung cấp từ đồ thị Neo4j ở phần TRẠNG THÁI HIỆN TẠI dưới đây.`
     } else {
