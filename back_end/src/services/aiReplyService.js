@@ -128,7 +128,7 @@ For **each disease**, present the title EXACTLY in this format (required for ren
 
 **⚠️ MANDATORY PROBABILITY RULE**: You MUST copy the **exact** probability percentage (%) provided next to the disease in the Ranked Diseases list in the CURRENT STATE below. DO NOT recalculate, modify, or make up your own percentages.
 
-**⚠️ MANDATORY DATA SOURCE RULE**: You MUST ONLY list the top 5 diseases from the Ranked Diseases list in the CURRENT STATE below. DO NOT invent, add, or include any other conditions.
+**⚠️ MANDATORY DATA SOURCE RULE**: You MUST ONLY list the top 3 diseases from the Ranked Diseases list in the CURRENT STATE below. DO NOT invent, add, or include any other conditions.
 
 For **each disease**, provide a thorough analysis with these sections:
 - **Evidence:** Explain in detail and naturally how the patient's specific symptoms, demographics, and timeline match this condition. Reference the patient's actual words (e.g. "Your 2-day fever combined with headache and..."). Do NOT mention "Neo4j" or "knowledge graph".
@@ -157,7 +157,7 @@ Với **mỗi bệnh**, trình bày tiêu đề ĐÚNG ĐỊNH DẠNG sau (bắt
 
 **⚠️ Quy tắc dịch tên bệnh BẮT BUỘC**: Tên bệnh trong đồ thị được lưu bằng tiếng Anh (ví dụ: "Malaria", "Meningitis", "Mononucleosis"). Bạn BẮT BUỘC phải dịch tên bệnh sang tiếng Việt khi viết tiêu đề (ví dụ: "Sốt rét", "Viêm màng não", "Bạch cầu đơn nhân nhiễm khuẩn"). Nếu không có tên tiếng Việt thông dụng, hãy ghi tên tiếng Việt y khoa trước, rồi kèm tên tiếng Anh trong ngoặc đơn.
 
-**⚠️ Quy tắc nguồn dữ liệu BẮT BUỘC**: Bạn CHỈ ĐƯỢC PHÉP liệt kê các bệnh có trong danh sách 5 bệnh đứng đầu của phần TRẠNG THÁI HIỆN TẠI bên dưới. TUYỆT ĐỐI KHÔNG tự suy diễn, thêm bớt hay sử dụng các bệnh lý khác ngoài danh sách này (ví dụ: không tự ý đưa các bệnh ở thứ hạng thấp như Áp xe mũi hay Viêm tiểu phế quản cấp vào báo cáo nếu chúng không nằm trong top 5).
+**⚠️ Quy tắc nguồn dữ liệu BẮT BUỘC**: Bạn CHỈ ĐƯỢC PHÉP liệt kê tối đa 3 bệnh có xác suất cao nhất trong danh sách Ranked Diseases của phần TRẠNG THÁI HIỆN TẠI bên dưới. TUYỆT ĐỐI KHÔNG tự suy diễn, thêm bớt hay sử dụng các bệnh lý khác ngoài danh sách này (ví dụ: không tự ý đưa các bệnh ở thứ hạng thấp như Áp xe mũi hay Viêm tiểu phế quản cấp vào báo cáo nếu chúng không nằm trong top 3).
 
 Với **mỗi bệnh**, cung cấp phân tích chi tiết và đầy đủ gồm các phần sau:
 - **Dẫn chứng:** Giải thích chi tiết và tự nhiên về cách các triệu chứng cụ thể, nhân khẩu học và diễn tiến thời gian của bệnh nhân khớp với bệnh lý này. Tham chiếu trực tiếp đến những gì người dùng mô tả (ví dụ: "Triệu chứng sốt 2 ngày kèm theo đau đầu của bạn cho thấy..."). KHÔNG dùng từ "Neo4j" hay "đồ thị tri thức".
