@@ -668,7 +668,15 @@ export async function computeAdaptiveContext(sceResult, excludedSymptoms = new S
         // Điều chỉnh thời gian khởi phát (temporalMultiplier)
         const temporalMultiplier = computeTemporalMultiplier(name, onset)
 
-        const score = Math.max(0, baseScore * demographicMultiplier * temporalMultiplier - penalty)
+        // Áp dụng căn bậc bốn để giảm bớt sự thống trị quá đà của hệ số dịch tễ học (Odds Ratios)
+        const dampenedDemoMult = Math.pow(demographicMultiplier, 0.25)
+
+        // Tính tỷ lệ bao phủ triệu chứng của bệnh (Symptom Coverage Ratio)
+        // Phạt nặng các bệnh không giải thích được toàn bộ triệu chứng đang có của bệnh nhân
+        const matchedCount = r.get('matched_count').toNumber()
+        const coverageRatio = matchedCount / symptomsArr.length
+
+        const score = Math.max(0, (baseScore * dampenedDemoMult * temporalMultiplier) * Math.pow(coverageRatio, 1.5) - penalty)
 
         return {
           name,
