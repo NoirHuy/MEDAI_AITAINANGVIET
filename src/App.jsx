@@ -100,7 +100,7 @@ function App() {
   }
 
   function handleHelp() {
-    showToast(lang === 'en' ? 'Feedback feature coming soon' : 'Tính năng gửi phản hồi sắp ra mắt')
+    setSettingsTab('help')
   }
 
   function handleAuthed(_user, message) {

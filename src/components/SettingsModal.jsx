@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { CloseIcon, UserCircleIcon, GaugeIcon, CreditCardIcon, CheckIcon } from './Icons'
+import { CloseIcon, UserCircleIcon, GaugeIcon, CreditCardIcon, CheckIcon, HelpCircleIcon } from './Icons'
 import { PLANS, getPlan } from '../data/account'
 import './SettingsModal.css'
 
@@ -7,6 +7,7 @@ const TABS = [
   { id: 'account', label: 'Tài khoản', Icon: UserCircleIcon },
   { id: 'usage', label: 'Mức sử dụng', Icon: GaugeIcon },
   { id: 'subscription', label: 'Gói thuê bao', Icon: CreditCardIcon },
+  { id: 'help', label: 'Trợ giúp & Phản hồi', Icon: HelpCircleIcon },
 ]
 
 export default function SettingsModal({
@@ -178,6 +179,62 @@ export default function SettingsModal({
                 Đây là giả lập nâng cấp/hạ cấp gói, chưa kết nối cổng thanh toán thật (ví dụ
                 Stripe, VNPay, Momo).
               </p>
+            </section>
+          )}
+          {activeTab === 'help' && (
+            <section className="help-section">
+              <h2>Trợ giúp &amp; Phản hồi</h2>
+              <p className="settings-modal__hint">
+                Gặp khó khăn khi sử dụng hoặc muốn đóng góp ý kiến nâng cấp hệ thống? Bạn có thể gửi phản hồi trực tiếp cho đội ngũ phát triển MedAI tại đây.
+              </p>
+              
+              <form onSubmit={(e) => {
+                e.preventDefault();
+                const feedback = e.target.elements.feedback.value;
+                if (!feedback.trim()) return;
+                alert('Cảm ơn bạn đã gửi phản hồi! Đội ngũ phát triển MedAI sẽ phản hồi lại bạn sớm nhất.');
+                e.target.reset();
+              }} className="feedback-form" style={{ marginTop: '16px' }}>
+                <label className="settings-field" style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                  <span>Nội dung phản hồi / Yêu cầu hỗ trợ</span>
+                  <textarea 
+                    name="feedback" 
+                    placeholder="Mô tả chi tiết câu hỏi hoặc lỗi bạn gặp phải..." 
+                    rows={4}
+                    required
+                    style={{
+                      width: '100%',
+                      padding: '12px',
+                      borderRadius: 'var(--radius-md)',
+                      border: '1px solid var(--border-subtle)',
+                      background: 'var(--bg-surface-hover)',
+                      color: 'var(--text-primary)',
+                      fontFamily: 'inherit',
+                      fontSize: '13px',
+                      resize: 'none'
+                    }}
+                  />
+                </label>
+                <div style={{ marginTop: '14px' }}>
+                  <button type="submit" className="btn btn--primary">
+                    Gửi phản hồi
+                  </button>
+                </div>
+              </form>
+
+              <div className="faq-box" style={{ marginTop: '24px', paddingTop: '16px', borderTop: '1px solid var(--border-subtle)' }}>
+                <h3 style={{ fontSize: '15px', fontWeight: '600', marginBottom: '12px', color: 'var(--text-primary)' }}>Câu hỏi thường gặp (FAQ)</h3>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
+                  <div>
+                    <strong style={{ fontSize: '13px', display: 'block', color: 'var(--text-primary)', marginBottom: '4px' }}>1. MedAI chẩn đoán có chính xác không?</strong>
+                    <span style={{ fontSize: '12px', color: 'var(--text-muted)', lineHeight: '1.5' }}>Hệ thống chỉ mang tính chất sàng lọc và tư vấn ban đầu dựa trên đồ thị tri thức lâm sàng SymCAT. Kết quả không thay thế chẩn đoán của bác sĩ chuyên khoa.</span>
+                  </div>
+                  <div>
+                    <strong style={{ fontSize: '13px', display: 'block', color: 'var(--text-primary)', marginBottom: '4px' }}>2. Tại sao số lượng câu hỏi lại thay đổi giữa các lượt?</strong>
+                    <span style={{ fontSize: '12px', color: 'var(--text-muted)', lineHeight: '1.5' }}>Hệ thống tự động phân tích độ phủ và tầm quan trọng của các triệu chứng phân biệt còn lại để đưa ra từ 3 đến 5 câu hỏi tối ưu nhất.</span>
+                  </div>
+                </div>
+              </div>
             </section>
           )}
         </div>
