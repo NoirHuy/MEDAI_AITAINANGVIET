@@ -19,8 +19,8 @@ const router = Router()
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
 const COOKIE_OPTIONS = {
   httpOnly: true,
-  sameSite: 'lax',
-  secure: env.cookieSecure, // set COOKIE_SECURE=true once served over HTTPS
+  sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax',
+  secure: process.env.NODE_ENV === 'production' ? true : env.cookieSecure,
   maxAge: 7 * 24 * 60 * 60 * 1000,
 }
 
