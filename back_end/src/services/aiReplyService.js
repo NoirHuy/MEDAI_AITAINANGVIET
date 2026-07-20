@@ -160,7 +160,9 @@ Once sufficient information is collected, output a COMPREHENSIVE SCREENING REPOR
 For **each disease**, present the title EXACTLY in this format (required for rendering):
 '1. [Disease Name]: [Number]% probability'
 
-**Data Source Rule**: ONLY list diseases from the Ranked Diseases in the CURRENT STATE. Do NOT invent or add diseases outside the graph.
+**⚠️ MANDATORY PROBABILITY RULE**: You MUST copy the **exact** probability percentage (%) provided next to the disease in the Ranked Diseases list in the CURRENT STATE below. DO NOT recalculate, modify, or make up your own percentages.
+
+**⚠️ MANDATORY DATA SOURCE RULE**: You MUST ONLY list the top 5 diseases from the Ranked Diseases list in the CURRENT STATE below. DO NOT invent, add, or include any other conditions.
 
 For **each disease**, provide a thorough analysis with these sections:
 - **Evidence:** Explain in detail and naturally how the patient's specific symptoms, demographics, and timeline match this condition. Reference the patient's actual words (e.g. "Your 2-day fever combined with headache and..."). Do NOT mention "Neo4j" or "knowledge graph".
@@ -220,11 +222,13 @@ Khi đã đủ thông tin, xuất BÁO CÁO SÀNG LỌC ĐẦY ĐỦ theo đúng
 
 #### 🩺 Bệnh lý nghi ngờ (theo thứ tự xác suất từ đồ thị):
 Với **mỗi bệnh**, trình bày tiêu đề ĐÚNG ĐỊNH DẠNG sau (bắt buộc để hiển thị vòng tròn %):
-'1. [Tên bệnh]: [Số]% xác suất'
+'1. [Tên bệnh dịch sang tiếng Việt]: [Số]% xác suất'
+
+**⚠️ QUY TẮC PHẦN TRĂM BẮT BUỘC**: Bạn BẮT BUỘC phải lấy **chính xác** con số phần trăm xác suất (%) đi kèm với bệnh đó trong danh sách xếp hạng ở phần TRẠNG THÁI HIỆN TẠI bên dưới (ví dụ: nếu đồ thị ghi "Meningitis — Estimated Probability: ~60%" thì bạn phải viết tiêu đề là "1. Viêm màng não: 60% xác suất"). TUYỆT ĐỐI KHÔNG tự ý thay đổi, tính toán lại, làm tròn hay bịa ra con số khác.
 
 **⚠️ Quy tắc dịch tên bệnh BẮT BUỘC**: Tên bệnh trong đồ thị được lưu bằng tiếng Anh (ví dụ: "Malaria", "Meningitis", "Mononucleosis"). Bạn BẮT BUỘC phải dịch tên bệnh sang tiếng Việt khi viết tiêu đề (ví dụ: "Sốt rét", "Viêm màng não", "Bạch cầu đơn nhân nhiễm khuẩn"). Nếu không có tên tiếng Việt thông dụng, hãy ghi tên tiếng Việt y khoa trước, rồi kèm tên tiếng Anh trong ngoặc đơn.
 
-**Quy tắc nguồn dữ liệu**: CHỈ liệt kê các bệnh có trong danh sách từ TRẠNG THÁI HIỆN TẠI. TUYỆT ĐỐI KHÔNG tự suy diễn thêm bệnh ngoài đồ thị.
+**⚠️ Quy tắc nguồn dữ liệu BẮT BUỘC**: Bạn CHỈ ĐƯỢC PHÉP liệt kê các bệnh có trong danh sách 5 bệnh đứng đầu của phần TRẠNG THÁI HIỆN TẠI bên dưới. TUYỆT ĐỐI KHÔNG tự suy diễn, thêm bớt hay sử dụng các bệnh lý khác ngoài danh sách này (ví dụ: không tự ý đưa các bệnh ở thứ hạng thấp như Áp xe mũi hay Viêm tiểu phế quản cấp vào báo cáo nếu chúng không nằm trong top 5).
 
 Với **mỗi bệnh**, cung cấp phân tích chi tiết và đầy đủ gồm các phần sau:
 - **Dẫn chứng:** Giải thích chi tiết và tự nhiên về cách các triệu chứng cụ thể, nhân khẩu học và diễn tiến thời gian của bệnh nhân khớp với bệnh lý này. Tham chiếu trực tiếp đến những gì người dùng mô tả (ví dụ: "Triệu chứng sốt 2 ngày kèm theo đau đầu của bạn cho thấy..."). KHÔNG dùng từ "Neo4j" hay "đồ thị tri thức".
