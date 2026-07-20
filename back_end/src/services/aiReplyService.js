@@ -48,7 +48,11 @@ async function streamOpenRouter(chatMessages, onChunk, signal, modelOverride = n
       model: modelName,
       messages: chatMessages,
       stream: true,
-      max_tokens: 3000
+      max_tokens: 3000,
+      reasoning: (modelName.includes('gemini-3') || modelName.includes('deepseek')) ? {
+        effort: 'low',
+        exclude: true
+      } : undefined
     }),
     signal
   })
