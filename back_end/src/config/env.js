@@ -15,6 +15,7 @@ export const env = {
   neo4jUsername: (process.env.NEO4J_USERNAME || 'neo4j').trim(),
   neo4jPassword: (process.env.NEO4J_PASSWORD || '').trim(),
   neo4jDatabase: (process.env.NEO4J_DATABASE || 'neo4j').trim(),
+  mongodbUri: (process.env.MONGODB_URI || 'mongodb://localhost:27018/medchat').trim(),
   umlsApiKey: process.env.UMLS_API_KEY ? process.env.UMLS_API_KEY.trim() : null,
   wChiefComplaint: Number(process.env.W_CHIEF_COMPLAINT) || 1.5,
   wAssociated: Number(process.env.W_ASSOCIATED) || 1.0,

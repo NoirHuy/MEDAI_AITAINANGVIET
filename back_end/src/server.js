@@ -2,10 +2,14 @@ import express from 'express'
 import cors from 'cors'
 import cookieParser from 'cookie-parser'
 import { env } from './config/env.js'
+import { connectDatabase } from './db/mongodb.js'
 import authRoutes from './routes/auth.routes.js'
 import accountRoutes from './routes/account.routes.js'
 import chatRoutes from './routes/chat.routes.js'
 import { notFoundHandler, errorHandler } from './middleware/errorHandler.js'
+
+// Connect to MongoDB
+connectDatabase()
 
 const app = express()
 
