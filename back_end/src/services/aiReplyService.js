@@ -89,7 +89,7 @@ async function streamOpenRouter(chatMessages, onChunk, signal, modelOverride = n
 }
 
 // ─── SYSTEM PROMPTS ───────────────────────────────────────────────────────────
-function buildSystemPrompt(specialtyId, graphContext, lang = 'vi', checklistStatus = { hasAgeSex: false, hasDuration: false, hasSeverity: false }) {
+function buildSystemPrompt(specialtyId, graphContext, lang = 'vi', checklistStatus = { hasAgeSex: false, hasDuration: false, hasSeverity: false }, turnCount = 1) {
   const specialty = getSpecialty(specialtyId)
   const isEn = lang === 'en'
 
@@ -116,6 +116,62 @@ function buildSystemPrompt(specialtyId, graphContext, lang = 'vi', checklistStat
 - Cách xử lý: Nếu câu hỏi của người dùng không phải là khai báo triệu chứng bệnh thực tế, hoặc là câu hỏi kiến thức y học chung/ngoài lề (NGOẠI TRỪ các lời chào xã giao đơn giản như "xin chào", "hi"): Bạn TUYỆT ĐỐI KHÔNG được trả lời câu hỏi đó. Hãy lịch sự nhắc nhở người dùng: "Tôi là Trợ Lý Giúp Tư Vấn và Sàng Lọc Sức Khỏe của MedAI. Nhiệm vụ của tôi là hỗ trợ sàng lọc bệnh lý dựa trên các triệu chứng bạn đang gặp phải. Xin vui lòng chia sẻ các biểu hiện/triệu chứng cụ thể của bạn để tôi có thể tiến hành sàng lọc."
 - Trình bày câu trả lời rõ ràng, đầy đủ, khoa học và chuyên nghiệp.
 `.trim()
+
+  const phase2En = (turnCount >= 3) ? `
+### PHASE 2 — Detailed Screening Report (After gathering info)
+
+Once sufficient information is collected, output a COMPREHENSIVE SCREENING REPORT:
+
+#### 🩺 Suspected Conditions (ordered by graph probability):
+For **each disease**, present the title EXACTLY in this format (required for rendering):
+'1. [Disease Name]: [Number]% probability'
+
+**⚠️ MANDATORY PROBABILITY RULE**: You MUST copy the **exact** probability percentage (%) provided next to the disease in the Ranked Diseases list in the CURRENT STATE below. DO NOT recalculate, modify, or make up your own percentages.
+
+**⚠️ MANDATORY DATA SOURCE RULE**: You MUST ONLY list the top 5 diseases from the Ranked Diseases list in the CURRENT STATE below. DO NOT invent, add, or include any other conditions.
+
+For **each disease**, provide a thorough analysis with these sections:
+- **Evidence:** Explain in detail and naturally how the patient's specific symptoms, demographics, and timeline match this condition. Reference the patient's actual words (e.g. "Your 2-day fever combined with headache and..."). Do NOT mention "Neo4j" or "knowledge graph".
+- **Differential reasoning:** Explain clearly and in detail why this condition is more likely or less likely than the others listed. Mention at least 1–2 specific clinical features that distinguish it.
+- **What to watch for:** List 2–3 specific warning signs for THIS disease that would require immediate medical attention.
+
+After all diseases, add:
+⚠️ **Warning:** (on its own line) List any red-flag symptoms from the patient's description that require urgent evaluation.
+
+📋 **Recommendations:** (on its own line) Provide specific, actionable next steps: recommended tests, type of specialist to see, and timeframe (e.g. "within 24h", "if no improvement in 3 days").
+` : `
+### PHASE 2 — Detailed Screening Report (LOCKED)
+You are strictly in PHASE 1 (Information Gathering). You MUST NOT output the screening report or make a diagnosis yet. You MUST ask 3 to 5 clarifying questions to gather more details. Any attempt to conclude will violate system guidelines.
+`;
+
+  const phase2Vi = (turnCount >= 3) ? `
+### GIAI ĐOẠN 2 — Báo cáo sàng lọc chi tiết (Sau khi thu thập đủ thông tin)
+
+Khi đã đủ thông tin, xuất BÁO CÁO SÀNG LỌC ĐẦY ĐỦ theo đúng cấu trúc sau:
+
+#### 🩺 Bệnh lý nghi ngờ (theo thứ tự xác suất từ đồ thị):
+Với **mỗi bệnh**, trình bày tiêu đề ĐÚNG ĐỊNH DẠNG sau (bắt buộc để hiển thị vòng tròn %):
+'1. [Tên bệnh dịch sang tiếng Việt]: [Số]% xác suất'
+
+**⚠️ QUY TẮC PHẦN TRĂM BẮT BUỘC**: Bạn BẮT BUỘC phải lấy **chính xác** con số phần trăm xác suất (%) đi kèm với bệnh đó trong danh sách xếp hạng ở phần TRẠNG THÁI HIỆN TẠI bên dưới (ví dụ: nếu đồ thị ghi "Meningitis — Estimated Probability: ~60%" thì bạn phải viết tiêu đề là "1. Viêm màng não: 60% xác suất"). TUYỆT ĐỐI KHÔNG tự ý thay đổi, tính toán lại, làm tròn hay bịa ra con số khác.
+
+**⚠️ Quy tắc dịch tên bệnh BẮT BUỘC**: Tên bệnh trong đồ thị được lưu bằng tiếng Anh (ví dụ: "Malaria", "Meningitis", "Mononucleosis"). Bạn BẮT BUỘC phải dịch tên bệnh sang tiếng Việt khi viết tiêu đề (ví dụ: "Sốt rét", "Viêm màng não", "Bạch cầu đơn nhân nhiễm khuẩn"). Nếu không có tên tiếng Việt thông dụng, hãy ghi tên tiếng Việt y khoa trước, rồi kèm tên tiếng Anh trong ngoặc đơn.
+
+**⚠️ Quy tắc nguồn dữ liệu BẮT BUỘC**: Bạn CHỈ ĐƯỢC PHÉP liệt kê các bệnh có trong danh sách 5 bệnh đứng đầu của phần TRẠNG THÁI HIỆN TẠI bên dưới. TUYỆT ĐỐI KHÔNG tự suy diễn, thêm bớt hay sử dụng các bệnh lý khác ngoài danh sách này (ví dụ: không tự ý đưa các bệnh ở thứ hạng thấp như Áp xe mũi hay Viêm tiểu phế quản cấp vào báo cáo nếu chúng không nằm trong top 5).
+
+Với **mỗi bệnh**, cung cấp phân tích chi tiết và đầy đủ gồm các phần sau:
+- **Dẫn chứng:** Giải thích chi tiết và tự nhiên về cách các triệu chứng cụ thể, nhân khẩu học và diễn tiến thời gian của bệnh nhân khớp với bệnh lý này. Tham chiếu trực tiếp đến những gì người dùng mô tả (ví dụ: "Triệu chứng sốt 2 ngày kèm theo đau đầu của bạn cho thấy..."). KHÔNG dùng từ "Neo4j" hay "đồ thị tri thức".
+- **Lý giải phân biệt:** Giải thích rõ ràng và chi tiết tại sao bệnh này phù hợp hơn hoặc ít phù hợp hơn so với các bệnh khác trong danh sách. Đề cập ít nhất 1–2 đặc điểm lâm sàng cụ thể giúp phân biệt.
+- **Dấu hiệu cần chú ý:** Liệt kê 2–3 dấu hiệu cảnh báo đặc hiệu của BỆNH NÀY mà người dùng cần theo dõi và đến y tế ngay nếu xuất hiện.
+
+Sau khi liệt kê tất cả các bệnh, thêm:
+⚠️ **Cảnh báo:** (trên dòng riêng) Liệt kê các triệu chứng nguy hiểm từ mô tả của bệnh nhân cần được đánh giá y tế khẩn cấp.
+
+📋 **Khuyến nghị:** (trên dòng riêng) Đưa ra các bước hành động cụ thể, thiết thực: xét nghiệm cần làm, chuyên khoa cần gặp, và khung thời gian cụ thể (ví dụ: "trong vòng 24 giờ", "nếu không cải thiện sau 3 ngày").
+` : `
+### GIAI ĐOẠN 2 — Báo cáo sàng lọc chi tiết (BỊ KHÓA)
+Bạn đang ở Giai đoạn 1 (Thu thập thông tin). Bạn TUYỆT ĐỐI KHÔNG ĐƯỢC phép kết luận hoặc xuất Báo cáo sàng lọc trong lượt này. Bạn bắt buộc phải hỏi tiếp các triệu chứng phân biệt.
+`;
 
   if (specialtyId === 'pediatrics') {
     if (isEn) {
@@ -152,27 +208,7 @@ Your goal is to gather the following details through natural, friendly conversat
 
 ---
 
-### PHASE 2 — Detailed Screening Report (After gathering info)
-
-Once sufficient information is collected, output a COMPREHENSIVE SCREENING REPORT:
-
-#### 🩺 Suspected Conditions (ordered by graph probability):
-For **each disease**, present the title EXACTLY in this format (required for rendering):
-'1. [Disease Name]: [Number]% probability'
-
-**⚠️ MANDATORY PROBABILITY RULE**: You MUST copy the **exact** probability percentage (%) provided next to the disease in the Ranked Diseases list in the CURRENT STATE below. DO NOT recalculate, modify, or make up your own percentages.
-
-**⚠️ MANDATORY DATA SOURCE RULE**: You MUST ONLY list the top 5 diseases from the Ranked Diseases list in the CURRENT STATE below. DO NOT invent, add, or include any other conditions.
-
-For **each disease**, provide a thorough analysis with these sections:
-- **Evidence:** Explain in detail and naturally how the patient's specific symptoms, demographics, and timeline match this condition. Reference the patient's actual words (e.g. "Your 2-day fever combined with headache and..."). Do NOT mention "Neo4j" or "knowledge graph".
-- **Differential reasoning:** Explain clearly and in detail why this condition is more likely or less likely than the others listed. Mention at least 1–2 specific clinical features that distinguish it.
-- **What to watch for:** List 2–3 specific warning signs for THIS disease that would require immediate medical attention.
-
-After all diseases, add:
-⚠️ **Warning:** (on its own line) List any red-flag symptoms from the patient's description that require urgent evaluation.
-
-📋 **Recommendations:** (on its own line) Provide specific, actionable next steps: recommended tests, type of specialist to see, and timeframe (e.g. "within 24h", "if no improvement in 3 days").
+${phase2En}
 
 ---
 
@@ -216,29 +252,7 @@ Mục tiêu là thu thập đủ thông tin qua trò chuyện thân thiện:
 
 ---
 
-### GIAI ĐOẠN 2 — Báo cáo sàng lọc chi tiết (Sau khi thu thập đủ thông tin)
-
-Khi đã đủ thông tin, xuất BÁO CÁO SÀNG LỌC ĐẦY ĐỦ theo đúng cấu trúc sau:
-
-#### 🩺 Bệnh lý nghi ngờ (theo thứ tự xác suất từ đồ thị):
-Với **mỗi bệnh**, trình bày tiêu đề ĐÚNG ĐỊNH DẠNG sau (bắt buộc để hiển thị vòng tròn %):
-'1. [Tên bệnh dịch sang tiếng Việt]: [Số]% xác suất'
-
-**⚠️ QUY TẮC PHẦN TRĂM BẮT BUỘC**: Bạn BẮT BUỘC phải lấy **chính xác** con số phần trăm xác suất (%) đi kèm với bệnh đó trong danh sách xếp hạng ở phần TRẠNG THÁI HIỆN TẠI bên dưới (ví dụ: nếu đồ thị ghi "Meningitis — Estimated Probability: ~60%" thì bạn phải viết tiêu đề là "1. Viêm màng não: 60% xác suất"). TUYỆT ĐỐI KHÔNG tự ý thay đổi, tính toán lại, làm tròn hay bịa ra con số khác.
-
-**⚠️ Quy tắc dịch tên bệnh BẮT BUỘC**: Tên bệnh trong đồ thị được lưu bằng tiếng Anh (ví dụ: "Malaria", "Meningitis", "Mononucleosis"). Bạn BẮT BUỘC phải dịch tên bệnh sang tiếng Việt khi viết tiêu đề (ví dụ: "Sốt rét", "Viêm màng não", "Bạch cầu đơn nhân nhiễm khuẩn"). Nếu không có tên tiếng Việt thông dụng, hãy ghi tên tiếng Việt y khoa trước, rồi kèm tên tiếng Anh trong ngoặc đơn.
-
-**⚠️ Quy tắc nguồn dữ liệu BẮT BUỘC**: Bạn CHỈ ĐƯỢC PHÉP liệt kê các bệnh có trong danh sách 5 bệnh đứng đầu của phần TRẠNG THÁI HIỆN TẠI bên dưới. TUYỆT ĐỐI KHÔNG tự suy diễn, thêm bớt hay sử dụng các bệnh lý khác ngoài danh sách này (ví dụ: không tự ý đưa các bệnh ở thứ hạng thấp như Áp xe mũi hay Viêm tiểu phế quản cấp vào báo cáo nếu chúng không nằm trong top 5).
-
-Với **mỗi bệnh**, cung cấp phân tích chi tiết và đầy đủ gồm các phần sau:
-- **Dẫn chứng:** Giải thích chi tiết và tự nhiên về cách các triệu chứng cụ thể, nhân khẩu học và diễn tiến thời gian của bệnh nhân khớp với bệnh lý này. Tham chiếu trực tiếp đến những gì người dùng mô tả (ví dụ: "Triệu chứng sốt 2 ngày kèm theo đau đầu của bạn cho thấy..."). KHÔNG dùng từ "Neo4j" hay "đồ thị tri thức".
-- **Lý giải phân biệt:** Giải thích rõ ràng và chi tiết tại sao bệnh này phù hợp hơn hoặc ít phù hợp hơn so với các bệnh khác trong danh sách. Đề cập ít nhất 1–2 đặc điểm lâm sàng cụ thể giúp phân biệt.
-- **Dấu hiệu cần chú ý:** Liệt kê 2–3 dấu hiệu cảnh báo đặc hiệu của BỆNH NÀY mà người dùng cần theo dõi và đến y tế ngay nếu xuất hiện.
-
-Sau khi liệt kê tất cả các bệnh, thêm:
-⚠️ **Cảnh báo:** (trên dòng riêng) Liệt kê các triệu chứng nguy hiểm từ mô tả của bệnh nhân cần được đánh giá y tế khẩn cấp.
-
-📋 **Khuyến nghị:** (trên dòng riêng) Đưa ra các bước hành động cụ thể, thiết thực: xét nghiệm cần làm, chuyên khoa cần gặp, và khung thời gian cụ thể (ví dụ: "trong vòng 24 giờ", "nếu không cải thiện sau 3 ngày").
+${phase2Vi}
 
 ---
 
@@ -322,8 +336,12 @@ export async function generateReply({ messages, specialtyId, lang = 'vi', onChun
       hasSeverity: !!(sceResult?.symptoms?.some(s => s.status === 'positive' && s.attributes?.severity))
     }
 
-    // 3b. Tạo system prompt tĩnh (cấu trúc quy trình) với trạng thái checklist động
-    const basePrompt = buildSystemPrompt(specialtyId, null, lang, checklistStatus)
+    // 5. Đếm số lượt hội thoại của người dùng để giới hạn tối đa 3 lần hỏi
+    const userMessages = messages.filter((m) => m.role === 'user')
+    const turnCount = userMessages.length
+
+    // 3b. Tạo system prompt tĩnh (cấu trúc quy trình) với trạng thái checklist động và turnCount cưỡng chế
+    const basePrompt = buildSystemPrompt(specialtyId, null, lang, checklistStatus, turnCount)
 
     // 4. Inject adaptive context (bảng xếp hạng + gợi ý câu hỏi) động vào prompt
     const adaptiveText = adaptiveCtx
@@ -331,10 +349,6 @@ export async function generateReply({ messages, specialtyId, lang = 'vi', onChun
       : (isEn ? '*[No graph data yet — please ask for symptoms]*' : '*[Chưa có dữ liệu đồ thị — hãy hỏi triệu chứng ban đầu]*')
 
     let systemPrompt = basePrompt.replace('{ADAPTIVE_CONTEXT}', adaptiveText)
-
-    // 5. Đếm số lượt hội thoại của người dùng để giới hạn tối đa 3 lần hỏi
-    const userMessages = messages.filter((m) => m.role === 'user')
-    const turnCount = userMessages.length
 
     if (turnCount >= 4) {
       systemPrompt += isEn
