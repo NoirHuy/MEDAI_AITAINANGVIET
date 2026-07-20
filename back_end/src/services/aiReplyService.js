@@ -298,10 +298,11 @@ export async function generateReply({ messages, specialtyId, lang = 'vi', onChun
   // ── TRUE ADAPTIVE GRAPHRAG cho chuyên khoa Nhi khoa ─────────────────────
   if (specialtyId === 'pediatrics') {
     let adaptiveCtx = null
+    let sceResult = null
     try {
       // 1. Trích xuất triệu chứng tích lũy theo cấu trúc dữ liệu SCE (song ngữ)
       const firstCtx = await computeAdaptiveContext(new Set(), new Set())
-      const sceResult = await extractSymptomsFromHistory(messages, firstCtx.allSymptoms, lang)
+      sceResult = await extractSymptomsFromHistory(messages, firstCtx.allSymptoms, lang)
 
       // 2. Re-query Neo4j với đối tượng SCE để áp dụng trọng số, dịch tễ học và phủ định
       adaptiveCtx = await computeAdaptiveContext(sceResult)
