@@ -36,10 +36,10 @@ async function streamText(text, onChunk, signal) {
 // ─── OPENROUTER STREAM CLIENT ─────────────────────────────────────────────────
 async function streamOpenRouter(chatMessages, onChunk, signal, modelOverride = null, maxTokens = 1500) {
   const modelName = modelOverride || env.openrouterModel
-  const response = await fetch(`${env.openrouterBaseUrl}/chat/completions`, {
+  const response = await fetch(`${env.llmBaseUrl}/chat/completions`, {
     method: 'POST',
     headers: {
-      'Authorization': `Bearer ${env.openrouterApiKey}`,
+      'Authorization': `Bearer ${env.llmApiKey}`,
       'Content-Type': 'application/json',
       'HTTP-Referer': 'http://localhost:4000',
       'X-Title': 'MedChat'
@@ -308,7 +308,7 @@ export async function generateReply({ messages, specialtyId, lang = 'vi', onChun
   const isEn = lang === 'en'
 
   // ── Không có API Key: trả về hướng dẫn cấu hình ─────────────────────────
-  if (!env.openrouterApiKey) {
+  if (!env.llmApiKey) {
     const lastUser = [...messages].reverse().find(m => m.role === 'user')
     return streamText(buildMockReply(lastUser?.content ?? '', specialtyId, lang), onChunk, signal)
   }

@@ -79,10 +79,10 @@ async function searchUMLS(queryString) {
 
 // Helper phụ thực thi cuộc gọi OpenRouter cụ thể
 async function tryCallOpenRouter(chatMessages, modelName, timeoutMs = 15000) {
-  const response = await fetch(`${env.openrouterBaseUrl}/chat/completions`, {
+  const response = await fetch(`${env.llmBaseUrl}/chat/completions`, {
     method: 'POST',
     headers: {
-      'Authorization': `Bearer ${env.openrouterApiKey}`,
+      'Authorization': `Bearer ${env.llmApiKey}`,
       'Content-Type': 'application/json',
       'HTTP-Referer': 'http://localhost:4000',
       'X-Title': 'MedChat'
@@ -116,7 +116,7 @@ async function tryCallOpenRouter(chatMessages, modelName, timeoutMs = 15000) {
 
 // Helper gọi OpenRouter Completion chính hỗ trợ chuyển đổi phòng thủ (Active Failover)
 async function callOpenRouter(chatMessages, modelOverride = null) {
-  if (!env.openrouterApiKey) return ""
+  if (!env.llmApiKey) return ""
   
   const primaryModel = modelOverride || env.openrouterModel
   const fallbackModel = 'google/gemini-2.5-flash'

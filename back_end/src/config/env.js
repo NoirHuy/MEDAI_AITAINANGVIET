@@ -6,6 +6,14 @@ export const env = {
   jwtSecret: (process.env.JWT_SECRET || 'dev-only-insecure-secret-change-me').trim(),
   openrouterApiKey: process.env.OPENROUTER_API_KEY ? process.env.OPENROUTER_API_KEY.trim() : null,
   openrouterBaseUrl: (process.env.OPENROUTER_BASE_URL || 'https://openrouter.ai/api/v1').trim(),
+  ninerouterApi: process.env.NINEROUTER_API ? process.env.NINEROUTER_API.trim() : null,
+  ninerouterUrl: process.env.NINEROUTER_URL ? process.env.NINEROUTER_URL.trim() : null,
+  get llmApiKey() {
+    return this.ninerouterApi || this.openrouterApiKey
+  },
+  get llmBaseUrl() {
+    return this.ninerouterUrl || this.openrouterBaseUrl
+  },
   openrouterModel: (process.env.OPENROUTER_MODEL || 'deepseek/deepseek-v4-flash').trim(),
   openrouterModelNer: (process.env.OPENROUTER_MODEL_NER || 'google/gemini-2.5-flash-lite').trim(),
   openrouterModelChat: (process.env.OPENROUTER_MODEL_CHAT || 'google/gemini-3-flash-preview').trim(),
