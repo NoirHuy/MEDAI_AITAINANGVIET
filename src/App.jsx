@@ -38,22 +38,28 @@ function App() {
   const [authTab, setAuthTab] = useState(null)
   const [lang, setLang] = useState(localStorage.getItem('medai_lang') || 'en')
   
-  const isDashboardHost = window.location.hostname.startsWith('dashboard.')
+  const isAdminPath = window.location.pathname === '/admin' || window.location.pathname === '/admin/'
+
+  // Tự động chuyển view nếu truy cập trực tiếp đường dẫn /admin
+  useEffect(() => {
+    if (isAdminPath && account && account.role === 'admin' && view !== 'dashboard') {
+      setView('dashboard')
+    } else if (isAdminPath && !account && !authTab) {
+      // Yêu cầu đăng nhập nếu chưa đăng nhập vào trang /admin
+      setAuthTab('signin')
+    }
+  }, [isAdminPath, account, authTab, view])
 
   useEffect(() => {
-    // If user is logged in but is NOT an admin, block dashboard access
-    if (account && account.role !== 'admin' && (view === 'dashboard' || isDashboardHost)) {
+    // Nếu người dùng không phải admin cố tình truy cập vào trang dashboard
+    if (account && account.role !== 'admin' && (view === 'dashboard' || isAdminPath)) {
       setView('chat')
       showToast(lang === 'en' ? 'Unauthorized: Admin access only' : 'Bạn không có quyền truy cập trang quản trị.')
-      const host = window.location.hostname
-      if (host.startsWith('dashboard.')) {
-        const mainDomain = host.replace(/^dashboard\./, '')
-        window.location.href = `${window.location.protocol}//${mainDomain}`
+      if (window.location.pathname.startsWith('/admin')) {
+        window.history.replaceState({}, '', '/')
       }
-    } else if (account && account.role === 'admin' && isDashboardHost && view !== 'dashboard') {
-      setView('dashboard')
     }
-  }, [account, view, lang, isDashboardHost])
+  }, [account, view, lang, isAdminPath])
 
   const specialtyId = chat.activeConversation?.specialtyId ?? pendingSpecialtyId
 
@@ -133,28 +139,17 @@ function App() {
   }
 
   function handleDashboardBack() {
-    const host = window.location.hostname
-    if (host.startsWith('dashboard.')) {
-      const mainDomain = host.replace(/^dashboard\./, '')
-      // Redirect to main domain chat view
-      window.location.href = `${window.location.protocol}//${mainDomain}`
-    } else {
-      setView('chat')
-    }
+    window.history.pushState({}, '', '/')
+    setView('chat')
   }
 
   function handleOpenDashboard(tab) {
     if (account && account.role === 'admin') {
-      const host = window.location.hostname
-      if (host !== 'localhost' && !host.startsWith('127.') && !host.startsWith('103.')) {
-        // Redirect to dashboard subdomain
-        window.location.href = `${window.location.protocol}//dashboard.${host}`
-      } else {
-        setView('dashboard')
-        setDashboardTab(tab)
-      }
+      window.history.pushState({}, '', '/admin')
+      setView('dashboard')
+      setDashboardTab(tab)
     } else {
-      // Regular user: open original settings modal inline
+      // Người dùng thường: mở popup settings modal như cũ
       setSettingsTab(tab)
     }
   }
