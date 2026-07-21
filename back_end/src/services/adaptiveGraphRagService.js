@@ -92,6 +92,7 @@ async function tryCallOpenRouter(chatMessages, modelName, timeoutMs = 15000) {
       messages: chatMessages,
       temperature: 0.1,
       max_tokens: 2000, // Tăng lên 2000 để đảm bảo không bao giờ bị cắt cụt JSON khi bệnh sử siêu dài
+      stream: false,
       reasoning: (modelName.includes('gemini-3') || modelName.includes('gemini-2.5') || modelName.includes('deepseek')) ? {
         effort: 'low',
         exclude: true
