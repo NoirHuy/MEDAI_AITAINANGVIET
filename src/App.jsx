@@ -31,7 +31,8 @@ function App() {
   const [searchTerm, setSearchTerm] = useState('')
   const [collapsed, setCollapsed] = useState(false)
   const [mobileOpen, setMobileOpen] = useState(false)
-  const [view, setView] = useState('chat')
+  const isDashboardHost = window.location.hostname.startsWith('dashboard.')
+  const [view, setView] = useState(isDashboardHost ? 'dashboard' : 'chat')
   const [dashboardTab, setDashboardTab] = useState('account')
   const [authTab, setAuthTab] = useState(null)
   const [lang, setLang] = useState(localStorage.getItem('medai_lang') || 'en')
@@ -101,8 +102,7 @@ function App() {
   }
 
   function handleHelp() {
-    setView('dashboard')
-    setDashboardTab('account')
+    handleOpenDashboard('account')
   }
 
   function handleAuthed(_user, message) {
@@ -110,12 +110,34 @@ function App() {
     showToast(message)
   }
 
+  function handleDashboardBack() {
+    const host = window.location.hostname
+    if (host.startsWith('dashboard.')) {
+      const mainDomain = host.replace(/^dashboard\./, '')
+      // Redirect to main domain chat view
+      window.location.href = `${window.location.protocol}//${mainDomain}`
+    } else {
+      setView('chat')
+    }
+  }
+
+  function handleOpenDashboard(tab) {
+    const host = window.location.hostname
+    if (host !== 'localhost' && !host.startsWith('127.') && !host.startsWith('103.')) {
+      // Redirect to dashboard subdomain
+      window.location.href = `${window.location.protocol}//dashboard.${host}`
+    } else {
+      setView('dashboard')
+      setDashboardTab(tab)
+    }
+  }
+
   if (view === 'dashboard' && account) {
     return (
       <div className="app-shell-dashboard" style={{ width: '100vw', height: '100vh', overflow: 'hidden' }}>
         <DashboardView
           account={account}
-          onBack={() => setView('chat')}
+          onBack={handleDashboardBack}
           onSignOut={handleSignOut}
           lang={lang}
           initialTab={dashboardTab}
@@ -141,10 +163,7 @@ function App() {
           searchTerm={searchTerm}
           onSearchTermChange={setSearchTerm}
           account={account}
-          onOpenSettings={(tab) => {
-            setView('dashboard')
-            setDashboardTab(tab)
-          }}
+          onOpenSettings={handleOpenDashboard}
           onSignOut={handleSignOut}
           onHelp={handleHelp}
           onOpenAuth={() => setAuthTab('signin')}
