@@ -119,7 +119,8 @@ async function callOpenRouter(chatMessages, modelOverride = null) {
   if (!env.llmApiKey) return ""
   
   const primaryModel = modelOverride || env.openrouterModel
-  const fallbackModel = 'google/gemini-2.5-flash'
+  const prefix = primaryModel.includes('/') ? primaryModel.split('/')[0] : 'google'
+  const fallbackModel = `${prefix}/gemini-2.5-flash`
 
   try {
     console.log(`[Audit Log][LLM_TRANSLATION][Info] Calling primary model: "${primaryModel}"`)
