@@ -1,7 +1,8 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import Sidebar from './components/Sidebar'
 import ChatView from './components/ChatView'
 import DashboardView from './components/DashboardView'
+import SettingsModal from './components/SettingsModal'
 import AuthModal from './components/AuthModal'
 import Toast from './components/Toast'
 import { useChat } from './hooks/useChat'
@@ -31,11 +32,28 @@ function App() {
   const [searchTerm, setSearchTerm] = useState('')
   const [collapsed, setCollapsed] = useState(false)
   const [mobileOpen, setMobileOpen] = useState(false)
-  const isDashboardHost = window.location.hostname.startsWith('dashboard.')
-  const [view, setView] = useState(isDashboardHost ? 'dashboard' : 'chat')
+  const [view, setView] = useState('chat')
   const [dashboardTab, setDashboardTab] = useState('account')
+  const [settingsTab, setSettingsTab] = useState(null)
   const [authTab, setAuthTab] = useState(null)
   const [lang, setLang] = useState(localStorage.getItem('medai_lang') || 'en')
+  
+  const isDashboardHost = window.location.hostname.startsWith('dashboard.')
+
+  useEffect(() => {
+    // If user is logged in but is NOT an admin, block dashboard access
+    if (account && account.role !== 'admin' && (view === 'dashboard' || isDashboardHost)) {
+      setView('chat')
+      showToast(lang === 'en' ? 'Unauthorized: Admin access only' : 'Bạn không có quyền truy cập trang quản trị.')
+      const host = window.location.hostname
+      if (host.startsWith('dashboard.')) {
+        const mainDomain = host.replace(/^dashboard\./, '')
+        window.location.href = `${window.location.protocol}//${mainDomain}`
+      }
+    } else if (account && account.role === 'admin' && isDashboardHost && view !== 'dashboard') {
+      setView('dashboard')
+    }
+  }, [account, view, lang, isDashboardHost])
 
   const specialtyId = chat.activeConversation?.specialtyId ?? pendingSpecialtyId
 
@@ -102,7 +120,11 @@ function App() {
   }
 
   function handleHelp() {
-    handleOpenDashboard('account')
+    if (account) {
+      handleOpenDashboard('account')
+    } else {
+      setAuthTab('signin')
+    }
   }
 
   function handleAuthed(_user, message) {
@@ -122,13 +144,18 @@ function App() {
   }
 
   function handleOpenDashboard(tab) {
-    const host = window.location.hostname
-    if (host !== 'localhost' && !host.startsWith('127.') && !host.startsWith('103.')) {
-      // Redirect to dashboard subdomain
-      window.location.href = `${window.location.protocol}//dashboard.${host}`
+    if (account && account.role === 'admin') {
+      const host = window.location.hostname
+      if (host !== 'localhost' && !host.startsWith('127.') && !host.startsWith('103.')) {
+        // Redirect to dashboard subdomain
+        window.location.href = `${window.location.protocol}//dashboard.${host}`
+      } else {
+        setView('dashboard')
+        setDashboardTab(tab)
+      }
     } else {
-      setView('dashboard')
-      setDashboardTab(tab)
+      // Regular user: open original settings modal inline
+      setSettingsTab(tab)
     }
   }
 
@@ -187,7 +214,18 @@ function App() {
         onToggleLang={handleToggleLang}
       />
 
-      {/* SettingsModal has been replaced by the full-screen DashboardView */}
+      {settingsTab && account && (
+        <SettingsModal
+          activeTab={settingsTab}
+          onChangeTab={setSettingsTab}
+          onClose={() => setSettingsTab(null)}
+          account={account}
+          onUpdateName={handleUpdateName}
+          onSetPlan={handleSetPlan}
+          onSignOut={handleSignOut}
+          onFetchUsage={fetchUsage}
+        />
+      )}
 
       {authTab && (
         <AuthModal
