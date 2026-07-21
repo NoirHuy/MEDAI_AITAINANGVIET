@@ -38,16 +38,11 @@ export default function AccountMenu({
     document.addEventListener('mousedown', handleClickOutside)
     return () => document.removeEventListener('mousedown', handleClickOutside)
   }, [])
-
   function openDashboardTab(tab) {
-    let mapped = 'account'
-    if (tab === 'usage') mapped = 'invoices'
-    if (tab === 'subscription') mapped = 'billing'
-    onOpenDashboard(mapped)
+    onOpenDashboard(tab)
     setOpen(false)
     setAppearanceExpanded(false)
   }
-
   return (
     <div className="account-menu" ref={ref}>
       {open && (

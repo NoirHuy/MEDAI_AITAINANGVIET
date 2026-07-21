@@ -307,8 +307,8 @@ export default function DashboardView({ account, onBack, onSignOut, lang, initia
         </nav>
 
         <footer className="admin-side__foot">
-          <button className="btn-exit-admin" onClick={onBack}>
-            ← Quay lại Chat
+          <button className="btn-exit-admin" onClick={onSignOut} style={{ borderColor: '#ef4444', color: '#ef4444' }}>
+            Đăng xuất tài khoản
           </button>
         </footer>
       </aside>
