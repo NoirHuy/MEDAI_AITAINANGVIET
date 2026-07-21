@@ -47,8 +47,10 @@ services:
     container_name: medchat-ninerouter
     ports:
       - '20128:20128'
+    environment:
+      - DATA_DIR=/app/data
     volumes:
-      - ninerouter_data:/root/.9router
+      - ninerouter_data:/app/data
     restart: unless-stopped
 
 volumes:
