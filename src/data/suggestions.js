@@ -1,34 +1,58 @@
 export const SUGGESTIONS = [
   {
-    title: { vi: 'Chẩn đoán Nhi khoa (GraphRAG)', en: 'Pediatric Diagnosis (GraphRAG)' },
-    detail: { vi: 'Trải nghiệm quy trình hỏi bệnh thông minh NLICE', en: 'Experience the smart NLICE clinical process' },
+    title: {
+      vi: 'Mô tả triệu chứng để AI hỏi thêm',
+      en: 'Describe your symptoms and let AI ask follow-up questions'
+    },
+    detail: {
+      vi: 'Tôi cảm thấy mệt, sốt và đau đầu.',
+      en: 'I feel tired, have a fever, and a headache.'
+    },
     prompt: {
-      vi: 'Con tôi 4 tuổi, là bé trai, bị sốt cao đột ngột và đau đầu từ tối qua (khoảng 12 tiếng rồi).',
-      en: 'My child is a 4-year-old boy, he has a sudden high fever and headache since last night (about 12 hours now).'
+      vi: 'Tôi cảm thấy mệt, sốt và đau đầu.',
+      en: 'I feel tired, have a fever, and a headache.'
     },
   },
   {
-    title: { vi: 'Khám Da liễu & Dị ứng', en: 'Dermatology & Allergy' },
-    detail: { vi: 'Tư vấn ngứa, nổi ban đỏ và mề đay', en: 'Consult on itching, rash, and hives' },
+    title: {
+      vi: 'Đánh giá mức độ khẩn cấp của triệu chứng',
+      en: 'Assess how urgent your symptoms are'
+    },
+    detail: {
+      vi: 'Tôi bị đau ngực và khó thở nhẹ, có cần đi cấp cứu không?',
+      en: 'I have chest pain and mild shortness of breath. Should I seek emergency care?'
+    },
     prompt: {
-      vi: 'Tôi bị nổi nhiều nốt ban đỏ và ngứa ở cánh tay sau khi ăn hải sản khoảng 2 tiếng, tôi cần xử lý thế nào?',
-      en: 'I have red rash and severe itching on my arm about 2 hours after eating seafood, what should I do?'
+      vi: 'Tôi bị đau ngực và khó thở nhẹ, có cần đi cấp cứu không?',
+      en: 'I have chest pain and mild shortness of breath. Should I seek emergency care?'
     },
   },
   {
-    title: { vi: 'Tư vấn Dinh dưỡng', en: 'Nutrition & Dietetics' },
-    detail: { vi: 'Lên thực đơn ăn uống điều trị bệnh lý', en: 'Create healthy clinical diets' },
+    title: {
+      vi: 'Trải nghiệm quy trình hỏi bệnh thông minh',
+      en: 'Experience the intelligent symptom interview'
+    },
+    detail: {
+      vi: 'Tôi bị đau bụng, hãy bắt đầu hỏi tôi để tìm nguyên nhân.',
+      en: 'I have abdominal pain. Please start asking questions to find the cause.'
+    },
     prompt: {
-      vi: 'Lên giúp tôi thực đơn dinh dưỡng lành mạnh cho người trung niên bị cao huyết áp.',
-      en: 'Please create a healthy nutritional diet plan for a middle-aged person with high blood pressure.'
+      vi: 'Tôi bị đau bụng, hãy bắt đầu hỏi tôi để tìm nguyên nhân.',
+      en: 'I have abdominal pain. Please start asking questions to find the cause.'
     },
   },
   {
-    title: { vi: 'Hướng dẫn Tài khoản & Gói cước', en: 'Account & Subscription Guide' },
-    detail: { vi: 'Cách nâng cấp gói Pro và xem lượng Token đã dùng', en: 'How to upgrade Pro and view token usage' },
+    title: {
+      vi: 'Khám phá các triệu chứng thường gặp',
+      en: 'Explore common symptoms'
+    },
+    detail: {
+      vi: 'Tôi bị ho và sốt từ hôm qua.',
+      en: 'I have had a cough and fever since yesterday.'
+    },
     prompt: {
-      vi: 'Làm thế nào để tôi nâng cấp lên gói Pro (giả lập) và làm sao xem lượng token mà tài khoản tôi đã sử dụng?',
-      en: 'How can I upgrade to the Pro plan (simulated) and check the number of tokens my account has used?'
+      vi: 'Tôi bị ho và sốt từ hôm qua.',
+      en: 'I have had a cough and fever since yesterday.'
     },
   },
 ]

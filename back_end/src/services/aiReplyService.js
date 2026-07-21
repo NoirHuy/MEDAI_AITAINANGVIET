@@ -36,7 +36,7 @@ async function streamText(text, onChunk, signal) {
 // ─── OPENROUTER STREAM CLIENT ─────────────────────────────────────────────────
 async function streamOpenRouter(chatMessages, onChunk, signal, modelOverride = null, maxTokens = 1500) {
   const modelName = modelOverride || env.openrouterModel
-  const response = await fetch('https://openrouter.ai/api/v1/chat/completions', {
+  const response = await fetch(`${env.openrouterBaseUrl}/chat/completions`, {
     method: 'POST',
     headers: {
       'Authorization': `Bearer ${env.openrouterApiKey}`,

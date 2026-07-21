@@ -79,7 +79,7 @@ async function searchUMLS(queryString) {
 
 // Helper phụ thực thi cuộc gọi OpenRouter cụ thể
 async function tryCallOpenRouter(chatMessages, modelName, timeoutMs = 15000) {
-  const response = await fetch('https://openrouter.ai/api/v1/chat/completions', {
+  const response = await fetch(`${env.openrouterBaseUrl}/chat/completions`, {
     method: 'POST',
     headers: {
       'Authorization': `Bearer ${env.openrouterApiKey}`,

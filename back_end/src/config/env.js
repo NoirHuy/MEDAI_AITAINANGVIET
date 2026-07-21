@@ -5,6 +5,7 @@ export const env = {
   clientOrigin: (process.env.CLIENT_ORIGIN || 'http://localhost:5173').trim(),
   jwtSecret: (process.env.JWT_SECRET || 'dev-only-insecure-secret-change-me').trim(),
   openrouterApiKey: process.env.OPENROUTER_API_KEY ? process.env.OPENROUTER_API_KEY.trim() : null,
+  openrouterBaseUrl: (process.env.OPENROUTER_BASE_URL || 'https://openrouter.ai/api/v1').trim(),
   openrouterModel: (process.env.OPENROUTER_MODEL || 'deepseek/deepseek-v4-flash').trim(),
   openrouterModelNer: (process.env.OPENROUTER_MODEL_NER || 'google/gemini-2.5-flash-lite').trim(),
   openrouterModelChat: (process.env.OPENROUTER_MODEL_CHAT || 'google/gemini-3-flash-preview').trim(),
