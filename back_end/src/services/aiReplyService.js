@@ -350,7 +350,8 @@ export async function generateReply({ messages, specialtyId, lang = 'vi', onChun
 
     let systemPrompt = basePrompt.replace('{ADAPTIVE_CONTEXT}', adaptiveText)
 
-    if (turnCount >= 4) {
+    const allChecklistItemsMet = checklistStatus.hasAgeSex && checklistStatus.hasDuration && checklistStatus.hasSeverity;
+    if (turnCount >= 4 || allChecklistItemsMet) {
       systemPrompt += isEn
         ? `\n\n⚠️ **CRITICAL SYSTEM ENFORCEMENT**: This is turn ${turnCount}. You MUST immediately transition to PHASE 2 (Detailed Screening Report) now. DO NOT ask any further questions. Output the SCREENING REPORT using the information collected so far. You MUST strictly follow the rule to ONLY list diseases present in the Neo4j graph context.`
         : `\n\n⚠️ **CHỈ THỊ HỆ THỐNG BẮT BUỘC**: Đây là lượt phản hồi thứ ${turnCount}. Bạn BẮT BUỘC phải chuyển sang GIAI ĐOẠN 2 (Báo cáo sàng lọc chi tiết) ngay lập tức. TUYỆT ĐỐI KHÔNG ĐƯỢC hỏi thêm bất kỳ câu hỏi nào. Hãy xuất BÁO CÁO SÀNG LỌC dựa trên thông tin đã có. Bạn BẮT BUỘC chỉ được liệt kê các bệnh lý có trong danh sách được cung cấp từ đồ thị Neo4j ở phần TRẠNG THÁI HIỆN TẠI dưới đây.`
