@@ -225,7 +225,13 @@ function App() {
       {authTab && (
         <AuthModal
           initialTab={authTab}
-          onClose={() => setAuthTab(null)}
+          onClose={() => {
+            setAuthTab(null)
+            if (isAdminPath) {
+              window.history.replaceState({}, '', '/')
+              setView('chat')
+            }
+          }}
           onSignUpForm={signUpForm}
           onSignInForm={signInForm}
           onSignInWithGoogle={signInWithGoogle}
