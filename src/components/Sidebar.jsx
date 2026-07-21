@@ -111,7 +111,7 @@ export default function Sidebar({
             account={account}
             theme={theme}
             onToggleTheme={onToggleTheme}
-            onOpenSettings={onOpenSettings}
+            onOpenDashboard={onOpenSettings}
             onSignOut={onSignOut}
             onHelp={onHelp}
             lang={lang}

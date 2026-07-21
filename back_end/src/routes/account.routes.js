@@ -45,4 +45,32 @@ router.get(
   }),
 )
 
+router.patch(
+  '/password',
+  asyncHandler(async (req, res) => {
+    const bcrypt = await import('bcryptjs').then(m => m.default)
+    const { oldPassword, newPassword } = req.body ?? {}
+    if (!newPassword || newPassword.trim().length < 6) {
+      throw new HttpError(400, 'Mật khẩu mới phải có ít nhất 6 ký tự.')
+    }
+
+    const user = await findUserById(req.userId)
+    if (!user) throw new HttpError(404, 'Không tìm thấy tài khoản.')
+    if (user.provider === 'google') {
+      throw new HttpError(400, 'Tài khoản đăng nhập bằng Google không sử dụng mật khẩu.')
+    }
+
+    if (user.passwordHash) {
+      const isMatch = await bcrypt.compare(oldPassword || '', user.passwordHash)
+      if (!isMatch) throw new HttpError(400, 'Mật khẩu cũ không chính xác.')
+    }
+
+    const salt = await bcrypt.genSalt(10)
+    const passwordHash = await bcrypt.hash(newPassword, salt)
+    
+    await updateUser(req.userId, { passwordHash })
+    res.json({ success: true, message: 'Đổi mật khẩu thành công.' })
+  }),
+)
+
 export default router

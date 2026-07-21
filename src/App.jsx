@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import Sidebar from './components/Sidebar'
 import ChatView from './components/ChatView'
-import SettingsModal from './components/SettingsModal'
+import DashboardView from './components/DashboardView'
 import AuthModal from './components/AuthModal'
 import Toast from './components/Toast'
 import { useChat } from './hooks/useChat'
@@ -31,7 +31,8 @@ function App() {
   const [searchTerm, setSearchTerm] = useState('')
   const [collapsed, setCollapsed] = useState(false)
   const [mobileOpen, setMobileOpen] = useState(false)
-  const [settingsTab, setSettingsTab] = useState(null)
+  const [view, setView] = useState('chat')
+  const [dashboardTab, setDashboardTab] = useState('account')
   const [authTab, setAuthTab] = useState(null)
   const [lang, setLang] = useState(localStorage.getItem('medai_lang') || 'en')
 
@@ -94,18 +95,34 @@ function App() {
 
   function handleSignOut() {
     signOut()
-    setSettingsTab(null)
+    setView('chat')
     setMobileOpen(false)
     showToast(lang === 'en' ? 'Logged out' : 'Đã đăng xuất')
   }
 
   function handleHelp() {
-    setSettingsTab('help')
+    setView('dashboard')
+    setDashboardTab('account')
   }
 
   function handleAuthed(_user, message) {
     setAuthTab(null)
     showToast(message)
+  }
+
+  if (view === 'dashboard' && account) {
+    return (
+      <div className="app-shell-dashboard" style={{ width: '100vw', height: '100vh', overflow: 'hidden' }}>
+        <DashboardView
+          account={account}
+          onBack={() => setView('chat')}
+          onSignOut={handleSignOut}
+          lang={lang}
+          initialTab={dashboardTab}
+        />
+        <Toast message={toastMessage} />
+      </div>
+    )
   }
 
   return (
@@ -124,7 +141,10 @@ function App() {
           searchTerm={searchTerm}
           onSearchTermChange={setSearchTerm}
           account={account}
-          onOpenSettings={setSettingsTab}
+          onOpenSettings={(tab) => {
+            setView('dashboard')
+            setDashboardTab(tab)
+          }}
           onSignOut={handleSignOut}
           onHelp={handleHelp}
           onOpenAuth={() => setAuthTab('signin')}
@@ -148,18 +168,7 @@ function App() {
         onToggleLang={handleToggleLang}
       />
 
-      {settingsTab && account && (
-        <SettingsModal
-          activeTab={settingsTab}
-          onChangeTab={setSettingsTab}
-          onClose={() => setSettingsTab(null)}
-          account={account}
-          onUpdateName={handleUpdateName}
-          onSetPlan={handleSetPlan}
-          onSignOut={handleSignOut}
-          onFetchUsage={fetchUsage}
-        />
-      )}
+      {/* SettingsModal has been replaced by the full-screen DashboardView */}
 
       {authTab && (
         <AuthModal

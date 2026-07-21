@@ -8,6 +8,13 @@ const userSchema = new mongoose.Schema({
   provider: { type: String, required: true },
   planId: { type: String, required: true },
   tokensUsed: { type: Number, default: 0 },
+  role: { type: String, enum: ['user', 'admin'], default: 'user' },
+  subscriptionExpiresAt: { type: Date, default: null },
+  subscriptionStatus: { type: String, enum: ['active', 'past_due', 'canceled', 'none'], default: 'none' },
+  autoRenew: { type: Boolean, default: false },
+  billingMethod: { type: String, enum: ['stripe', 'momo', null], default: null },
+  billingToken: { type: String, default: null },
+  billingDetails: { type: mongoose.Schema.Types.Mixed, default: null },
   createdAt: { type: Date, default: Date.now },
 }, {
   versionKey: false,

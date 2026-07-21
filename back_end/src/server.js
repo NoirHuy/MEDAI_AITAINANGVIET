@@ -6,6 +6,9 @@ import { connectDatabase } from './db/mongodb.js'
 import authRoutes from './routes/auth.routes.js'
 import accountRoutes from './routes/account.routes.js'
 import chatRoutes from './routes/chat.routes.js'
+import paymentRoutes from './routes/payment.routes.js'
+import adminRoutes from './routes/admin.routes.js'
+import { startBillingScheduler } from './services/billingScheduler.js'
 import { notFoundHandler, errorHandler } from './middleware/errorHandler.js'
 
 // Connect to MongoDB
@@ -22,6 +25,8 @@ app.get('/health', (_req, res) => res.json({ ok: true }))
 app.use('/api/auth', authRoutes)
 app.use('/api/account', accountRoutes)
 app.use('/api/chat', chatRoutes)
+app.use('/api/payments', paymentRoutes)
+app.use('/api/admin', adminRoutes)
 
 import path from 'path'
 import { fileURLToPath } from 'url'
@@ -58,6 +63,7 @@ app.use(errorHandler)
 
 app.listen(env.port, '0.0.0.0', () => {
   console.log(`MedChat backend listening on http://0.0.0.0:${env.port}`)
+  startBillingScheduler()
   if (!env.openrouterApiKey) {
     console.log('OPENROUTER_API_KEY not set — /api/chat is using the mock reply generator.')
   } else {

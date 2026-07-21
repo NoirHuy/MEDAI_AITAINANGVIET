@@ -16,6 +16,8 @@
     "google-auth-library": "^10.9.0",
     "jsonwebtoken": "^9.0.2",
     "mongoose": "^8.9.5",
-    "neo4j-driver": "^6.2.0"
+    "neo4j-driver": "^6.2.0",
+    "node-cron": "^4.6.0",
+    "stripe": "^22.3.2"
   }
 }

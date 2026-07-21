@@ -18,7 +18,7 @@ export default function AccountMenu({
   account,
   theme,
   onToggleTheme,
-  onOpenSettings,
+  onOpenDashboard,
   onSignOut,
   onHelp,
 }) {
@@ -39,8 +39,11 @@ export default function AccountMenu({
     return () => document.removeEventListener('mousedown', handleClickOutside)
   }, [])
 
-  function openSettingsTab(tab) {
-    onOpenSettings(tab)
+  function openDashboardTab(tab) {
+    let mapped = 'account'
+    if (tab === 'usage') mapped = 'invoices'
+    if (tab === 'subscription') mapped = 'billing'
+    onOpenDashboard(mapped)
     setOpen(false)
     setAppearanceExpanded(false)
   }
@@ -59,17 +62,17 @@ export default function AccountMenu({
 
           <div className="account-menu__divider" />
 
-          <button className="account-menu__item" onClick={() => openSettingsTab('account')}>
+          <button className="account-menu__item" onClick={() => openDashboardTab('account')}>
             <UserCircleIcon />
             <span>Hồ sơ tài khoản</span>
           </button>
 
-          <button className="account-menu__item" onClick={() => openSettingsTab('usage')}>
+          <button className="account-menu__item" onClick={() => openDashboardTab('usage')}>
             <GaugeIcon />
             <span>Mức sử dụng &amp; Token</span>
           </button>
 
-          <button className="account-menu__item" onClick={() => openSettingsTab('subscription')}>
+          <button className="account-menu__item" onClick={() => openDashboardTab('subscription')}>
             <CreditCardIcon />
             <span>Gói thuê bao</span>
             <span className="account-menu__badge">{plan.name}</span>

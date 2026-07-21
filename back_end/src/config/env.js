@@ -26,6 +26,8 @@ export const env = {
   neo4jDatabase: (process.env.NEO4J_DATABASE || 'neo4j').trim(),
   mongodbUri: (process.env.MONGODB_URI || 'mongodb://localhost:27018/medchat').trim(),
   umlsApiKey: process.env.UMLS_API_KEY ? process.env.UMLS_API_KEY.trim() : null,
+  stripeSecretKey: (process.env.STRIPE_SECRET_KEY || '').trim(),
+  adminEmail: (process.env.ADMIN_EMAIL || 'admin@medchat.ai').trim(),
   wChiefComplaint: Number(process.env.W_CHIEF_COMPLAINT) || 1.5,
   wAssociated: Number(process.env.W_ASSOCIATED) || 1.0,
   penaltyMultiplier: Number(process.env.PENALTY_MULTIPLIER) || 0.8,
