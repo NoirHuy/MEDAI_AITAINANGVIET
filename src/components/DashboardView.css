@@ -923,3 +923,43 @@
   padding: 2rem;
   font-style: italic;
 }
+
+/* Gateway pills & type badges for payments management */
+.gateway-pill {
+  padding: 0.25rem 0.5rem;
+  border-radius: 6px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  display: inline-block;
+}
+
+.gateway-stripe {
+  background-color: #e0f2fe;
+  color: #0369a1;
+  border: 1px solid #bae6fd;
+}
+
+.gateway-momo {
+  background-color: #fce7f3;
+  color: #be185d;
+  border: 1px solid #fbcfe8;
+}
+
+.type-badge-recurring {
+  background-color: #f3e8ff;
+  color: #7e22ce;
+  padding: 0.15rem 0.4rem;
+  border-radius: 4px;
+  font-size: 0.7rem;
+  font-weight: 600;
+}
+
+.type-badge-initial {
+  background-color: #ecfdf5;
+  color: #047857;
+  padding: 0.15rem 0.4rem;
+  border-radius: 4px;
+  font-size: 0.7rem;
+  font-weight: 600;
+}
+

@@ -46,6 +46,13 @@ export default function DashboardView({ account, onBack, onSignOut, lang, initia
   const [editPlan, setEditPlan] = useState('free')
   const [editRole, setEditRole] = useState('user')
 
+  // Quản lý Thanh toán & Doanh thu
+  const [payments, setPayments] = useState([])
+  const [payPage, setPayPage] = useState(1)
+  const [totalPayPages, setTotalPayPages] = useState(1)
+  const [filterPayStatus, setFilterPayStatus] = useState('')
+  const [filterPayGateway, setFilterPayGateway] = useState('')
+
   const [loading, setLoading] = useState(false)
 
   useEffect(() => {
@@ -99,6 +106,19 @@ export default function DashboardView({ account, onBack, onSignOut, lang, initia
             const data = await res.json()
             setOpsLogs(data.ops)
           }
+        } else if (activeTab === 'payments') {
+          const queryParams = new URLSearchParams({
+            page: payPage,
+            limit: 8,
+            status: filterPayStatus,
+            gateway: filterPayGateway
+          })
+          const res = await fetch(`/api/admin/payments?${queryParams}`)
+          if (res.ok) {
+            const data = await res.json()
+            setPayments(data.payments || [])
+            setTotalPayPages(data.pagination?.totalPages || 1)
+          }
         }
       } catch (err) {
         console.error('Lỗi khi lấy dữ liệu admin:', err)
@@ -108,7 +128,7 @@ export default function DashboardView({ account, onBack, onSignOut, lang, initia
     }
 
     loadData()
-  }, [activeTab, convPage, searchConv, filterUrgency, filterLang, filterGuest, userPage, searchUser, isAdmin])
+  }, [activeTab, convPage, searchConv, filterUrgency, filterLang, filterGuest, userPage, searchUser, payPage, filterPayStatus, filterPayGateway, isAdmin])
 
   // Xem chi tiết hội thoại
   const handleViewDetails = async (convId) => {
@@ -276,6 +296,10 @@ export default function DashboardView({ account, onBack, onSignOut, lang, initia
             <UserCircleIcon />
             <span>Quản lý thành viên</span>
           </button>
+          <button className={`admin-nav-item ${activeTab === 'payments' ? 'active' : ''}`} onClick={() => { setActiveTab('payments'); setPayPage(1); }}>
+            <CreditCardIcon />
+            <span>Thanh toán &amp; Doanh thu</span>
+          </button>
           <button className={`admin-nav-item ${activeTab === 'ops' ? 'active' : ''}`} onClick={() => setActiveTab('ops')}>
             <HelpCircleIcon />
             <span>Giám sát vận hành</span>
@@ -307,6 +331,16 @@ export default function DashboardView({ account, onBack, onSignOut, lang, initia
                 <span className="card-label">Hội thoại mới (Hôm nay/Tuần/Tháng)</span>
                 <h2>{overviewStats.chatCounts.today} / {overviewStats.chatCounts.week} / {overviewStats.chatCounts.month}</h2>
                 <div className="card-trend text-blue">Hoạt động ổn định</div>
+              </div>
+              <div className="overview-card">
+                <span className="card-label">Doanh thu hệ thống</span>
+                <h2 className="text-success-custom">{(overviewStats.totalRevenue || 0).toLocaleString('vi-VN')} đ</h2>
+                <div className="card-trend text-success-custom">Thanh toán &amp; Auto-billing</div>
+              </div>
+              <div className="overview-card">
+                <span className="card-label">Thành viên Premium (Pro)</span>
+                <h2>{overviewStats.proUsersCount || 0}</h2>
+                <div className="card-trend text-blue">Đăng ký trả phí hoạt động</div>
               </div>
               <div className="overview-card">
                 <span className="card-label">Người dùng hoạt động (Tháng)</span>
@@ -750,6 +784,123 @@ export default function DashboardView({ account, onBack, onSignOut, lang, initia
                     )}
                   </tbody>
                 </table>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* TAB 6: PAYMENTS & REVENUE (THANH TOÁN & DOANH THU) */}
+        {activeTab === 'payments' && (
+          <div className="tab-pane">
+            <header className="pane-header">
+              <h1>Quản Lý Giao Dịch &amp; Doanh Thu</h1>
+              <p>Danh sách toàn bộ các hóa đơn nâng cấp và gia hạn định kỳ (Auto-billing) trên hệ thống.</p>
+            </header>
+
+            {/* Filters bar */}
+            <div className="filters-bar card-box mb-4">
+              <div className="filter-title">
+                <h3 style={{ margin: 0, fontSize: '0.95rem', fontWeight: 650 }}>Bộ lọc giao dịch</h3>
+              </div>
+              <div className="filter-dropdowns">
+                <select value={filterPayStatus} onChange={e => { setFilterPayStatus(e.target.value); setPayPage(1); }}>
+                  <option value="">-- Trạng thái --</option>
+                  <option value="success">Thành công</option>
+                  <option value="failed">Thất bại</option>
+                  <option value="pending">Chờ thanh toán</option>
+                </select>
+
+                <select value={filterPayGateway} onChange={e => { setFilterPayGateway(e.target.value); setPayPage(1); }}>
+                  <option value="">-- Cổng thanh toán --</option>
+                  <option value="stripe">Stripe (Thẻ Visa/Mastercard)</option>
+                  <option value="momo">Ví MoMo</option>
+                </select>
+              </div>
+            </div>
+
+            {/* Transaction log table */}
+            <div className="card-box">
+              <div className="table-responsive">
+                <table className="admin-table-custom">
+                  <thead>
+                    <tr>
+                      <th>Mã hóa đơn</th>
+                      <th>Khách hàng</th>
+                      <th>Gói cước</th>
+                      <th>Cổng thanh toán</th>
+                      <th>Loại</th>
+                      <th>Số tiền</th>
+                      <th>Thời gian</th>
+                      <th>Trạng thái</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {payments.length === 0 ? (
+                      <tr>
+                        <td colSpan="8" className="text-center-muted">Không tìm thấy giao dịch nào.</td>
+                      </tr>
+                    ) : (
+                      payments.map(p => (
+                        <tr key={p.id}>
+                          <td className="font-mono text-sm">{p.id.slice(0, 10)}...</td>
+                          <td>
+                            <strong>{p.user?.name || 'Người dùng'}</strong>
+                            <br />
+                            <span className="text-xs text-muted">{p.user?.email || 'N/A'}</span>
+                          </td>
+                          <td><span className="plan-pill plan-pro">{p.planId}</span></td>
+                          <td>
+                            <span className={`gateway-pill gateway-${p.paymentGateway}`}>
+                              {p.paymentGateway === 'stripe' ? '💳 Stripe (Visa/MC)' : '💗 Ví MoMo'}
+                            </span>
+                          </td>
+                          <td>
+                            {p.type === 'recurring' ? (
+                              <span className="type-badge-recurring">Gia hạn tự động</span>
+                            ) : (
+                              <span className="type-badge-initial">Nâng cấp lần đầu</span>
+                            )}
+                          </td>
+                          <td className="font-bold text-success-custom">
+                            {(p.amount || 0).toLocaleString('vi-VN')} đ
+                          </td>
+                          <td>{new Date(p.createdAt).toLocaleString('vi-VN')}</td>
+                          <td>
+                            {p.status === 'success' && <span className="badge-status badge-success">Thành công</span>}
+                            {p.status === 'failed' && <span className="badge-status badge-failed">Thất bại</span>}
+                            {p.status === 'pending' && <span className="badge-status badge-pending">Chờ xử lý</span>}
+                          </td>
+                        </tr>
+                      ))
+                    )}
+                  </tbody>
+                </table>
+              </div>
+
+              {/* Pagination */}
+              {totalPayPages > 1 && (
+                <div className="pagination-bar mt-4">
+                  <button disabled={payPage === 1} onClick={() => setPayPage(p => p - 1)}>← Trước</button>
+                  <span>Trang {payPage} / {totalPayPages}</span>
+                  <button disabled={payPage === totalPayPages} onClick={() => setPayPage(p => p + 1)}>Sau →</button>
+                </div>
+              )}
+            </div>
+
+            {/* Export payments report */}
+            <div className="card-box mt-6 block-reports">
+              <h3>Xuất báo cáo tài chính</h3>
+              <p className="chart-subtitle">Tải toàn bộ lịch sử hóa đơn để phục vụ báo cáo kế toán và đối soát.</p>
+              <div className="flex-buttons mt-4">
+                <button className="btn-report-dl blue" onClick={() => {
+                  const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(payments, null, 2))
+                  const downloadAnchor = document.createElement('a')
+                  downloadAnchor.setAttribute("href", dataStr)
+                  downloadAnchor.setAttribute("download", `MedChat_Financial_Transactions_Report.json`)
+                  document.body.appendChild(downloadAnchor)
+                  downloadAnchor.click()
+                  downloadAnchor.remove()
+                }}>Xuất báo cáo giao dịch (JSON)</button>
               </div>
             </div>
           </div>

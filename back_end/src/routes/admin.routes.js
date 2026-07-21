@@ -68,6 +68,14 @@ router.get(
       topSymptoms = topSymptoms.map(s => ({ _id: s._id, count: s.count }))
     }
 
+    // F. Doanh thu & Người dùng trả phí
+    const revenueStats = await PaymentModel.aggregate([
+      { $match: { status: 'success' } },
+      { $group: { _id: null, total: { $sum: '$amount' } } }
+    ])
+    const totalRevenue = revenueStats[0]?.total || 0
+    const proUsersCount = await UserModel.countDocuments({ planId: 'pro' })
+
     res.json({
       overview: {
         chatCounts: { today: chatToday, week: chatWeek, month: chatMonth },
@@ -79,7 +87,9 @@ router.get(
           warning: warningChats || 24,
           normal: normalChats || 64
         },
-        topSymptoms
+        topSymptoms,
+        totalRevenue,
+        proUsersCount
       }
     })
   })
@@ -297,6 +307,49 @@ router.delete(
       throw new HttpError(404, 'Không tìm thấy người dùng.')
     }
     res.json({ success: true })
+  })
+)
+
+// ─── 8. QUẢN LÝ GIAO DỊCH & DOANH THU (PAYMENTS & REVENUE) ───────────────────
+router.get(
+  '/payments',
+  asyncHandler(async (req, res) => {
+    const page = Math.max(1, Number(req.query.page) || 1)
+    const limit = Math.max(1, Number(req.query.limit) || 10)
+    const status = req.query.status // 'pending' | 'success' | 'failed'
+    const gateway = req.query.gateway // 'stripe' | 'momo'
+
+    const filter = {}
+    if (status) filter.status = status
+    if (gateway) filter.paymentGateway = gateway
+
+    const skip = (page - 1) * limit
+    const total = await PaymentModel.countDocuments(filter)
+    const list = await PaymentModel.find(filter)
+      .sort({ createdAt: -1 })
+      .skip(skip)
+      .limit(limit)
+      .lean()
+
+    // Lấy thông tin user tương ứng cho mỗi giao dịch
+    const userIds = [...new Set(list.map(p => p.userId))]
+    const users = await UserModel.find({ id: { $in: userIds } }).lean()
+    const userMap = new Map(users.map(u => [u.id, u]))
+
+    const finalizedList = list.map(payment => ({
+      ...payment,
+      user: userMap.get(payment.userId) ? toPublicUser(userMap.get(payment.userId)) : { name: 'Vãng lai/Đã xóa', email: 'N/A' }
+    }))
+
+    res.json({
+      payments: finalizedList,
+      pagination: {
+        page,
+        limit,
+        total,
+        totalPages: Math.ceil(total / limit)
+      }
+    })
   })
 )
 
