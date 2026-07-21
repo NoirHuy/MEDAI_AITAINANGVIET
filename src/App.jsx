@@ -33,7 +33,7 @@ function App() {
   const [collapsed, setCollapsed] = useState(false)
   const [mobileOpen, setMobileOpen] = useState(false)
   const [view, setView] = useState('chat')
-  const [dashboardTab, setDashboardTab] = useState('account')
+  const [dashboardTab, setDashboardTab] = useState('overview')
   const [settingsTab, setSettingsTab] = useState(null)
   const [authTab, setAuthTab] = useState(null)
   const [lang, setLang] = useState(localStorage.getItem('medai_lang') || 'en')
@@ -127,7 +127,7 @@ function App() {
 
   function handleHelp() {
     if (account) {
-      handleOpenDashboard('account')
+      setSettingsTab('help')
     } else {
       setAuthTab('signin')
     }
@@ -143,16 +143,7 @@ function App() {
     setView('chat')
   }
 
-  function handleOpenDashboard(tab) {
-    if (account && account.role === 'admin') {
-      window.history.pushState({}, '', '/admin')
-      setView('dashboard')
-      setDashboardTab(tab)
-    } else {
-      // Người dùng thường: mở popup settings modal như cũ
-      setSettingsTab(tab)
-    }
-  }
+  // handleOpenDashboard has been removed so that clicking profile settings always opens the standard SettingsModal.
 
   if (view === 'dashboard' && account) {
     return (
@@ -185,7 +176,7 @@ function App() {
           searchTerm={searchTerm}
           onSearchTermChange={setSearchTerm}
           account={account}
-          onOpenSettings={handleOpenDashboard}
+          onOpenSettings={setSettingsTab}
           onSignOut={handleSignOut}
           onHelp={handleHelp}
           onOpenAuth={() => setAuthTab('signin')}
