@@ -7,322 +7,165 @@ import {
   TrashIcon,
   SearchIcon,
   CheckIcon,
-  SpinnerIcon
+  SpinnerIcon,
+  PulseIcon,
+  CloseIcon
 } from './Icons'
 import './DashboardView.css'
 
 export default function DashboardView({ account, onBack, onSignOut, lang, initialTab }) {
-  const [activeTab, setActiveTab] = useState(initialTab || 'account')
+  const [activeTab, setActiveTab] = useState(initialTab || 'overview')
   const [isAdmin, setIsAdmin] = useState(account.role === 'admin')
 
-  useEffect(() => {
-    if (initialTab) {
-      setActiveTab(initialTab)
-    }
-  }, [initialTab])
-
-  // State tài khoản
-  const [name, setName] = useState(account.name)
-  const [oldPassword, setOldPassword] = useState('')
-  const [newPassword, setNewPassword] = useState('')
-  const [confirmPassword, setConfirmPassword] = useState('')
-  const [profileMsg, setProfileMsg] = useState('')
-  const [profileErr, setProfileErr] = useState('')
-  const [loadingProfile, setLoadingProfile] = useState(false)
-
-  // State thanh toán
-  const [billingInfo, setBillingInfo] = useState(account)
-  const [invoices, setInvoices] = useState([])
-  const [loadingBilling, setLoadingBilling] = useState(false)
-  const [billingMsg, setBillingMsg] = useState('')
-  const [showLinkModal, setShowLinkModal] = useState(null) // 'card' | 'momo'
+  // State các dữ liệu quản trị
+  const [overviewStats, setOverviewStats] = useState(null)
+  const [conversations, setConversations] = useState([])
+  const [searchConv, setSearchConv] = useState('')
+  const [filterUrgency, setFilterUrgency] = useState('')
+  const [filterLang, setFilterLang] = useState('')
+  const [filterGuest, setFilterGuest] = useState('')
+  const [convPage, setConvPage] = useState(1)
+  const [totalConvPages, setTotalConvPages] = useState(1)
   
-  // State form liên kết thẻ
-  const [cardName, setCardName] = useState('')
-  const [cardNumber, setCardNumber] = useState('')
-  const [cardExpiry, setCardExpiry] = useState('')
-  const [cardCvc, setCardCvc] = useState('')
-  
-  // State form liên kết Momo
-  const [momoPhone, setMomoPhone] = useState('')
-  const [momoOtp, setMomoOtp] = useState('')
-  const [otpSent, setOtpSent] = useState(false)
-  const [countdown, setCountdown] = useState(0)
+  // Chi tiết hội thoại đang xem
+  const [selectedConv, setSelectedConv] = useState(null)
+  const [showDetailModal, setShowDetailModal] = useState(false)
+  const [flagReason, setFlagReason] = useState('')
+  const [showFlagInput, setShowFlagInput] = useState(false)
 
-  // State Admin Panel
-  const [adminTab, setAdminTab] = useState('stats')
-  const [adminStats, setAdminStats] = useState(null)
-  const [adminUsers, setAdminUsers] = useState([])
-  const [adminPayments, setAdminPayments] = useState([])
+  // Danh sách log an toàn & Ops
+  const [safetyLogs, setSafetyLogs] = useState([])
+  const [opsLogs, setOpsLogs] = useState(null)
+
+  // Quản lý User (Cũ)
+  const [users, setUsers] = useState([])
   const [searchUser, setSearchUser] = useState('')
   const [userPage, setUserPage] = useState(1)
-  const [totalPages, setTotalPages] = useState(1)
+  const [totalUserPages, setTotalUserPages] = useState(1)
   const [editingUserId, setEditingUserId] = useState(null)
   const [editPlan, setEditPlan] = useState('free')
   const [editRole, setEditRole] = useState('user')
-  const [loadingAdmin, setLoadingAdmin] = useState(false)
 
-  // Cập nhật lại thông tin user từ prop
+  const [loading, setLoading] = useState(false)
+
   useEffect(() => {
-    setBillingInfo(account)
     setIsAdmin(account.role === 'admin')
   }, [account])
 
-  // Lấy lịch sử giao dịch cá nhân
-  const fetchInvoices = async () => {
-    try {
-      const res = await fetch('/api/payments/history')
-      if (res.ok) {
-        const data = await res.json()
-        setInvoices(data.history || [])
-      }
-    } catch (err) {
-      console.error('Lỗi lấy lịch sử giao dịch:', err)
-    }
-  }
-
+  // Tự động load dữ liệu tùy thuộc vào tab đang active
   useEffect(() => {
-    if (activeTab === 'billing' || activeTab === 'invoices') {
-      fetchInvoices()
-    }
-  }, [activeTab])
+    if (!isAdmin) return
 
-  // Đếm ngược gửi mã OTP Momo
-  useEffect(() => {
-    if (countdown > 0) {
-      const timer = setTimeout(() => setCountdown(c => c - 1), 1000)
-      return () => clearTimeout(timer)
-    }
-  }, [countdown])
-
-  // ─── XỬ LÝ TÀI KHOẢN ────────────────────────────────────────────────────────
-  const handleUpdateProfile = async (e) => {
-    e.preventDefault()
-    setProfileMsg('')
-    setProfileErr('')
-    setLoadingProfile(true)
-    try {
-      // 1. Cập nhật tên hiển thị nếu thay đổi
-      if (name.trim() !== account.name) {
-        const res = await fetch('/api/account/name', {
-          method: 'PATCH',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ name: name.trim() })
-        })
-        if (!res.ok) {
-          const errData = await res.json()
-          throw new Error(errData.error || 'Lỗi cập nhật tên.')
+    const loadData = async () => {
+      setLoading(true)
+      try {
+        if (activeTab === 'overview') {
+          const res = await fetch('/api/admin/stats/overview')
+          if (res.ok) {
+            const data = await res.json()
+            setOverviewStats(data.overview)
+          }
+        } else if (activeTab === 'conversations') {
+          const queryParams = new URLSearchParams({
+            page: convPage,
+            limit: 8,
+            search: searchConv,
+            urgency: filterUrgency,
+            lang: filterLang,
+            isGuest: filterGuest
+          })
+          const res = await fetch(`/api/admin/conversations?${queryParams}`)
+          if (res.ok) {
+            const data = await res.json()
+            setConversations(data.conversations || [])
+            setTotalConvPages(data.pagination?.totalPages || 1)
+          }
+        } else if (activeTab === 'safety') {
+          const res = await fetch('/api/admin/safety-logs')
+          if (res.ok) {
+            const data = await res.json()
+            setSafetyLogs(data.logs || [])
+          }
+        } else if (activeTab === 'users') {
+          const res = await fetch(`/api/admin/users?page=${userPage}&search=${encodeURIComponent(searchUser)}`)
+          if (res.ok) {
+            const data = await res.json()
+            setUsers(data.users || [])
+            setTotalUserPages(data.pagination?.totalPages || 1)
+          }
+        } else if (activeTab === 'ops') {
+          const res = await fetch('/api/admin/ops/logs')
+          if (res.ok) {
+            const data = await res.json()
+            setOpsLogs(data.ops)
+          }
         }
+      } catch (err) {
+        console.error('Lỗi khi lấy dữ liệu admin:', err)
+      } finally {
+        setLoading(false)
       }
-
-      // 2. Đổi mật khẩu nếu có nhập
-      if (newPassword) {
-        if (newPassword !== confirmPassword) {
-          throw new Error('Mật khẩu xác nhận không khớp.')
-        }
-        const res = await fetch('/api/account/password', {
-          method: 'PATCH',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ oldPassword, newPassword })
-        })
-        if (!res.ok) {
-          const errData = await res.json()
-          throw new Error(errData.error || 'Lỗi đổi mật khẩu.')
-        }
-        setOldPassword('')
-        setNewPassword('')
-        setConfirmPassword('')
-      }
-
-      setProfileMsg('Cập nhật hồ sơ tài khoản thành công!')
-      // Reload lại trang sau 1s để cập nhật prop account
-      setTimeout(() => window.location.reload(), 1000)
-    } catch (err) {
-      setProfileErr(err.message)
-    } finally {
-      setLoadingProfile(false)
     }
-  }
 
-  // ─── XỬ LÝ THANH TOÁN ───────────────────────────────────────────────────────
-  const handleLinkCard = async (e) => {
-    e.preventDefault()
-    setBillingMsg('')
-    if (!cardNumber || !cardExpiry || !cardCvc || !cardName) {
-      alert('Vui lòng nhập đầy đủ thông tin thẻ.')
-      return
-    }
-    setLoadingBilling(true)
+    loadData()
+  }, [activeTab, convPage, searchConv, filterUrgency, filterLang, filterGuest, userPage, searchUser, isAdmin])
+
+  // Xem chi tiết hội thoại
+  const handleViewDetails = async (convId) => {
     try {
-      const last4 = cardNumber.replace(/\s/g, '').slice(-4)
-      const brand = cardNumber.startsWith('4') ? 'Visa' : cardNumber.startsWith('5') ? 'Mastercard' : 'Credit Card'
-
-      const res = await fetch('/api/payments/link-card', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ last4, brand })
-      })
-      const data = await res.json()
-      if (!res.ok) throw new Error(data.error || 'Lỗi liên kết thẻ.')
-
-      setBillingInfo(data.user)
-      setShowLinkModal(null)
-      setCardName('')
-      setCardNumber('')
-      setCardExpiry('')
-      setCardCvc('')
-      setBillingMsg('Đã liên kết thẻ tín dụng thành công!')
-      fetchInvoices()
-    } catch (err) {
-      alert(err.message)
-    } finally {
-      setLoadingBilling(false)
-    }
-  }
-
-  const handleSendMomoOtp = (e) => {
-    e.preventDefault()
-    if (!momoPhone || momoPhone.length < 10) {
-      alert('Vui lòng nhập số điện thoại Ví MoMo hợp lệ.')
-      return
-    }
-    setOtpSent(true)
-    setCountdown(60)
-    setMomoOtp('1234') // Mã test mặc định
-  }
-
-  const handleLinkMomo = async (e) => {
-    e.preventDefault()
-    if (!momoOtp) {
-      alert('Vui lòng nhập mã OTP.')
-      return
-    }
-    setLoadingBilling(true)
-    try {
-      const res = await fetch('/api/payments/link-momo', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ phoneNumber: momoPhone, otp: momoOtp })
-      })
-      const data = await res.json()
-      if (!res.ok) throw new Error(data.error || 'Lỗi liên kết ví.')
-
-      setBillingInfo(data.user)
-      setShowLinkModal(null)
-      setMomoPhone('')
-      setMomoOtp('')
-      setOtpSent(false)
-      setBillingMsg('Đã liên kết Ví MoMo thành công!')
-      fetchInvoices()
-    } catch (err) {
-      alert(err.message)
-    } finally {
-      setLoadingBilling(false)
-    }
-  }
-
-  const handleUnlink = async () => {
-    if (!confirm('Bạn có chắc chắn muốn hủy liên kết phương thức thanh toán định kỳ này?')) return
-    setLoadingBilling(true)
-    try {
-      const res = await fetch('/api/payments/unlink', { method: 'POST' })
-      const data = await res.json()
-      if (!res.ok) throw new Error(data.error || 'Lỗi hủy liên kết.')
-
-      setBillingInfo(data.user)
-      setBillingMsg('Đã hủy liên kết nguồn tiền thành công.')
-      fetchInvoices()
-    } catch (err) {
-      alert(err.message)
-    } finally {
-      setLoadingBilling(false)
-    }
-  }
-
-  const handleToggleAutoRenew = async (checked) => {
-    try {
-      const res = await fetch('/api/payments/toggle-autorenew', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ autoRenew: checked })
-      })
-      const data = await res.json()
-      if (res.ok) {
-        setBillingInfo(data.user)
-      }
-    } catch (err) {
-      console.error(err)
-    }
-  }
-
-  const handleTriggerRenewTest = async () => {
-    setLoadingBilling(true)
-    setBillingMsg('')
-    try {
-      const res = await fetch('/api/payments/trigger-renew-test', { method: 'POST' })
-      const data = await res.json()
-      if (data.success) {
-        setBillingInfo(data.user)
-        setBillingMsg('Kiểm thử gia hạn thành công! Tài khoản của bạn đã được cộng hạn ngạch cước.')
-        fetchInvoices()
-      } else {
-        throw new Error(data.error || 'Thanh toán tự động bị từ chối.')
-      }
-    } catch (err) {
-      alert(`[Lỗi gia hạn tự động]: ${err.message}`)
-    } finally {
-      setLoadingBilling(false)
-    }
-  }
-
-  // ─── TÁC VỤ ADMIN ──────────────────────────────────────────────────────────
-  const fetchAdminStats = async () => {
-    try {
-      const res = await fetch('/api/admin/stats')
+      const res = await fetch(`/api/admin/conversations/${convId}`)
       if (res.ok) {
         const data = await res.json()
-        setAdminStats(data.stats)
+        setSelectedConv(data.conversation)
+        setFlagReason(data.conversation.flaggedReason || '')
+        setShowFlagInput(false)
+        setShowDetailModal(true)
       }
     } catch (err) {
-      console.error(err)
+      alert('Không thể tải chi tiết cuộc hội thoại.')
     }
   }
 
-  const fetchAdminUsers = async () => {
+  // Gắn cờ/Gỡ cờ hội thoại
+  const handleToggleFlag = async () => {
+    if (!selectedConv) return
+    const nextFlag = !selectedConv.flagged
     try {
-      const res = await fetch(`/api/admin/users?page=${userPage}&search=${encodeURIComponent(searchUser)}`)
+      const res = await fetch(`/api/admin/conversations/${selectedConv.id}/flag`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ flagged: nextFlag, flaggedReason: flagReason })
+      })
       if (res.ok) {
         const data = await res.json()
-        setAdminUsers(data.users || [])
-        setTotalPages(data.pagination?.totalPages || 1)
+        setSelectedConv(data.conversation)
+        setShowFlagInput(false)
+        // Refresh danh sách
+        if (activeTab === 'conversations') {
+          setConversations(prev => prev.map(c => c.id === selectedConv.id ? { ...c, flagged: nextFlag, flaggedReason: nextFlag ? flagReason : null } : c))
+        } else if (activeTab === 'safety') {
+          setSafetyLogs(prev => prev.map(c => c.id === selectedConv.id ? { ...c, flagged: nextFlag, flaggedReason: nextFlag ? flagReason : null } : c))
+        }
+        alert(nextFlag ? 'Đã gắn cờ cuộc hội thoại thành công!' : 'Đã gỡ cờ cuộc hội thoại.')
       }
     } catch (err) {
-      console.error(err)
+      alert('Không thể thực hiện gắn cờ.')
     }
   }
 
-  const fetchAdminPayments = async () => {
-    try {
-      const res = await fetch('/api/admin/payments')
-      if (res.ok) {
-        const data = await res.json()
-        setAdminPayments(data.payments || [])
-      }
-    } catch (err) {
-      console.error(err)
-    }
+  // Xuất file báo cáo kiểm toán hội thoại (JSON format)
+  const handleExportAudit = (conv) => {
+    const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(conv, null, 2))
+    const downloadAnchor = document.createElement('a')
+    downloadAnchor.setAttribute("href", dataStr)
+    downloadAnchor.setAttribute("download", `MedChat_Audit_Session_${conv.id}.json`)
+    document.body.appendChild(downloadAnchor)
+    downloadAnchor.click()
+    downloadAnchor.remove()
   }
 
-  useEffect(() => {
-    if (activeTab === 'admin' && isAdmin) {
-      if (adminTab === 'stats') fetchAdminStats()
-      if (adminTab === 'users') fetchAdminUsers()
-      if (adminTab === 'payments') fetchAdminPayments()
-    }
-  }, [activeTab, adminTab, userPage, searchUser])
-
+  // Quản lý người dùng
   const handleSaveUserEdit = async (userId) => {
-    setLoadingAdmin(true)
     try {
       const res = await fetch(`/api/admin/users/${userId}`, {
         method: 'PATCH',
@@ -331,274 +174,389 @@ export default function DashboardView({ account, onBack, onSignOut, lang, initia
       })
       if (res.ok) {
         setEditingUserId(null)
-        fetchAdminUsers()
-      } else {
-        const data = await res.json()
-        alert(data.error || 'Lỗi lưu thông tin.')
+        setUsers(prev => prev.map(u => u.id === userId ? { ...u, planId: editPlan, role: editRole } : u))
+        alert('Cập nhật quyền hạn thành viên thành công!')
       }
     } catch (err) {
-      alert(err.message)
-    } finally {
-      setLoadingAdmin(false)
+      alert('Lỗi cập nhật người dùng.')
+    }
+  }
+
+  const handleDeleteUser = async (userId) => {
+    if (!confirm('Xóa tài khoản này đồng thời sẽ xóa mọi phiên hội thoại liên quan. Bạn có chắc chắn?')) return
+    try {
+      const res = await fetch(`/api/admin/users/${userId}`, { method: 'DELETE' })
+      if (res.ok) {
+        setUsers(prev => prev.filter(u => u.id !== userId))
+      }
+    } catch (err) {
+      console.error(err)
     }
   }
 
   const handleResetTokens = async (userId) => {
-    if (!confirm('Bạn có muốn reset số lượng token đã sử dụng của tài khoản này về 0?')) return
+    if (!confirm('Đặt lại số token đã dùng về 0?')) return
     try {
       const res = await fetch(`/api/admin/users/${userId}`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ resetTokens: true })
       })
-      if (res.ok) fetchAdminUsers()
+      if (res.ok) {
+        setUsers(prev => prev.map(u => u.id === userId ? { ...u, tokensUsed: 0 } : u))
+      }
     } catch (err) {
       console.error(err)
     }
   }
 
-  const handleDeleteUser = async (userId) => {
-    if (!confirm('Hành động này sẽ XÓA VĨNH VIỄN tài khoản người dùng này. Bạn có chắc chắn?')) return
-    try {
-      const res = await fetch(`/api/admin/users/${userId}`, { method: 'DELETE' })
-      if (res.ok) fetchAdminUsers()
-    } catch (err) {
-      console.error(err)
+  // Xuất báo cáo hoạt động định kỳ (Tuần/Tháng) dạng tóm tắt
+  const handleExportPeriodicReport = (type) => {
+    const reportData = {
+      reportType: type === 'week' ? 'Báo cáo Tuần' : 'Báo cáo Tháng',
+      generatedAt: new Date().toLocaleString('vi-VN'),
+      metrics: overviewStats ? {
+        totalChats: overviewStats.chatCounts,
+        activeUsers: overviewStats.activeUsers,
+        emergencyRate: `${overviewStats.emergencyRate}%`,
+        avgResponseTime: `${overviewStats.avgResponseTimeMs}ms`,
+        topSymptoms: overviewStats.topSymptoms
+      } : 'No data available'
     }
+    const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(reportData, null, 2))
+    const downloadAnchor = document.createElement('a')
+    downloadAnchor.setAttribute("href", dataStr)
+    downloadAnchor.setAttribute("download", `MedChat_Periodic_Report_${type}.json`)
+    document.body.appendChild(downloadAnchor)
+    downloadAnchor.click()
+    downloadAnchor.remove()
+  }
+
+  // Phân loại nhãn khẩn cấp
+  const renderUrgencyBadge = (urgency) => {
+    if (urgency === 'emergency') {
+      return <span className="urgency-tag tag-red">Khẩn cấp (Đỏ)</span>
+    } else if (urgency === 'warning') {
+      return <span className="urgency-tag tag-yellow">Cần theo dõi (Vàng)</span>
+    }
+    return <span className="urgency-tag tag-green">Bình thường (Xanh)</span>
   }
 
   return (
-    <div className="dashboard-container">
+    <div className="admin-dashboard-root">
       {/* Sidebar Navigation */}
-      <aside className="dashboard-sidebar">
-        <div className="dashboard-sidebar__header">
-          <span className="dashboard-avatar">{account.name.charAt(0).toUpperCase()}</span>
+      <aside className="admin-side">
+        <div className="admin-side__brand">
+          <PulseIcon className="pulse-icon-blue" />
+          <h2>MedChat Admin</h2>
+        </div>
+
+        <div className="admin-side__user">
+          <span className="admin-avatar-initial">{account.name.charAt(0).toUpperCase()}</span>
           <div>
-            <h3>{account.name}</h3>
-            <p>{account.email}</p>
+            <h4>{account.name}</h4>
+            <p className="role-tag">Hệ thống Vận hành</p>
           </div>
         </div>
 
-        <nav className="dashboard-sidebar__nav">
-          <button
-            className={`dashboard-sidebar__btn ${activeTab === 'account' ? 'active' : ''}`}
-            onClick={() => setActiveTab('account')}
-          >
-            <UserCircleIcon />
-            <span>Thông tin cá nhân</span>
-          </button>
-          <button
-            className={`dashboard-sidebar__btn ${activeTab === 'billing' ? 'active' : ''}`}
-            onClick={() => setActiveTab('billing')}
-          >
-            <CreditCardIcon />
-            <span>Gói cước &amp; Gia hạn</span>
-          </button>
-          <button
-            className={`dashboard-sidebar__btn ${activeTab === 'invoices' ? 'active' : ''}`}
-            onClick={() => setActiveTab('invoices')}
-          >
+        <nav className="admin-side__nav">
+          <button className={`admin-nav-item ${activeTab === 'overview' ? 'active' : ''}`} onClick={() => setActiveTab('overview')}>
             <GaugeIcon />
-            <span>Lịch sử hóa đơn</span>
+            <span>Tổng quan hệ thống</span>
           </button>
-
-          {isAdmin && (
-            <>
-              <div className="dashboard-sidebar__divider" />
-              <button
-                className={`dashboard-sidebar__btn dashboard-sidebar__btn--admin ${activeTab === 'admin' ? 'active' : ''}`}
-                onClick={() => setActiveTab('admin')}
-              >
-                <HelpCircleIcon />
-                <span>Admin Panel</span>
-              </button>
-            </>
-          )}
+          <button className={`admin-nav-item ${activeTab === 'conversations' ? 'active' : ''}`} onClick={() => { setActiveTab('conversations'); setConvPage(1); }}>
+            <UserCircleIcon />
+            <span>Quản lý hội thoại</span>
+          </button>
+          <button className={`admin-nav-item ${activeTab === 'safety' ? 'active' : ''}`} onClick={() => setActiveTab('safety')}>
+            <CheckIcon />
+            <span>An toàn y tế</span>
+          </button>
+          <button className={`admin-nav-item ${activeTab === 'users' ? 'active' : ''}`} onClick={() => { setActiveTab('users'); setUserPage(1); }}>
+            <UserCircleIcon />
+            <span>Quản lý thành viên</span>
+          </button>
+          <button className={`admin-nav-item ${activeTab === 'ops' ? 'active' : ''}`} onClick={() => setActiveTab('ops')}>
+            <HelpCircleIcon />
+            <span>Giám sát vận hành</span>
+          </button>
         </nav>
 
-        <div className="dashboard-sidebar__footer">
-          <button className="dashboard-sidebar__back" onClick={onBack}>
-            ← Quay lại ứng dụng
+        <footer className="admin-side__foot">
+          <button className="btn-exit-admin" onClick={onBack}>
+            ← Quay lại Chat
           </button>
-        </div>
+        </footer>
       </aside>
 
-      {/* Main Content Area */}
-      <main className="dashboard-content">
-        <header className="dashboard-content__header">
-          <h2>{activeTab === 'account' ? 'Hồ sơ tài khoản' : activeTab === 'billing' ? 'Nâng cấp gói & Cấu hình thanh toán' : activeTab === 'invoices' ? 'Lịch sử thanh toán cước' : 'Quản trị hệ thống MedChat'}</h2>
-          <button className="btn-back-chat" onClick={onBack}>Bắt đầu Chat →</button>
-        </header>
+      {/* Main Panel Content */}
+      <main className="admin-main">
+        {loading && <div className="loading-bar-spinner"><SpinnerIcon className="animate-spin" /><span>Đang kết nối dữ liệu y khoa...</span></div>}
 
-        <div className="dashboard-content__body">
-          {/* TAB 1: THÔNG TIN TÀI KHOẢN */}
-          {activeTab === 'account' && (
-            <div className="card-glass shadow-lg">
-              <form onSubmit={handleUpdateProfile} className="form-settings">
-                <h3>Cập nhật thông tin</h3>
+        {/* TAB 1: OVERVIEW */}
+        {activeTab === 'overview' && overviewStats && (
+          <div className="tab-pane">
+            <header className="pane-header">
+              <h1>Tổng Quan Vận Hành</h1>
+              <p>Thống kê xu hướng triệu chứng và chất lượng tư vấn lâm sàng của Bot.</p>
+            </header>
+
+            {/* Metrics cards */}
+            <div className="overview-cards">
+              <div className="overview-card">
+                <span className="card-label">Hội thoại mới (Hôm nay/Tuần/Tháng)</span>
+                <h2>{overviewStats.chatCounts.today} / {overviewStats.chatCounts.week} / {overviewStats.chatCounts.month}</h2>
+                <div className="card-trend text-blue">Hoạt động ổn định</div>
+              </div>
+              <div className="overview-card">
+                <span className="card-label">Người dùng hoạt động (Tháng)</span>
+                <h2>{overviewStats.activeUsers}</h2>
+                <div className="card-trend text-blue">Thành viên và vãng lai</div>
+              </div>
+              <div className="overview-card">
+                <span className="card-label">Tỷ lệ khẩn cấp (Cấp cứu)</span>
+                <h2 className="text-danger-custom">{overviewStats.emergencyRate}%</h2>
+                <div className="card-trend">Đề xuất đi cấp cứu</div>
+              </div>
+              <div className="overview-card">
+                <span className="card-label">Phản hồi trung bình</span>
+                <h2>{overviewStats.avgResponseTimeMs}ms</h2>
+                <div className="card-trend text-success-custom">Tốc độ tối ưu</div>
+              </div>
+            </div>
+
+            {/* Charts Section */}
+            <div className="charts-grid mt-6">
+              {/* Left Chart: Top Symptoms */}
+              <div className="chart-box card-box">
+                <h3>Triệu chứng y tế hỏi nhiều nhất (Top Symptoms)</h3>
+                <p className="chart-subtitle">Tần suất xuất hiện triệu chứng được bot trích xuất từ hội thoại</p>
+                <div className="symptoms-bar-chart mt-4">
+                  {overviewStats.topSymptoms.map((symp, i) => {
+                    const maxVal = Math.max(...overviewStats.topSymptoms.map(s => s.count)) || 1
+                    const percent = Math.round((symp.count / maxVal) * 100)
+                    return (
+                      <div className="symptom-bar-row" key={i}>
+                        <span className="symptom-name">{symp._id}</span>
+                        <div className="bar-wrapper">
+                          <div className="bar-fill" style={{ width: `${percent}%` }} />
+                        </div>
+                        <span className="symptom-val">{symp.count} lượt</span>
+                      </div>
+                    )
+                  })}
+                </div>
+              </div>
+
+              {/* Right Chart: Urgency Donut Chart */}
+              <div className="chart-box card-box">
+                <h3>Phân bổ mức độ nguy cơ (Urgency Distribution)</h3>
+                <p className="chart-subtitle">Phân loại khẩn cấp được xác định tự động qua chẩn đoán lâm sàng</p>
                 
-                {profileMsg && <div className="alert-success">{profileMsg}</div>}
-                {profileErr && <div className="alert-danger">{profileErr}</div>}
-
-                <div className="input-group-grid">
-                  <div className="form-field">
-                    <label>Tên hiển thị</label>
-                    <input value={name} onChange={e => setName(e.target.value)} required />
+                <div className="donut-chart-container mt-4">
+                  <svg viewBox="0 0 36 36" className="donut-svg">
+                    <circle cx="18" cy="18" r="15.915" fill="transparent" stroke="var(--bg-app)" strokeWidth="3" />
+                    {/* SVG Donut logic segments */}
+                    {(() => {
+                      const total = overviewStats.urgencyDistribution.emergency + overviewStats.urgencyDistribution.warning + overviewStats.urgencyDistribution.normal
+                      const ePct = total > 0 ? (overviewStats.urgencyDistribution.emergency / total) * 100 : 15
+                      const wPct = total > 0 ? (overviewStats.urgencyDistribution.warning / total) * 100 : 25
+                      const nPct = total > 0 ? (overviewStats.urgencyDistribution.normal / total) * 100 : 60
+                      
+                      // Calculate offset strokes
+                      const strokeE = `${ePct} ${100 - ePct}`
+                      const strokeW = `${wPct} ${100 - wPct}`
+                      const strokeN = `${nPct} ${100 - nPct}`
+                      
+                      return (
+                        <>
+                          <circle cx="18" cy="18" r="15.915" fill="transparent" stroke="#10b981" strokeWidth="3" strokeDasharray={strokeN} strokeDashoffset="0" />
+                          <circle cx="18" cy="18" r="15.915" fill="transparent" stroke="#fbbf24" strokeWidth="3" strokeDasharray={strokeW} strokeDashoffset={-nPct} />
+                          <circle cx="18" cy="18" r="15.915" fill="transparent" stroke="#ef4444" strokeWidth="3" strokeDasharray={strokeE} strokeDashoffset={-(nPct + wPct)} />
+                        </>
+                      )
+                    })()}
+                  </svg>
+                  <div className="donut-labels">
+                    <div className="donut-label-row"><span className="dot dot-green" /><span>Bình thường: {overviewStats.urgencyDistribution.normal}</span></div>
+                    <div className="donut-label-row"><span className="dot dot-yellow" /><span>Cần theo dõi: {overviewStats.urgencyDistribution.warning}</span></div>
+                    <div className="donut-label-row"><span className="dot dot-red" /><span>Khẩn cấp: {overviewStats.urgencyDistribution.emergency}</span></div>
                   </div>
-                  <div className="form-field">
-                    <label>Email đăng ký</label>
-                    <input value={account.email} disabled className="disabled-input" />
-                  </div>
-                </div>
-
-                {account.provider !== 'google' && (
-                  <>
-                    <h3 className="mt-6">Đổi mật khẩu bảo mật</h3>
-                    <div className="form-field">
-                      <label>Mật khẩu cũ hiện tại</label>
-                      <input type="password" value={oldPassword} onChange={e => setOldPassword(e.target.value)} placeholder="Nhập để xác thực quyền sở hữu" />
-                    </div>
-                    <div className="input-group-grid">
-                      <div className="form-field">
-                        <label>Mật khẩu mới</label>
-                        <input type="password" value={newPassword} onChange={e => setNewPassword(e.target.value)} placeholder="Tối thiểu 6 ký tự" />
-                      </div>
-                      <div className="form-field">
-                        <label>Xác nhận mật khẩu mới</label>
-                        <input type="password" value={confirmPassword} onChange={e => setConfirmPassword(e.target.value)} placeholder="Nhập lại mật khẩu mới" />
-                      </div>
-                    </div>
-                  </>
-                )}
-
-                <button type="submit" className="btn-submit" disabled={loadingProfile}>
-                  {loadingProfile ? <SpinnerIcon className="animate-spin" /> : 'Lưu mọi thay đổi'}
-                </button>
-              </form>
-            </div>
-          )}
-
-          {/* TAB 2: GÓI CƯỚC & LIÊN KẾT THANH TOÁN */}
-          {activeTab === 'billing' && (
-            <div className="billing-layout">
-              {billingMsg && <div className="alert-success w-full mb-4">{billingMsg}</div>}
-
-              {/* Status cước hiện tại */}
-              <div className="card-glass billing-status">
-                <h3>Trạng thái gói cước hiện tại</h3>
-                <div className="status-grid">
-                  <div>
-                    <span className="text-muted">Gói đang dùng</span>
-                    <h2 className="text-highlight uppercase">{billingInfo.planId}</h2>
-                  </div>
-                  <div>
-                    <span className="text-muted">Hình thức gia hạn</span>
-                    <div className="toggle-wrapper">
-                      <span>Tự động gia hạn</span>
-                      <input
-                        type="checkbox"
-                        checked={billingInfo.autoRenew}
-                        onChange={e => handleToggleAutoRenew(e.target.checked)}
-                        disabled={!billingInfo.billingToken}
-                      />
-                    </div>
-                    {!billingInfo.billingToken && <p className="text-sm text-muted mt-1">(Cần liên kết thẻ/ví để bật)</p>}
-                  </div>
-                </div>
-
-                {billingInfo.billingToken && (
-                  <div className="linked-method-card mt-6">
-                    <div>
-                      <h4>Phương thức thanh toán đã liên kết:</h4>
-                      {billingInfo.billingMethod === 'stripe' ? (
-                        <p className="card-details">💳 Thẻ **{billingInfo.billingDetails?.brand}** (Đuôi *{billingInfo.billingDetails?.last4})</p>
-                      ) : (
-                        <p className="card-details">📱 Ví MoMo (SĐT: {billingInfo.billingDetails?.momoPhone})</p>
-                      )}
-                    </div>
-                    <div className="linked-actions">
-                      <button className="btn-unlink" onClick={handleUnlink}>Hủy liên kết</button>
-                      <button className="btn-trigger-test" onClick={handleTriggerRenewTest} disabled={loadingBilling}>
-                        {loadingBilling ? <SpinnerIcon className="animate-spin" /> : 'Gia hạn thử nghiệm ngay'}
-                      </button>
-                    </div>
-                  </div>
-                )}
-              </div>
-
-              {/* Thẻ bảng giá */}
-              <div className="pricing-grid mt-6">
-                <div className={`pricing-card card-glass ${billingInfo.planId === 'free' ? 'pricing-card--active' : ''}`}>
-                  <h3>FREE PLAN</h3>
-                  <div className="price">0đ<span>/tháng</span></div>
-                  <ul>
-                    <li>✓ 50.000 tokens sử dụng</li>
-                    <li>✓ Khám nhi khoa cơ bản</li>
-                    <li>✓ Thời gian phản hồi tiêu chuẩn</li>
-                  </ul>
-                </div>
-                <div className={`pricing-card card-glass ${billingInfo.planId === 'pro' ? 'pricing-card--active' : ''}`}>
-                  <div className="card-badge">KHUYÊN DÙNG</div>
-                  <h3>PRO PLAN</h3>
-                  <div className="price">99.000đ<span>/tháng</span></div>
-                  <ul>
-                    <li>✓ 2.000.000 tokens sử dụng</li>
-                    <li>✓ Đầy đủ các khoa kết nối</li>
-                    <li>✓ Ưu tiên tốc độ tối đa</li>
-                    <li>✓ Tự động gia hạn qua Visa/Momo</li>
-                  </ul>
-                  {!billingInfo.billingToken ? (
-                    <div className="link-button-group mt-6">
-                      <button className="btn-link-visa" onClick={() => setShowLinkModal('card')}>Liên kết Visa / Mastercard</button>
-                      <button className="btn-link-momo" onClick={() => setShowLinkModal('momo')}>Liên kết Ví MoMo</button>
-                    </div>
-                  ) : billingInfo.planId !== 'pro' ? (
-                    <button className="btn-submit mt-6" onClick={handleTriggerRenewTest} disabled={loadingBilling}>
-                      {loadingBilling ? <SpinnerIcon className="animate-spin" /> : 'Nâng cấp lên gói PRO'}
-                    </button>
-                  ) : (
-                    <div className="pro-active-msg mt-6">✓ Bạn đang sử dụng gói Pro</div>
-                  )}
                 </div>
               </div>
             </div>
-          )}
 
-          {/* TAB 3: LỊCH SỬ HÓA ĐƠN */}
-          {activeTab === 'invoices' && (
-            <div className="card-glass">
-              <h3>Bảng kê khai hóa đơn cước</h3>
-              <div className="table-responsive mt-4">
-                <table className="dashboard-table">
+            {/* Periodic reports generation */}
+            <div className="card-box mt-6 block-reports">
+              <h3>Báo cáo vận hành định kỳ</h3>
+              <p className="chart-subtitle">Tải dữ liệu phân tích định kỳ cho tổ chuyên môn hoặc bộ phận Ops</p>
+              <div className="flex-buttons mt-4">
+                <button className="btn-report-dl blue" onClick={() => handleExportPeriodicReport('week')}>Xuất báo cáo tuần này (JSON)</button>
+                <button className="btn-report-dl blue-soft" onClick={() => handleExportPeriodicReport('month')}>Xuất báo cáo tháng này (JSON)</button>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* TAB 2: CONVERSATIONS */}
+        {activeTab === 'conversations' && (
+          <div className="tab-pane">
+            <header className="pane-header">
+              <h1>Quản Lý Hội Thoại</h1>
+              <p>Audit và giám sát lịch sử tư vấn y khoa của chatbot.</p>
+            </header>
+
+            {/* Search & Filters */}
+            <div className="filters-bar card-box mb-4">
+              <div className="search-input-wrapper">
+                <SearchIcon />
+                <input
+                  type="text"
+                  placeholder="Tìm kiếm tiêu đề cuộc hội thoại..."
+                  value={searchConv}
+                  onChange={e => { setSearchConv(e.target.value); setConvPage(1); }}
+                />
+              </div>
+
+              <div className="filter-dropdowns">
+                <select value={filterUrgency} onChange={e => { setFilterUrgency(e.target.value); setConvPage(1); }}>
+                  <option value="">-- Mức nguy cơ --</option>
+                  <option value="normal">Bình thường</option>
+                  <option value="warning">Cần theo dõi</option>
+                  <option value="emergency">Khẩn cấp</option>
+                </select>
+
+                <select value={filterLang} onChange={e => { setFilterLang(e.target.value); setConvPage(1); }}>
+                  <option value="">-- Ngôn ngữ --</option>
+                  <option value="vi">Tiếng Việt</option>
+                  <option value="en">English</option>
+                </select>
+
+                <select value={filterGuest} onChange={e => { setFilterGuest(e.target.value); setConvPage(1); }}>
+                  <option value="">-- Tài khoản --</option>
+                  <option value="false">Đã đăng ký</option>
+                  <option value="true">Khách vãng lai</option>
+                </select>
+              </div>
+            </div>
+
+            {/* Table conversations */}
+            <div className="card-box">
+              <div className="table-responsive">
+                <table className="admin-table-custom">
                   <thead>
                     <tr>
-                      <th>Mã giao dịch</th>
-                      <th>Ngày thanh toán</th>
-                      <th>Gói cước</th>
-                      <th>Cổng</th>
-                      <th>Loại</th>
-                      <th>Số tiền</th>
+                      <th>ID phiên</th>
+                      <th>Cuộc hội thoại</th>
+                      <th>Ngôn ngữ</th>
+                      <th>Người dùng</th>
+                      <th>Mức nguy cơ</th>
+                      <th>Phản hồi</th>
                       <th>Trạng thái</th>
+                      <th>Thao tác</th>
                     </tr>
                   </thead>
                   <tbody>
-                    {invoices.length === 0 ? (
+                    {conversations.length === 0 ? (
                       <tr>
-                        <td colSpan="7" className="text-center text-muted">Chưa có giao dịch thanh toán nào được thực hiện.</td>
+                        <td colSpan="8" className="text-center-muted">Không tìm thấy phiên hội thoại phù hợp.</td>
                       </tr>
                     ) : (
-                      invoices.map(inv => (
-                        <tr key={inv.id}>
-                          <td className="font-mono text-sm">{inv.id.slice(0, 8)}...</td>
-                          <td>{new Date(inv.createdAt).toLocaleString('vi-VN')}</td>
-                          <td className="uppercase">{inv.planId}</td>
-                          <td className="uppercase">{inv.paymentGateway}</td>
-                          <td>{inv.type === 'recurring' ? 'Định kỳ' : 'Lần đầu'}</td>
-                          <td className="font-semibold">{inv.amount.toLocaleString('vi-VN')}đ</td>
+                      conversations.map(c => (
+                        <tr key={c.id}>
+                          <td className="font-mono text-sm text-muted">{c.id.slice(0, 8)}...</td>
                           <td>
-                            <span className={`badge-status badge-${inv.status}`}>
-                              {inv.status === 'success' ? 'Thành công' : inv.status === 'failed' ? 'Thất bại' : 'Đang xử lý'}
-                            </span>
+                            <strong>{c.title}</strong>
+                            <br />
+                            <span className="text-xs text-muted">{new Date(c.createdAt).toLocaleString('vi-VN')}</span>
+                          </td>
+                          <td className="uppercase text-xs font-semibold">{c.lang}</td>
+                          <td>
+                            {c.isGuest ? (
+                              <span className="guest-pill">Guest (Vãng lai)</span>
+                            ) : (
+                              <span className="user-pill">Member</span>
+                            )}
+                          </td>
+                          <td>{renderUrgencyBadge(c.urgency)}</td>
+                          <td>{c.responseTimeMs ? `${c.responseTimeMs}ms` : 'N/A'}</td>
+                          <td>
+                            {c.flagged ? (
+                              <span className="flagged-warn" title={c.flaggedReason}>🚩 Đã gắn cờ</span>
+                            ) : (
+                              <span className="text-xs text-muted">Bình thường</span>
+                            )}
+                          </td>
+                          <td>
+                            <div className="actions-cell">
+                              <button className="btn-table-action blue" onClick={() => handleViewDetails(c.id)}>Chi tiết</button>
+                              <button className="btn-table-action gray" onClick={() => handleExportAudit(c)} title="Xuất JSON kiểm toán">Xuất File</button>
+                            </div>
+                          </td>
+                        </tr>
+                      ))
+                    )}
+                  </tbody>
+                </table>
+              </div>
+
+              {/* Pagination */}
+              {totalConvPages > 1 && (
+                <div className="pagination-bar mt-4">
+                  <button disabled={convPage === 1} onClick={() => setConvPage(p => p - 1)}>← Trước</button>
+                  <span>Trang {convPage} / {totalConvPages}</span>
+                  <button disabled={convPage === totalConvPages} onClick={() => setConvPage(p => p + 1)}>Sau →</button>
+                </div>
+              )}
+            </div>
+          </div>
+        )}
+
+        {/* TAB 3: MEDICAL SAFETY (AN TOÀN Y TẾ) */}
+        {activeTab === 'safety' && (
+          <div className="tab-pane">
+            <header className="pane-header">
+              <h1>An Toàn Y Tế</h1>
+              <p>Audit lâm sàng các trường hợp bot đã đưa ra cảnh báo khẩn cấp hoặc bị gắn cờ review.</p>
+            </header>
+
+            <div className="card-box">
+              <div className="table-responsive">
+                <table className="admin-table-custom">
+                  <thead>
+                    <tr>
+                      <th>ID Phiên</th>
+                      <th>Nội dung tư vấn</th>
+                      <th>Ngày kích hoạt</th>
+                      <th>Nguy cơ</th>
+                      <th>Lý do gắn cờ</th>
+                      <th>Xem lại</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {safetyLogs.length === 0 ? (
+                      <tr>
+                        <td colSpan="6" className="text-center-muted">Không có trường hợp khẩn cấp hoặc gắn cờ nào cần review.</td>
+                      </tr>
+                    ) : (
+                      safetyLogs.map(log => (
+                        <tr key={log.id} className={log.urgency === 'emergency' ? 'row-emergency-light' : ''}>
+                          <td className="font-mono text-sm">{log.id.slice(0, 8)}...</td>
+                          <td>
+                            <strong>{log.title}</strong>
+                            <p className="text-xs text-muted limit-chars">{log.messages[0]?.content.slice(0, 80)}...</p>
+                          </td>
+                          <td>{new Date(log.createdAt).toLocaleString('vi-VN')}</td>
+                          <td>{renderUrgencyBadge(log.urgency)}</td>
+                          <td>
+                            {log.flagged ? (
+                              <span className="text-danger font-semibold">{log.flaggedReason}</span>
+                            ) : (
+                              <span className="text-muted text-xs">Cảnh báo tự động</span>
+                            )}
+                          </td>
+                          <td>
+                            <button className="btn-table-action blue" onClick={() => handleViewDetails(log.id)}>Xem &amp; Phân tích</button>
                           </td>
                         </tr>
                       ))
@@ -607,293 +565,268 @@ export default function DashboardView({ account, onBack, onSignOut, lang, initia
                 </table>
               </div>
             </div>
-          )}
+          </div>
+        )}
 
-          {/* TAB 4: ADMIN PANEL */}
-          {activeTab === 'admin' && isAdmin && (
-            <div className="admin-layout">
-              <div className="admin-tabs">
-                <button className={`admin-tab-btn ${adminTab === 'stats' ? 'active' : ''}`} onClick={() => setAdminTab('stats')}>Thống kê tổng quan</button>
-                <button className={`admin-tab-btn ${adminTab === 'users' ? 'active' : ''}`} onClick={() => setAdminTab('users')}>Quản lý thành viên</button>
-                <button className={`admin-tab-btn ${adminTab === 'payments' ? 'active' : ''}`} onClick={() => setAdminTab('payments')}>Lịch sử giao dịch</button>
+        {/* TAB 4: USERS (QUẢN LÝ THÀNH VIÊN) */}
+        {activeTab === 'users' && (
+          <div className="tab-pane">
+            <header className="pane-header">
+              <h1>Quản Lý Thành Viên</h1>
+              <p>Phân quyền quản trị và điều chỉnh gói cước thành viên.</p>
+            </header>
+
+            <div className="filters-bar card-box mb-4">
+              <div className="search-input-wrapper w-full">
+                <SearchIcon />
+                <input
+                  type="text"
+                  placeholder="Tìm kiếm thành viên theo email hoặc tên..."
+                  value={searchUser}
+                  onChange={e => { setSearchUser(e.target.value); setUserPage(1); }}
+                />
+              </div>
+            </div>
+
+            <div className="card-box">
+              <div className="table-responsive">
+                <table className="admin-table-custom">
+                  <thead>
+                    <tr>
+                      <th>Tên thành viên</th>
+                      <th>Email</th>
+                      <th>Gói cước</th>
+                      <th>Quyền hạn</th>
+                      <th>Token đã dùng</th>
+                      <th>Ngày tham gia</th>
+                      <th>Thao tác</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {users.map(u => (
+                      <tr key={u.id}>
+                        <td><strong>{u.name}</strong></td>
+                        <td>{u.email}</td>
+                        <td>
+                          {editingUserId === u.id ? (
+                            <select value={editPlan} onChange={e => setEditPlan(e.target.value)} className="select-table-edit">
+                              <option value="free">Free</option>
+                              <option value="pro">Pro</option>
+                            </select>
+                          ) : (
+                            <span className={`plan-pill plan-${u.planId}`}>{u.planId}</span>
+                          )}
+                        </td>
+                        <td>
+                          {editingUserId === u.id ? (
+                            <select value={editRole} onChange={e => setEditRole(e.target.value)} className="select-table-edit">
+                              <option value="user">User</option>
+                              <option value="admin">Admin</option>
+                            </select>
+                          ) : (
+                            <span className="font-semibold text-xs uppercase">{u.role}</span>
+                          )}
+                        </td>
+                        <td className="font-mono text-sm">{u.tokensUsed?.toLocaleString('vi-VN') || 0}</td>
+                        <td>{new Date(u.createdAt).toLocaleDateString('vi-VN')}</td>
+                        <td>
+                          <div className="actions-cell">
+                            {editingUserId === u.id ? (
+                              <>
+                                <button className="btn-table-action green" onClick={() => handleSaveUserEdit(u.id)}>Lưu</button>
+                                <button className="btn-table-action gray" onClick={() => setEditingUserId(null)}>Hủy</button>
+                              </>
+                            ) : (
+                              <>
+                                <button className="btn-table-action blue" onClick={() => {
+                                  setEditingUserId(u.id)
+                                  setEditPlan(u.planId)
+                                  setEditRole(u.role)
+                                }}>Sửa</button>
+                                <button className="btn-table-action blue-soft" onClick={() => handleResetTokens(u.id)}>Reset Token</button>
+                                <button className="btn-table-action danger" onClick={() => handleDeleteUser(u.id)}>Xóa</button>
+                              </>
+                            )}
+                          </div>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
               </div>
 
-              {/* Sub-tab 1: Stats */}
-              {adminTab === 'stats' && adminStats && (
-                <div className="admin-stats-grid mt-4">
-                  <div className="stat-box card-glass">
-                    <span className="text-muted">Tổng số thành viên</span>
-                    <h2>{adminStats.totalUsers}</h2>
-                  </div>
-                  <div className="stat-box card-glass">
-                    <span className="text-muted">Tổng doanh thu hệ thống</span>
-                    <h2 className="text-success">{adminStats.totalRevenue.toLocaleString('vi-VN')}đ</h2>
-                  </div>
-                  <div className="stat-box card-glass">
-                    <span className="text-muted">Tổng token đã tiêu thụ</span>
-                    <h2>{adminStats.totalTokensUsed.toLocaleString('vi-VN')}</h2>
-                  </div>
-                  <div className="stat-box card-glass">
-                    <span className="text-muted">Phân bổ gói Pro / Free</span>
-                    <h2>{adminStats.planDistribution?.pro} / {adminStats.planDistribution?.free}</h2>
-                  </div>
-                </div>
-              )}
-
-              {/* Sub-tab 2: Users */}
-              {adminTab === 'users' && (
-                <div className="admin-users-panel mt-4">
-                  <div className="search-bar">
-                    <SearchIcon />
-                    <input
-                      type="text"
-                      placeholder="Tìm theo tên hoặc email thành viên..."
-                      value={searchUser}
-                      onChange={e => { setSearchUser(e.target.value); setUserPage(1); }}
-                    />
-                  </div>
-
-                  <div className="table-responsive mt-4">
-                    <table className="dashboard-table">
-                      <thead>
-                        <tr>
-                          <th>Tên thành viên</th>
-                          <th>Email</th>
-                          <th>Gói cước</th>
-                          <th>Quyền</th>
-                          <th>Token đã dùng</th>
-                          <th>Hành động</th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        {adminUsers.map(u => (
-                          <tr key={u.id}>
-                            <td>{u.name}</td>
-                            <td>{u.email}</td>
-                            <td>
-                              {editingUserId === u.id ? (
-                                <select value={editPlan} onChange={e => setEditPlan(e.target.value)}>
-                                  <option value="free">Free</option>
-                                  <option value="pro">Pro</option>
-                                </select>
-                              ) : (
-                                <span className={`plan-badge plan-${u.planId}`}>{u.planId}</span>
-                              )}
-                            </td>
-                            <td>
-                              {editingUserId === u.id ? (
-                                <select value={editRole} onChange={e => setEditRole(e.target.value)}>
-                                  <option value="user">User</option>
-                                  <option value="admin">Admin</option>
-                                </select>
-                              ) : (
-                                <span className="uppercase text-sm font-semibold">{u.role}</span>
-                              )}
-                            </td>
-                            <td className="font-mono">{u.tokensUsed?.toLocaleString('vi-VN') || 0}</td>
-                            <td>
-                              <div className="action-buttons-flex">
-                                {editingUserId === u.id ? (
-                                  <>
-                                    <button className="btn-action-save" onClick={() => handleSaveUserEdit(u.id)} disabled={loadingAdmin}>Lưu</button>
-                                    <button className="btn-action-cancel" onClick={() => setEditingUserId(null)}>Hủy</button>
-                                  </>
-                                ) : (
-                                  <>
-                                    <button className="btn-action-edit" onClick={() => {
-                                      setEditingUserId(u.id)
-                                      setEditPlan(u.planId)
-                                      setEditRole(u.role)
-                                    }}>Sửa</button>
-                                    <button className="btn-action-reset" onClick={() => handleResetTokens(u.id)}>Reset Token</button>
-                                    <button className="btn-action-delete" onClick={() => handleDeleteUser(u.id)}><TrashIcon /></button>
-                                  </>
-                                )}
-                              </div>
-                            </td>
-                          </tr>
-                        ))}
-                      </tbody>
-                    </table>
-                  </div>
-
-                  {/* Phân trang */}
-                  {totalPages > 1 && (
-                    <div className="pagination mt-4">
-                      <button disabled={userPage === 1} onClick={() => setUserPage(p => p - 1)}>Trước</button>
-                      <span>Trang {userPage} / {totalPages}</span>
-                      <button disabled={userPage === totalPages} onClick={() => setUserPage(p => p + 1)}>Sau</button>
-                    </div>
-                  )}
-                </div>
-              )}
-
-              {/* Sub-tab 3: Payments */}
-              {adminTab === 'payments' && (
-                <div className="admin-payments-panel mt-4">
-                  <div className="table-responsive">
-                    <table className="dashboard-table">
-                      <thead>
-                        <tr>
-                          <th>ID giao dịch</th>
-                          <th>Khách hàng</th>
-                          <th>Gói</th>
-                          <th>Số tiền</th>
-                          <th>Cổng</th>
-                          <th>Ngày giao dịch</th>
-                          <th>Trạng thái</th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        {adminPayments.map(p => (
-                          <tr key={p.id}>
-                            <td className="font-mono text-sm">{p.id.slice(0, 8)}...</td>
-                            <td>
-                              <div>
-                                <span className="font-semibold">{p.user?.name}</span>
-                                <br />
-                                <span className="text-muted text-xs">{p.user?.email}</span>
-                              </div>
-                            </td>
-                            <td className="uppercase">{p.planId}</td>
-                            <td className="font-semibold">{p.amount.toLocaleString('vi-VN')}đ</td>
-                            <td className="uppercase">{p.paymentGateway}</td>
-                            <td>{new Date(p.createdAt).toLocaleString('vi-VN')}</td>
-                            <td>
-                              <span className={`badge-status badge-${p.status}`}>
-                                {p.status === 'success' ? 'Thành công' : p.status === 'failed' ? 'Thất bại' : 'Đang xử lý'}
-                              </span>
-                            </td>
-                          </tr>
-                        ))}
-                      </tbody>
-                    </table>
-                  </div>
+              {/* Pagination */}
+              {totalUserPages > 1 && (
+                <div className="pagination-bar mt-4">
+                  <button disabled={userPage === 1} onClick={() => setUserPage(p => p - 1)}>← Trước</button>
+                  <span>Trang {userPage} / {totalUserPages}</span>
+                  <button disabled={userPage === totalUserPages} onClick={() => setUserPage(p => p + 1)}>Sau →</button>
                 </div>
               )}
             </div>
-          )}
-        </div>
+          </div>
+        )}
+
+        {/* TAB 5: OPS & PERFORMANCE */}
+        {activeTab === 'ops' && opsLogs && (
+          <div className="tab-pane">
+            <header className="pane-header">
+              <h1>Giám Sát Vận Hành &amp; Chi Phí</h1>
+              <p>Theo dõi uptime, chi phí sử dụng API LLM và lịch sử lỗi hệ thống.</p>
+            </header>
+
+            {/* Overview stats for ops */}
+            <div className="overview-cards">
+              <div className="overview-card">
+                <span className="card-label">Uptime Bot</span>
+                <h2 className="text-success-custom">{opsLogs.uptime}</h2>
+                <div className="card-trend text-success-custom">Vận hành liên tục</div>
+              </div>
+              <div className="overview-card">
+                <span className="card-label">Tần suất lỗi hệ thống (Tháng)</span>
+                <h2 className={opsLogs.errors.length > 0 ? 'text-danger-custom' : 'text-success-custom'}>
+                  {opsLogs.errors.length} lỗi
+                </h2>
+                <div className="card-trend">Lỗi mạng &amp; timeout API</div>
+              </div>
+            </div>
+
+            {/* Line chart mock for cost */}
+            <div className="card-box mt-6">
+              <h3>Thống kê chi phí API LLM &amp; Tokens tích lũy</h3>
+              <p className="chart-subtitle">Ghi nhận mức độ tiêu thụ của mô hình AI theo thời gian</p>
+              
+              <div className="costs-chart-custom mt-4">
+                {opsLogs.costs.map((c, idx) => {
+                  const maxCost = Math.max(...opsLogs.costs.map(x => x.totalCost)) || 0.5
+                  const heightPercent = Math.max(10, Math.round((c.totalCost / maxCost) * 100))
+                  return (
+                    <div className="cost-chart-col" key={idx}>
+                      <div className="chart-bar-wrapper">
+                        <div className="chart-bar-fill" style={{ height: `${heightPercent}%` }} title={`Doanh thu: $${c.totalCost.toFixed(3)}`} />
+                      </div>
+                      <span className="col-label-date">{c._id.slice(-5)}</span>
+                      <span className="col-label-cost">${c.totalCost.toFixed(2)}</span>
+                    </div>
+                  )
+                })}
+              </div>
+            </div>
+
+            {/* Errors logs list */}
+            <div className="card-box mt-6">
+              <h3>Nhật ký lỗi hệ thống gần nhất</h3>
+              <p className="chart-subtitle">Tự động phát hiện lỗi ngắt quãng hoặc lỗi gọi API LLM/UMLS</p>
+              
+              <div className="table-responsive mt-4">
+                <table className="admin-table-custom">
+                  <thead>
+                    <tr>
+                      <th>Thời gian</th>
+                      <th>Lỗi xảy ra</th>
+                      <th>Môi trường/Meta</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {opsLogs.errors.length === 0 ? (
+                      <tr>
+                        <td colSpan="3" className="text-center-muted">Hệ thống ghi nhận không có lỗi nào xảy ra gần đây.</td>
+                      </tr>
+                    ) : (
+                      opsLogs.errors.map(err => (
+                        <tr key={err.id}>
+                          <td>{new Date(err.createdAt).toLocaleString('vi-VN')}</td>
+                          <td>
+                            <strong className="text-danger-custom">{err.message}</strong>
+                            <p className="text-xs text-muted font-mono whitespace-pre-wrap mt-1">{err.meta?.error}</p>
+                          </td>
+                          <td>
+                            <span className="text-xs font-semibold">Specialty: {err.meta?.specialtyId}</span>
+                            <br />
+                            <span className="text-xs text-muted">User: {err.meta?.userId}</span>
+                          </td>
+                        </tr>
+                      ))
+                    )}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        )}
       </main>
 
-      {/* POPUP LIÊN KẾT VISA/MASTERCARD */}
-      {showLinkModal === 'card' && (
-        <div className="modal-backdrop" onClick={() => setShowLinkModal(null)}>
-          <div className="payment-modal card-glass" onClick={e => e.stopPropagation()}>
-            <header>
-              <h3>Liên kết Thẻ Visa / Mastercard</h3>
-              <button className="modal-close" onClick={() => setShowLinkModal(null)}>×</button>
+      {/* MODAL XEM CHI TIẾT HỘI THOẠI & AUDIT */}
+      {showDetailModal && selectedConv && (
+        <div className="modal-backdrop" onClick={() => setShowDetailModal(false)}>
+          <div className="audit-detail-modal card-glass" onClick={e => e.stopPropagation()}>
+            <header className="modal-header-custom">
+              <div>
+                <h2>{selectedConv.title}</h2>
+                <p className="text-xs text-muted">ID: {selectedConv.id} | Ngày khởi tạo: {new Date(selectedConv.createdAt).toLocaleString('vi-VN')}</p>
+              </div>
+              <button className="modal-close" onClick={() => setShowDetailModal(false)}>×</button>
             </header>
-            <form onSubmit={handleLinkCard} className="form-card-link">
-              <div className="credit-card-preview">
-                <span className="card-brand">{cardNumber.startsWith('4') ? 'Visa' : 'Mastercard'}</span>
-                <div className="card-number-display">{cardNumber || '•••• •••• •••• ••••'}</div>
-                <div className="card-bottom">
-                  <span>{cardName.toUpperCase() || 'TEN CHU THE'}</span>
-                  <span>{cardExpiry || 'MM/YY'}</span>
-                </div>
+
+            <div className="audit-detail-body mt-4">
+              <div className="flex-meta-header">
+                <div><strong>Ngôn ngữ:</strong> <span className="uppercase">{selectedConv.lang}</span></div>
+                <div><strong>Người dùng:</strong> {selectedConv.isGuest ? 'Guest (Vãng lai)' : 'Thành viên'}</div>
+                <div><strong>Mức độ nguy cơ:</strong> {renderUrgencyBadge(selectedConv.urgency)}</div>
+                {selectedConv.flagged && (
+                  <div className="flagged-banner">
+                    🚩 **Cần Review:** {selectedConv.flaggedReason}
+                  </div>
+                )}
               </div>
 
-              <div className="form-field mt-4">
-                <label>Họ tên chủ thẻ</label>
-                <input
-                  type="text"
-                  placeholder="VIET DUNG TRAN"
-                  value={cardName}
-                  onChange={e => setCardName(e.target.value)}
-                  required
-                />
-              </div>
-              <div className="form-field">
-                <label>Số thẻ</label>
-                <input
-                  type="text"
-                  placeholder="4242 4242 4242 4242"
-                  value={cardNumber}
-                  onChange={e => setCardNumber(e.target.value.replace(/\D/g, '').replace(/(\d{4})/g, '$1 ').trim())}
-                  maxLength="19"
-                  required
-                />
-              </div>
-              <div className="input-group-grid">
-                <div className="form-field">
-                  <label>Ngày hết hạn</label>
-                  <input
-                    type="text"
-                    placeholder="MM/YY"
-                    value={cardExpiry}
-                    onChange={e => setCardExpiry(e.target.value)}
-                    maxLength="5"
-                    required
-                  />
-                </div>
-                <div className="form-field">
-                  <label>CVC / CVV</label>
-                  <input
-                    type="password"
-                    placeholder="•••"
-                    value={cardCvc}
-                    onChange={e => setCardCvc(e.target.value)}
-                    maxLength="3"
-                    required
-                  />
-                </div>
+              {/* Chat Timeline history */}
+              <div className="audit-timeline mt-4">
+                {selectedConv.messages.map((m, idx) => (
+                  <div className={`timeline-bubble bubble-${m.role}`} key={idx}>
+                    <div className="bubble-header-label">
+                      <strong>{m.role === 'user' ? 'Người bệnh (User)' : 'Bác sĩ ảo MedChat'}</strong>
+                      <span className="text-xs text-muted">{new Date(m.createdAt || selectedConv.createdAt).toLocaleString('vi-VN')}</span>
+                    </div>
+                    <div className="bubble-text-content">{m.content}</div>
+                  </div>
+                ))}
               </div>
 
-              <button type="submit" className="btn-submit mt-6" disabled={loadingBilling}>
-                {loadingBilling ? <SpinnerIcon className="animate-spin" /> : 'Xác thực & Liên kết thẻ'}
-              </button>
-            </form>
-          </div>
-        </div>
-      )}
-
-      {/* POPUP LIÊN KẾT VÍ MOMO */}
-      {showLinkModal === 'momo' && (
-        <div className="modal-backdrop" onClick={() => setShowLinkModal(null)}>
-          <div className="payment-modal card-glass" onClick={e => e.stopPropagation()}>
-            <header>
-              <h3>Liên kết Ví MoMo</h3>
-              <button className="modal-close" onClick={() => setShowLinkModal(null)}>×</button>
-            </header>
-            
-            {!otpSent ? (
-              <form onSubmit={handleSendMomoOtp} className="form-card-link">
-                <div className="momo-brand-banner">MOMO SUBSCRIPTION</div>
-                <div className="form-field mt-4">
-                  <label>Số điện thoại đăng ký MoMo</label>
-                  <input
-                    type="text"
-                    placeholder="0987654321"
-                    value={momoPhone}
-                    onChange={e => setMomoPhone(e.target.value.replace(/\D/g, ''))}
-                    required
-                  />
-                </div>
-                <button type="submit" className="btn-submit mt-6">
-                  Gửi mã xác thực OTP
-                </button>
-              </form>
-            ) : (
-              <form onSubmit={handleLinkMomo} className="form-card-link">
-                <div className="momo-brand-banner">MOMO SUBSCRIPTION</div>
-                <p className="text-sm mt-4">Đã gửi mã xác thực tới số **{momoPhone}**. (Để chạy thử nghiệm, bạn nhập mã mặc định là **1234**).</p>
-                <div className="form-field mt-4">
-                  <label>Mã xác thực OTP (4 số)</label>
-                  <input
-                    type="text"
-                    placeholder="Nhập 1234 để liên kết thử"
-                    value={momoOtp}
-                    onChange={e => setMomoOtp(e.target.value.replace(/\D/g, ''))}
-                    maxLength="4"
-                    required
-                  />
-                </div>
-                <button type="submit" className="btn-submit mt-6" disabled={loadingBilling}>
-                  {loadingBilling ? <SpinnerIcon className="animate-spin" /> : 'Xác nhận mã OTP & Liên kết ví'}
-                </button>
-              </form>
-            )}
+              {/* Actions panel for audit */}
+              <div className="audit-actions-panel mt-6">
+                {!showFlagInput ? (
+                  <div className="flex-actions-row">
+                    <button className={`btn-audit ${selectedConv.flagged ? 'btn-unflag' : 'btn-flag'}`} onClick={() => {
+                      if (selectedConv.flagged) {
+                        handleToggleFlag()
+                      } else {
+                        setShowFlagInput(true)
+                      }
+                    }}>
+                      {selectedConv.flagged ? '🚩 Gỡ cờ review' : '🚩 Đánh dấu cần review'}
+                    </button>
+                    <button className="btn-audit btn-export-json" onClick={() => handleExportAudit(selectedConv)}>
+                      Xuất File kiểm toán (JSON)
+                    </button>
+                  </div>
+                ) : (
+                  <div className="flag-input-group card-box">
+                    <h4>Nhập lý do cần review hội thoại</h4>
+                    <textarea 
+                      value={flagReason} 
+                      onChange={e => setFlagReason(e.target.value)} 
+                      placeholder="Ví dụ: Bot bỏ sót cảnh báo đau ngực dữ dội, chẩn đoán sai triệu chứng nhi..."
+                      rows="2"
+                    />
+                    <div className="flag-buttons mt-2">
+                      <button className="btn-table-action green" onClick={handleToggleFlag}>Lưu cờ</button>
+                      <button className="btn-table-action gray" onClick={() => setShowFlagInput(false)}>Hủy</button>
+                    </div>
+                  </div>
+                )}
+              </div>
+            </div>
           </div>
         </div>
       )}

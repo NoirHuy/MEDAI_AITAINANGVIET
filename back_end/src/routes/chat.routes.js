@@ -1,10 +1,12 @@
 import { Router } from 'express'
+import { randomUUID } from 'node:crypto'
 import { asyncHandler } from '../utils/asyncHandler.js'
 import { HttpError } from '../utils/httpError.js'
 import { attachUserIfPresent, requireAuth } from '../middleware/auth.js'
 import { generateReply, estimateTokens } from '../services/aiReplyService.js'
 import { incrementUsage } from '../db/usersRepo.js'
 import { ConversationModel } from '../db/conversation.model.js'
+import { SystemLogModel } from '../db/systemLog.model.js'
 
 const router = Router()
 
@@ -45,6 +47,7 @@ router.post(
     res.setHeader('Connection', 'keep-alive')
 
     let full = ''
+    const start = performance.now()
     try {
       full = await generateReply({
         messages,
@@ -53,11 +56,49 @@ router.post(
         signal: controller.signal,
         onChunk: (chunk) => res.write(chunk),
       })
+      const durationMs = Math.round(performance.now() - start)
+      
+      const lastUserMessage = [...messages].reverse().find((m) => m.role === 'user')
+      const inputTokens = estimateTokens(lastUserMessage?.content ?? '')
+      const outputTokens = estimateTokens(full)
+      const totalTokens = inputTokens + outputTokens
+      const costUsd = (inputTokens * 0.000075 / 1000) + (outputTokens * 0.0003 / 1000)
+
+      const log = new SystemLogModel({
+        id: randomUUID(),
+        type: 'perf',
+        message: `Phản hồi AI thành công trong ${durationMs}ms`,
+        meta: {
+          userId: req.userId || 'guest',
+          specialtyId,
+          durationMs,
+          inputTokens,
+          outputTokens,
+          totalTokens,
+          costUsd,
+          lang: lang || 'vi'
+        }
+      })
+      await log.save()
+
     } catch (err) {
       const isAbort = err.name === 'AbortError' || err.message === 'aborted' || controller.signal.aborted
       if (!isAbort) {
         console.error('[API CHAT Error]', err)
         res.write(`\n\n⚠️ **Cảnh báo hệ thống:** Mất kết nối y khoa (${err.message}). Vui lòng kiểm tra lại cấu hình API hoặc đường truyền mạng của bạn.`)
+        
+        const logErr = new SystemLogModel({
+          id: randomUUID(),
+          type: 'error',
+          message: `Lỗi kết nối API Chat: ${err.message}`,
+          meta: {
+            userId: req.userId || 'guest',
+            specialtyId,
+            error: err.message,
+            stack: err.stack
+          }
+        })
+        await logErr.save()
       }
     }
 
@@ -83,23 +124,48 @@ router.get(
   })
 )
 
-// Save or update a conversation
+// Save or update a conversation (works for guests too)
 router.post(
   '/conversations',
-  requireAuth,
+  attachUserIfPresent,
   asyncHandler(async (req, res) => {
-    const { id, title, specialtyId, messages } = req.body ?? {}
+    const { id, title, specialtyId, messages, lang, responseTimeMs, symptomsMatched } = req.body ?? {}
     if (!id || !title || !specialtyId || !Array.isArray(messages)) {
       throw new HttpError(400, 'Thiếu thông tin hội thoại.')
     }
 
+    const userId = req.userId || `guest_${id}`
+    const isGuest = !req.userId
+
+    // Phân loại mức độ khẩn cấp tự động dựa trên từ khóa y tế
+    const emergencyKeywords = ['cấp cứu', 'khẩn cấp', 'nguy hiểm', 'bác sĩ ngay', 'nhập viện', 'tử vong', 'dữ dội', 'đau nhói ngực', 'khó thở', 'emergency', 'hospit']
+    const warningKeywords = ['theo dõi', 'chú ý', 'bác sĩ', 'khám', 'sớm', 'watch out', 'see a doctor', 'consult']
+    
+    let urgency = 'normal'
+    for (const m of messages) {
+      if (m.role === 'assistant') {
+        const contentLower = m.content.toLowerCase()
+        if (emergencyKeywords.some(k => contentLower.includes(k))) {
+          urgency = 'emergency'
+          break
+        } else if (warningKeywords.some(k => contentLower.includes(k))) {
+          urgency = 'warning'
+        }
+      }
+    }
+
     const conversation = await ConversationModel.findOneAndUpdate(
-      { id, userId: req.userId },
+      { id, userId },
       {
         $set: {
           title,
           specialtyId,
           messages,
+          urgency,
+          lang: lang || 'vi',
+          isGuest,
+          responseTimeMs: responseTimeMs || 0,
+          symptomsMatched: symptomsMatched || []
         }
       },
       { new: true, upsert: true, setDefaultsOnInsert: true }
@@ -112,10 +178,11 @@ router.post(
 // Delete a conversation
 router.delete(
   '/conversations/:id',
-  requireAuth,
+  attachUserIfPresent,
   asyncHandler(async (req, res) => {
     const { id } = req.params
-    const result = await ConversationModel.deleteOne({ id, userId: req.userId })
+    const userId = req.userId || `guest_${id}`
+    const result = await ConversationModel.deleteOne({ id, userId })
     if (result.deletedCount === 0) {
       throw new HttpError(404, 'Không tìm thấy cuộc hội thoại hoặc không có quyền xóa.')
     }

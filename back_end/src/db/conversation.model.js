@@ -13,6 +13,13 @@ const conversationSchema = new mongoose.Schema({
   title: { type: String, required: true },
   specialtyId: { type: String, required: true },
   messages: [messageSchema],
+  urgency: { type: String, enum: ['normal', 'warning', 'emergency'], default: 'normal' },
+  lang: { type: String, default: 'vi' },
+  isGuest: { type: Boolean, default: false },
+  flagged: { type: Boolean, default: false },
+  flaggedReason: { type: String, default: null },
+  responseTimeMs: { type: Number, default: 0 },
+  symptomsMatched: { type: [String], default: [] },
   createdAt: { type: Date, default: Date.now }
 }, {
   versionKey: false,
