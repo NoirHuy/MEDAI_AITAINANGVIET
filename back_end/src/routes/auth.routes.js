@@ -17,10 +17,11 @@ import {
 const router = Router()
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+const isSecureCookie = env.cookieSecure
 const COOKIE_OPTIONS = {
   httpOnly: true,
-  sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax',
-  secure: process.env.NODE_ENV === 'production' ? true : env.cookieSecure,
+  sameSite: isSecureCookie ? 'none' : 'lax',
+  secure: isSecureCookie,
   maxAge: 7 * 24 * 60 * 60 * 1000,
 }
 
