@@ -22,14 +22,22 @@ router.get(
     const startOfWeek = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000)
     const startOfMonth = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000)
 
-    // A. Đếm số cuộc trò chuyện mới
-    const chatToday = await ConversationModel.countDocuments({ createdAt: { $gte: startOfToday } })
-    const chatWeek = await ConversationModel.countDocuments({ createdAt: { $gte: startOfWeek } })
-    const chatMonth = await ConversationModel.countDocuments({ createdAt: { $gte: startOfMonth } })
+    // A. Đếm số cuộc trò chuyện / lượt tư vấn mới (Tính cả Khách & Người dùng đã xóa chat)
+    const logToday = await SystemLogModel.countDocuments({ type: 'perf', createdAt: { $gte: startOfToday } })
+    const logWeek = await SystemLogModel.countDocuments({ type: 'perf', createdAt: { $gte: startOfWeek } })
+    const logMonth = await SystemLogModel.countDocuments({ type: 'perf', createdAt: { $gte: startOfMonth } })
 
-    // B. Số người dùng hoạt động (Unique users in conversations last 30 days)
+    const convToday = await ConversationModel.countDocuments({ createdAt: { $gte: startOfToday } })
+    const convWeek = await ConversationModel.countDocuments({ createdAt: { $gte: startOfWeek } })
+    const convMonth = await ConversationModel.countDocuments({ createdAt: { $gte: startOfMonth } })
+
+    const chatToday = Math.max(logToday, convToday)
+    const chatWeek = Math.max(logWeek, convWeek)
+    const chatMonth = Math.max(logMonth, convMonth)
+
+    // B. Số người dùng hoạt động (Unique users in conversations / logs last 30 days)
     const activeUsersList = await ConversationModel.distinct('userId', { createdAt: { $gte: startOfMonth } })
-    const activeUsers = activeUsersList.length
+    const activeUsers = Math.max(activeUsersList.length, 1)
 
     // C. Thời gian phản hồi trung bình (Từ log hiệu năng)
     const avgResponseTimeAggregate = await SystemLogModel.aggregate([
@@ -40,7 +48,10 @@ router.get(
     const avgResponseTimeMs = Math.round(avgResponseTimeAggregate[0]?.avgTime?.avg || 1850)
 
     // D. Tỷ lệ cuộc gọi khẩn cấp (Emergency rate)
-    const totalChats = await ConversationModel.countDocuments()
+    const totalLogsCount = await SystemLogModel.countDocuments({ type: 'perf' })
+    const totalConvsCount = await ConversationModel.countDocuments()
+    const totalChats = Math.max(totalLogsCount, totalConvsCount)
+
     const emergencyChats = await ConversationModel.countDocuments({ urgency: 'emergency' })
     const warningChats = await ConversationModel.countDocuments({ urgency: 'warning' })
     const normalChats = await ConversationModel.countDocuments({ urgency: 'normal' })
