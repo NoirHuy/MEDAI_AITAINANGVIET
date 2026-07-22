@@ -101,30 +101,34 @@ export function useChat(account) {
       }
       return remaining
     })
-    fetch(`/api/chat/conversations/${id}`, { method: 'DELETE' }).catch((err) =>
-      console.error('Không thể xóa cuộc trò chuyện:', err),
-    )
-  }, [setActiveIdAndPersist])
+    if (account) {
+      fetch(`/api/chat/conversations/${id}`, { method: 'DELETE' }).catch((err) =>
+        console.error('Không thể xóa cuộc trò chuyện:', err),
+      )
+    }
+  }, [account, setActiveIdAndPersist])
 
   const setSpecialty = useCallback((convId, specialtyId) => {
     setConversations((prev) => {
       const updated = prev.map((c) => (c.id === convId ? { ...c, specialtyId } : c))
-      const conv = updated.find((c) => c.id === convId)
-      if (conv) {
-        fetch('/api/chat/conversations', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            id: conv.id,
-            title: conv.title,
-            specialtyId: conv.specialtyId,
-            messages: conv.messages,
-          }),
-        }).catch((err) => console.error('Không thể lưu chuyên khoa:', err))
+      if (account) {
+        const conv = updated.find((c) => c.id === convId)
+        if (conv) {
+          fetch('/api/chat/conversations', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              id: conv.id,
+              title: conv.title,
+              specialtyId: conv.specialtyId,
+              messages: conv.messages,
+            }),
+          }).catch((err) => console.error('Không thể lưu chuyên khoa:', err))
+        }
       }
       return updated
     })
-  }, [])
+  }, [account])
 
   const stopResponding = useCallback(() => {
     abortRef.current?.abort()
@@ -184,19 +188,21 @@ export function useChat(account) {
           if (smartTitle) {
             setConversations((prev) => {
               const updated = prev.map((c) => (c.id === targetConvId ? { ...c, title: smartTitle } : c))
-              const conv = updated.find((c) => c.id === targetConvId)
-              if (conv) {
-                fetch('/api/chat/conversations', {
-                  method: 'POST',
-                  headers: { 'Content-Type': 'application/json' },
-                  body: JSON.stringify({
-                    id: conv.id,
-                    title: conv.title,
-                    specialtyId: conv.specialtyId,
-                    messages: conv.messages,
-                    lang,
-                  }),
-                }).catch(() => {})
+              if (account) {
+                const conv = updated.find((c) => c.id === targetConvId)
+                if (conv) {
+                  fetch('/api/chat/conversations', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                      id: conv.id,
+                      title: conv.title,
+                      specialtyId: conv.specialtyId,
+                      messages: conv.messages,
+                      lang,
+                    }),
+                  }).catch(() => {})
+                }
               }
               return updated
             })
@@ -249,19 +255,22 @@ export function useChat(account) {
               : c,
           )
 
-          const conv = updated.find((c) => c.id === convId)
-          if (conv) {
-            fetch('/api/chat/conversations', {
-              method: 'POST',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({
-                id: conv.id,
-                title: conv.title,
-                specialtyId: conv.specialtyId,
-                messages: conv.messages,
-                lang,
-              }),
-            }).catch((err) => console.error('Không thể lưu cuộc trò chuyện:', err))
+          // CHỈ LƯU VÀO MONGODB KHI TÀI KHOẢN ĐÃ ĐĂNG NHẬP (ACCOUNT != NULL)
+          if (account) {
+            const conv = updated.find((c) => c.id === convId)
+            if (conv) {
+              fetch('/api/chat/conversations', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                  id: conv.id,
+                  title: conv.title,
+                  specialtyId: conv.specialtyId,
+                  messages: conv.messages,
+                  lang,
+                }),
+              }).catch((err) => console.error('Không thể lưu cuộc trò chuyện:', err))
+            }
           }
 
           return updated
@@ -270,7 +279,7 @@ export function useChat(account) {
         abortRef.current = null
       }
     },
-    [activeId, activeConversation, isResponding, setActiveIdAndPersist],
+    [activeId, activeConversation, isResponding, account, setActiveIdAndPersist],
   )
 
   return {
