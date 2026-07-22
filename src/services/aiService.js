@@ -26,6 +26,23 @@ const TOKEN_DELAY_RANGE = [16, 45]
  * @param {(chunk: string) => void} [params.onToken] - called with each incremental chunk of text
  * @returns {Promise<string>} the full reply text
  */
+export async function fetchSmartTitle(text, lang = 'vi') {
+  try {
+    const res = await fetch(`${API_URL}/api/chat/generate-title`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ text, lang }),
+    })
+    if (res.ok) {
+      const data = await res.json()
+      if (data?.title) return data.title
+    }
+  } catch (err) {
+    console.warn('Failed to fetch smart title:', err)
+  }
+  return text.trim().slice(0, 30)
+}
+
 export async function streamAssistantReply({ messages, specialtyId, lang, isSuggestionDemo, signal, onToken }) {
   try {
     return await streamFromBackend({ messages, specialtyId, lang, isSuggestionDemo, signal, onToken })

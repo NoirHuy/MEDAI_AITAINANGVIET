@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { createId } from '../utils/id'
-import { streamAssistantReply } from '../services/aiService'
+import { streamAssistantReply, fetchSmartTitle } from '../services/aiService'
 import { DEFAULT_SPECIALTY_ID } from '../data/specialties'
 
 function makeConversation(specialtyId = DEFAULT_SPECIALTY_ID) {
@@ -19,8 +19,8 @@ function titleFromText(text) {
     .replace(/[*_`]/g, '')
     .replace(/\s+/g, ' ')
     .trim()
-  if (cleaned.length <= 32) return cleaned
-  return `${cleaned.slice(0, 32)}…`
+  if (cleaned.length <= 25) return cleaned
+  return `${cleaned.slice(0, 25)}…`
 }
 
 export function useChat(account) {
@@ -164,6 +164,18 @@ export function useChat(account) {
             : c,
         ),
       )
+
+      // Nếu là câu thoại đầu tiên của đoạn chat, tự động tạo tiêu đề ChatGPT súc tích
+      if (baseMessages.length === 0) {
+        const targetConvId = convId
+        fetchSmartTitle(trimmed, lang).then((smartTitle) => {
+          if (smartTitle) {
+            setConversations((prev) =>
+              prev.map((c) => (c.id === targetConvId ? { ...c, title: smartTitle } : c)),
+            )
+          }
+        })
+      }
 
       const assistantId = createId()
       setConversations((prev) =>

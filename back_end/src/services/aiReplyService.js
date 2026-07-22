@@ -420,3 +420,82 @@ export async function generateReply({ messages, specialtyId, lang = 'vi', isSugg
 export function estimateTokens(text) {
   return text ? Math.ceil(text.length / 4) : 0
 }
+
+// ─── SMART TITLE GENERATION (CHATGPT-STYLE) ──────────────────────────────────
+export async function generateSmartTitle(userText, lang = 'vi') {
+  if (!userText || typeof userText !== 'string') return 'Cuộc trò chuyện mới'
+
+  const cleanInput = userText.trim().replace(/\[.*?\]/g, '').replace(/[*_`]/g, '')
+  const lower = cleanInput.toLowerCase()
+
+  // 1. Pattern matching cho các tình huống lâm sàng phổ biến (Nhanh & Chuẩn xác)
+  if ((lower.includes('đau họng') || lower.includes('amidan') || lower.includes('rát họng')) && lower.includes('sốt')) {
+    return lang === 'en' ? 'Sore Throat & Fever' : 'Chẩn đoán viêm họng'
+  }
+  if (lower.includes('amidan') || lower.includes('đau họng') || lower.includes('rát họng')) {
+    return lang === 'en' ? 'Sore Throat Evaluation' : 'Chẩn đoán bệnh viêm họng'
+  }
+  if (lower.includes('đau bụng') && (lower.includes('hố chậu') || lower.includes('ruột thừa'))) {
+    return lang === 'en' ? 'Acute Abdominal Pain' : 'Đánh giá đau bụng cấp'
+  }
+  if (lower.includes('đau bụng') || lower.includes('dạ dày')) {
+    return lang === 'en' ? 'Abdominal Pain Consultation' : 'Tư vấn triệu chứng đau bụng'
+  }
+  if (lower.includes('đau đầu') || lower.includes('thái dương') || lower.includes('migraine')) {
+    return lang === 'en' ? 'Headache Consultation' : 'Tư vấn triệu chứng đau đầu'
+  }
+  if (lower.includes('sốt xuất huyết') || lower.includes('dengue') || lower.includes('chấm xuất huyết')) {
+    return lang === 'en' ? 'Dengue Fever Screening' : 'Dự đoán sốt xuất huyết'
+  }
+  if (lower.includes('trào ngược') || lower.includes('ợ chua') || lower.includes('ợ nóng') || lower.includes('gerd')) {
+    return lang === 'en' ? 'GERD Reflux Consultation' : 'Tư vấn trào ngược dạ dày'
+  }
+  if (lower.includes('sốt') && (lower.includes('ho') || lower.includes('nghẹt mũi'))) {
+    return lang === 'en' ? 'Flu & Respiratory Symptoms' : 'Tư vấn triệu chứng cảm cúm'
+  }
+  if (lower.includes('sốt')) {
+    return lang === 'en' ? 'Fever Assessment' : 'Tư vấn triệu chứng sốt'
+  }
+  if (lower.includes('phát ban') || lower.includes('mẩn ngứa') || lower.includes('nổi mề đay') || lower.includes('dị ứng')) {
+    return lang === 'en' ? 'Skin Allergy Consultation' : 'Tư vấn dị ứng da'
+  }
+
+  // 2. Gọi AI OpenRouter tạo tiêu đề ChatGPT 2-4 từ nếu có API Key
+  if (env.llmApiKey) {
+    try {
+      const response = await fetch(`${env.llmBaseUrl}/chat/completions`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${env.llmApiKey}`,
+          'Content-Type': 'application/json',
+          'HTTP-Referer': 'http://localhost:4000',
+          'X-Title': 'MedChat'
+        },
+        body: JSON.stringify({
+          model: env.openrouterModel,
+          messages: [
+            {
+              role: 'system',
+              content: 'Bạn là chuyên gia tạo tiêu đề súc tích cho ChatGPT. Hãy tóm tắt ý chính của lời nhắn người dùng thành một tiêu đề ngắn gồm 2 đến 4 từ tiếng Việt (Ví dụ: "Chẩn đoán viêm họng", "Dự đoán bệnh viêm họng", "Hỗ trợ xác minh payOS", "Thiết kế Admin Dashboard", "Tư vấn triệu chứng sốt"). CHỈ TRẢ VỀ DUY NHẤT CỤM TỪ TIÊU ĐỀ, KHÔNG THÊM CẶP NGOẶC HAY TỪ DẪN.'
+            },
+            { role: 'user', content: cleanInput }
+          ],
+          max_tokens: 25
+        })
+      })
+      if (response.ok) {
+        const data = await response.json()
+        const title = data.choices?.[0]?.message?.content?.trim()?.replace(/^["'«»“`]+|["'«»”`]+$/g, '')
+        if (title && title.length >= 3 && title.length <= 40) {
+          return title
+        }
+      }
+    } catch (err) {
+      console.warn('[SmartTitle] Fallback error:', err.message)
+    }
+  }
+
+  // 3. Fallback Heuristic cắt ngắn câu thoại sạch
+  const words = cleanInput.split(/\s+/).slice(0, 4).join(' ')
+  return words.length <= 30 ? words : `${words.slice(0, 30)}…`
+}

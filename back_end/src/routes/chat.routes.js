@@ -3,12 +3,22 @@ import { randomUUID } from 'node:crypto'
 import { asyncHandler } from '../utils/asyncHandler.js'
 import { HttpError } from '../utils/httpError.js'
 import { attachUserIfPresent, requireAuth } from '../middleware/auth.js'
-import { generateReply, estimateTokens } from '../services/aiReplyService.js'
+import { generateReply, estimateTokens, generateSmartTitle } from '../services/aiReplyService.js'
 import { incrementUsage } from '../db/usersRepo.js'
 import { ConversationModel } from '../db/conversation.model.js'
 import { SystemLogModel } from '../db/systemLog.model.js'
 
 const router = Router()
+
+// Endpoint tự động tạo tiêu đề ChatGPT (2-4 từ súc tích) dựa trên ý chính câu thoại
+router.post(
+  '/generate-title',
+  asyncHandler(async (req, res) => {
+    const { text, lang } = req.body ?? {}
+    const title = await generateSmartTitle(text, lang || 'vi')
+    res.json({ title })
+  })
+)
 
 // Chat works for guests too (no requireAuth) — only logged-in users get
 // their token usage tracked, matching the frontend's "no login wall for
