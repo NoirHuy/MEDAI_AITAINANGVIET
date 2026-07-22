@@ -421,58 +421,14 @@ export function estimateTokens(text) {
   return text ? Math.ceil(text.length / 4) : 0
 }
 
-// ─── SMART TITLE GENERATION (SAFETY & SYMPTOM FOCUSED) ──────────────────────
+// ─── DYNAMIC AI SMART TITLE GENERATION (CHATGPT STYLE) ────────────────────────
 export async function generateSmartTitle(userText, lang = 'vi') {
   if (!userText || typeof userText !== 'string') return 'Cuộc trò chuyện mới'
 
   const cleanInput = userText.trim().replace(/\[.*?\]/g, '').replace(/[*_`]/g, '')
-  const lower = cleanInput.toLowerCase()
+  if (!cleanInput) return 'Cuộc trò chuyện mới'
 
-  // 1. Xử lý các câu chào hỏi hoặc câu quá ngắn/bên lề (Greetings & Short words)
-  const isGreetingOnly = /^(hi|hello|chào|xin chào|chào bác sĩ|bác sĩ ơi|alo|cho tôi hỏi|tôi muốn hỏi|hỏi đáp|help)$/i.test(lower) || cleanInput.length < 5
-  if (isGreetingOnly) {
-    return lang === 'en' ? 'New Conversation' : 'Cuộc trò chuyện mới'
-  }
-
-  // 2. Xử lý trường hợp chỉ gõ thông tin hành chính/tuổi/giới (Ví dụ: "Tôi 22 tuổi", "Nam 25t", "Nữ 30 tuổi")
-  const isDemographicsOnly = /^(tôi|em|mình|bệnh nhân)?\s*(là\s*)?(nam|nữ)?\s*\d+\s*(tuổi|t|tuoi)?$/i.test(lower)
-  if (isDemographicsOnly) {
-    return lang === 'en' ? 'General Health Advice' : 'Tư vấn sức khỏe'
-  }
-
-  // 3. Phân tích triệu chứng lâm sàng cụ thể (KHÔNG dùng từ "Chẩn đoán" hay phán đoán tên bệnh)
-  if ((lower.includes('đau họng') || lower.includes('amidan') || lower.includes('rát họng')) && lower.includes('sốt')) {
-    return lang === 'en' ? 'Sore Throat & Fever' : 'Tư vấn sốt & đau họng'
-  }
-  if (lower.includes('amidan') || lower.includes('đau họng') || lower.includes('rát họng')) {
-    return lang === 'en' ? 'Sore Throat Symptoms' : 'Tư vấn đau rát họng'
-  }
-  if (lower.includes('đau bụng') && (lower.includes('hố chậu') || lower.includes('ruột thừa'))) {
-    return lang === 'en' ? 'Acute Abdominal Pain' : 'Đánh giá đau bụng cấp'
-  }
-  if (lower.includes('đau bụng') || lower.includes('dạ dày')) {
-    return lang === 'en' ? 'Abdominal Pain Symptoms' : 'Tư vấn triệu chứng đau bụng'
-  }
-  if (lower.includes('đau đầu') || lower.includes('thái dương') || lower.includes('migraine')) {
-    return lang === 'en' ? 'Headache Symptoms' : 'Tư vấn triệu chứng đau đầu'
-  }
-  if (lower.includes('sốt xuất huyết') || lower.includes('chấm xuất huyết') || lower.includes('xuất huyết')) {
-    return lang === 'en' ? 'Fever & Rash Screening' : 'Sàng lọc triệu chứng sốt'
-  }
-  if (lower.includes('trào ngược') || lower.includes('ợ chua') || lower.includes('ợ nóng') || lower.includes('gerd')) {
-    return lang === 'en' ? 'Acid Reflux Symptoms' : 'Tư vấn ợ chua & trào ngược'
-  }
-  if (lower.includes('sốt') && (lower.includes('ho') || lower.includes('nghẹt mũi'))) {
-    return lang === 'en' ? 'Fever & Cough Symptoms' : 'Sàng lọc sốt & ho'
-  }
-  if (lower.includes('sốt')) {
-    return lang === 'en' ? 'Fever Symptoms' : 'Tư vấn triệu chứng sốt'
-  }
-  if (lower.includes('phát ban') || lower.includes('mẩn ngứa') || lower.includes('nổi mề đay') || lower.includes('dị ứng')) {
-    return lang === 'en' ? 'Skin Rash & Allergy' : 'Tư vấn mẩn ngứa & dị ứng'
-  }
-
-  // 4. Gọi AI OpenRouter tạo tiêu đề theo cấu trúc Tư vấn / Đánh giá / Sàng lọc + Triệu chứng
+  // 1. GỬI TRỰC TIẾP CHO LLM TẠO TIÊU ĐỀ SÚC TÍCH (ƯU TIÊN HÀNG ĐẦU)
   if (env.llmApiKey) {
     try {
       const response = await fetch(`${env.llmBaseUrl}/chat/completions`, {
@@ -488,7 +444,16 @@ export async function generateSmartTitle(userText, lang = 'vi') {
           messages: [
             {
               role: 'system',
-              content: 'Bạn là chuyên gia tạo tiêu đề súc tích cho hệ thống tư vấn sức khỏe. QUY TẮC BẮT BUỘC:\n1. Nếu lời nhắn là câu chào hỏi ("Hi", "Chào bác sĩ") -> Trả về "Cuộc trò chuyện mới".\n2. Nếu lời nhắn chỉ có thông tin hành chính ("Tôi 22 tuổi") -> Trả về "Tư vấn sức khỏe".\n3. KHÔNG ĐƯỢC dùng từ "Chẩn đoán" hay "Dự đoán". KHÔNG tự gán tên bệnh lý khi chưa biết rõ.\n4. Nếu có triệu chứng: Tạo tiêu đề dạng "Tư vấn + [Triệu chứng]" hoặc "Đánh giá + [Triệu chứng]" (Ví dụ: "Tư vấn sốt & đau họng", "Đánh giá đau bụng cấp", "Sàng lọc mẩn ngứa & dị ứng", "Tư vấn triệu chứng đau đầu").\n5. Độ dài: 2 đến 4 từ tiếng Việt. CHỈ TRẢ VỀ DUY NHẤT CỤM TỪ TIÊU ĐỀ, KHÔNG THÊM CẶP NGOẶC HAY TỪ DẪN.'
+              content: `Bạn là chuyên gia tạo tiêu đề súc tích cho đoạn chat (tương tự ChatGPT).
+Hãy tóm tắt ý chính của lời nhắn người dùng thành đúng 1 tiêu đề ngắn gồm 2 đến 4 từ tiếng Việt.
+
+QUY TẮC BẮT BUỘC:
+- Lời nhắn chào hỏi ("hello", "hi", "chào bác sĩ") -> Đặt tên: "Lời chào ban đầu" hoặc "Chào hỏi & Bắt đầu".
+- Lời nhắn về tuổi/hành chính ("tôi 22 tuổi") -> Đặt tên: "Tư vấn tuổi & sức khỏe".
+- Lời nhắn chứa triệu chứng -> Đặt tên dạng "Tư vấn + triệu chứng" hoặc "Đánh giá + triệu chứng" (Ví dụ: "Tư vấn sốt & đau họng", "Đánh giá đau bụng cấp", "Tư vấn mẩn ngứa da"). KHÔNG dùng từ "Chẩn đoán".
+- Lời nhắn về chủ đề khác -> Đặt tên chủ đề ngắn gọn (Ví dụ: "Hướng dẫn thanh toán", "Hỏi đáp thuốc hạ sốt").
+- KHÔNG BAO GIỜ đặt tên là "Cuộc trò chuyện mới".
+- CHỈ TRẢ VỀ DUY NHẤT CỤM TỪ TIÊU ĐỀ, KHÔNG THÊM CẶP NGOẶC HAY TỪ DẪN.`
             },
             { role: 'user', content: cleanInput }
           ],
@@ -500,16 +465,40 @@ export async function generateSmartTitle(userText, lang = 'vi') {
         let title = data.choices?.[0]?.message?.content?.trim()?.replace(/^["'«»“`]+|["'«»”`]+$/g, '')
         if (title) {
           title = title.replace(/^chẩn đoán/i, 'Tư vấn').replace(/^dự đoán/i, 'Sàng lọc')
-          if (title.length >= 3 && title.length <= 40) {
+          if (title.length >= 2 && title.length <= 40) {
             return title
           }
         }
       }
     } catch (err) {
-      console.warn('[SmartTitle] Fallback error:', err.message)
+      console.warn('[SmartTitle] Error calling LLM for title:', err.message)
     }
   }
 
-  // 5. Fallback Heuristic
-  return lang === 'en' ? 'General Health Advice' : 'Tư vấn sức khỏe'
+  // 2. FALLBACK HEURISTIC KHI KHÔNG CÓ KẾT NỐI API
+  const lower = cleanInput.toLowerCase()
+  if (lower.includes('hello') || lower.includes('hi') || lower.includes('chào')) {
+    return lang === 'en' ? 'Initial Greeting' : 'Lời chào ban đầu'
+  }
+  if ((lower.includes('đau họng') || lower.includes('amidan') || lower.includes('rát họng')) && lower.includes('sốt')) {
+    return lang === 'en' ? 'Sore Throat & Fever' : 'Tư vấn sốt & đau họng'
+  }
+  if (lower.includes('amidan') || lower.includes('đau họng') || lower.includes('rát họng')) {
+    return lang === 'en' ? 'Sore Throat Symptoms' : 'Tư vấn đau rát họng'
+  }
+  if (lower.includes('đau bụng') && (lower.includes('hố chậu') || lower.includes('ruột thừa'))) {
+    return lang === 'en' ? 'Acute Abdominal Pain' : 'Đánh giá đau bụng cấp'
+  }
+  if (lower.includes('đau bụng') || lower.includes('dạ dày')) {
+    return lang === 'en' ? 'Abdominal Pain Symptoms' : 'Tư vấn triệu chứng đau bụng'
+  }
+  if (lower.includes('đau đầu') || lower.includes('thái dương') || lower.includes('migraine')) {
+    return lang === 'en' ? 'Headache Symptoms' : 'Tư vấn triệu chứng đau đầu'
+  }
+  if (lower.includes('sốt')) {
+    return lang === 'en' ? 'Fever Symptoms' : 'Tư vấn triệu chứng sốt'
+  }
+
+  const words = cleanInput.split(/\s+/).slice(0, 4).join(' ')
+  return words.length <= 25 ? words : `${words.slice(0, 22)}…`
 }

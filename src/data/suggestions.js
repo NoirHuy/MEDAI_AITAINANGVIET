@@ -3,8 +3,8 @@ export const SUGGESTIONS = [
     id: 'suggestion_1',
     isDemo: true, // Thẻ Demo đặc biệt: Ép xuất Báo cáo Kết luận Phase 2 ngay lượt 1
     title: {
-      vi: 'Xem ngay Báo cáo Sàng lọc Kết luận (Demo mẫu)',
-      en: 'View Instant Screening Report (Demo)'
+      vi: 'Xem ngay Báo cáo Sàng lọc Kết luận',
+      en: 'View Instant Screening Report'
     },
     detail: {
       vi: 'Xem trực tiếp giao diện Báo cáo Sàng lọc Chẩn đoán Y khoa đầy đủ.',
