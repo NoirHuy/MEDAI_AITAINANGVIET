@@ -294,3 +294,23 @@ export function RefreshIcon(props) {
     </svg>
   )
 }
+
+export function LockIcon(props) {
+  return (
+    <svg {...base} {...props}>
+      <rect x="3" y="11" width="18" height="11" rx="2" ry="2" />
+      <path d="M7 11V7a5 5 0 0 1 10 0v4" />
+    </svg>
+  )
+}
+
+export function KeyIcon(props) {
+  return (
+    <svg {...base} {...props}>
+      <path d="M21 2l-2 2m-2-2l2 2m7 0a9 9 0 1 1-18 0 9 9 0 0 1 18 0z" />
+      <circle cx="7.5" cy="16.5" r="3.5" />
+      <path d="M10 14l10-10" />
+      <path d="M15 9l3 3" />
+    </svg>
+  )
+}

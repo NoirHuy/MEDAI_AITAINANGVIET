@@ -19,6 +19,9 @@ function App() {
     signInForm,
     signInWithGoogle,
     updateName,
+    changePassword,
+    updateCard,
+    toggleAutoRenew,
     setPlan,
     signOut,
     fetchUsage,
@@ -207,9 +210,13 @@ function App() {
           onClose={() => setSettingsTab(null)}
           account={account}
           onUpdateName={handleUpdateName}
+          onChangePassword={changePassword}
+          onUpdateCard={updateCard}
+          onToggleAutoRenew={toggleAutoRenew}
           onSetPlan={handleSetPlan}
           onSignOut={handleSignOut}
           onFetchUsage={fetchUsage}
+          showToast={showToast}
         />
       )}
 

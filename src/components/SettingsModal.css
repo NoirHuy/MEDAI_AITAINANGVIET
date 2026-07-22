@@ -12,8 +12,8 @@
 .settings-modal {
   position: relative;
   width: 100%;
-  max-width: 720px;
-  height: min(560px, 90vh);
+  max-width: 760px;
+  height: min(600px, 92vh);
   background: var(--bg-surface);
   border-radius: var(--radius-md);
   box-shadow: var(--shadow-md);
@@ -43,13 +43,13 @@
 }
 
 .settings-modal__tabs {
-  width: 200px;
+  width: 210px;
   flex-shrink: 0;
   background: var(--bg-sidebar);
   padding: 16px 8px;
   display: flex;
   flex-direction: column;
-  gap: 2px;
+  gap: 4px;
 }
 
 .settings-modal__tab {
@@ -63,6 +63,7 @@
   font-size: 13.5px;
   color: var(--text-secondary);
   text-align: left;
+  transition: all 0.2s ease;
 }
 
 .settings-modal__tab svg {
@@ -71,12 +72,13 @@
 
 .settings-modal__tab:hover {
   background: var(--bg-surface-hover);
+  color: var(--text-primary);
 }
 
 .settings-modal__tab--active {
   background: var(--bg-accent-soft);
   color: var(--text-primary);
-  font-weight: 500;
+  font-weight: 600;
 }
 
 .settings-modal__content {
@@ -87,8 +89,8 @@
 
 .settings-modal__content h2 {
   font-size: 18px;
-  font-weight: 500;
-  margin: 0 0 12px;
+  font-weight: 600;
+  margin: 0 0 8px;
   color: var(--text-primary);
 }
 
@@ -99,23 +101,89 @@
   line-height: 1.5;
 }
 
+.settings-section-box {
+  background: var(--bg-surface-hover);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-md);
+  padding: 16px;
+  margin-bottom: 16px;
+}
+
+.settings-subheading {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text-primary);
+  margin: 0 0 12px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.settings-subheading svg {
+  font-size: 16px;
+  color: var(--bg-accent);
+}
+
+.settings-divider {
+  height: 1px;
+  background: var(--border-subtle);
+  margin: 20px 0;
+}
+
+.settings-info-badge {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  background: rgba(26, 115, 232, 0.08);
+  border: 1px solid rgba(26, 115, 232, 0.2);
+  border-radius: var(--radius-sm);
+  padding: 12px 14px;
+  font-size: 13px;
+  color: var(--text-primary);
+}
+
+.settings-info-badge p {
+  margin: 0;
+  line-height: 1.4;
+}
+
+.settings-alert {
+  padding: 10px 14px;
+  border-radius: var(--radius-sm);
+  font-size: 13px;
+  margin-bottom: 12px;
+}
+
+.settings-alert--success {
+  background: rgba(52, 168, 83, 0.1);
+  color: #2d8a46;
+  border: 1px solid rgba(52, 168, 83, 0.3);
+}
+
+.settings-alert--error {
+  background: rgba(234, 67, 53, 0.1);
+  color: #d93025;
+  border: 1px solid rgba(234, 67, 53, 0.3);
+}
+
 .settings-field {
   display: flex;
   flex-direction: column;
   gap: 6px;
-  margin-bottom: 16px;
+  margin-bottom: 14px;
   font-size: 12.5px;
   color: var(--text-secondary);
 }
 
 .settings-field input {
   border: 1px solid var(--border-subtle);
-  background: var(--bg-input);
+  background: var(--bg-surface);
   border-radius: var(--radius-sm);
   padding: 9px 12px;
   font-size: 14px;
   color: var(--text-primary);
   outline: none;
+  transition: border-color 0.2s ease;
 }
 
 .settings-field input:focus {
@@ -129,7 +197,6 @@
 .settings-modal__actions {
   display: flex;
   gap: 10px;
-  margin-top: 8px;
 }
 
 .btn {
@@ -138,6 +205,13 @@
   padding: 9px 18px;
   font-size: 13.5px;
   font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.btn--sm {
+  padding: 6px 14px;
+  font-size: 12.5px;
 }
 
 .btn--primary {
@@ -145,8 +219,13 @@
   color: var(--text-on-accent);
 }
 
+.btn--primary:hover {
+  opacity: 0.9;
+}
+
 .btn--primary:disabled {
   opacity: 0.6;
+  cursor: not-allowed;
 }
 
 .btn--outline {
@@ -155,12 +234,207 @@
   color: var(--text-primary);
 }
 
+.btn--outline:hover {
+  background: var(--bg-surface-hover);
+}
+
 .btn--danger-outline {
   background: transparent;
   border: 1px solid var(--border-strong);
   color: var(--danger);
 }
 
+.btn--danger-outline:hover {
+  background: rgba(234, 67, 53, 0.08);
+}
+
+/* KHỐI TRẠNG THÁI GÓI PRO & HẠN DÙNG */
+.subscription-status-box {
+  background: var(--bg-surface-hover);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-md);
+  padding: 18px;
+  margin-bottom: 16px;
+}
+
+.status-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 16px;
+}
+
+.status-label {
+  font-size: 12px;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.status-title {
+  margin: 4px 0 0;
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.status-pill {
+  padding: 4px 10px;
+  border-radius: 999px;
+  font-size: 11.5px;
+  font-weight: 600;
+}
+
+.status-pill--active {
+  background: rgba(52, 168, 83, 0.15);
+  color: #2d8a46;
+}
+
+.status-pill--free {
+  background: var(--bg-surface);
+  border: 1px solid var(--border-subtle);
+  color: var(--text-muted);
+}
+
+.date-info-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  padding: 12px;
+  background: var(--bg-surface);
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border-subtle);
+  margin-bottom: 16px;
+}
+
+.date-item span {
+  display: block;
+  font-size: 11.5px;
+  color: var(--text-muted);
+  margin-bottom: 4px;
+}
+
+.date-item strong {
+  font-size: 13.5px;
+  color: var(--text-primary);
+}
+
+/* CÔNG TẮC GIA HẠN TỰ ĐỘNG (TOGGLE SWITCH) */
+.auto-renew-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding-top: 14px;
+  border-top: 1px dashed var(--border-subtle);
+}
+
+.auto-renew-text strong {
+  font-size: 13.5px;
+  color: var(--text-primary);
+  display: block;
+}
+
+.auto-renew-hint {
+  margin: 3px 0 0;
+  font-size: 12px;
+  color: var(--text-muted);
+}
+
+.toggle-switch {
+  position: relative;
+  display: inline-block;
+  width: 44px;
+  height: 24px;
+  flex-shrink: 0;
+  cursor: pointer;
+}
+
+.toggle-switch input {
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+
+.toggle-slider {
+  position: absolute;
+  inset: 0;
+  background-color: var(--border-strong);
+  transition: 0.3s;
+  border-radius: 24px;
+}
+
+.toggle-slider:before {
+  position: absolute;
+  content: "";
+  height: 18px;
+  width: 18px;
+  left: 3px;
+  bottom: 3px;
+  background-color: white;
+  transition: 0.3s;
+  border-radius: 50%;
+}
+
+.toggle-switch input:checked + .toggle-slider {
+  background-color: var(--bg-accent);
+}
+
+.toggle-switch input:checked + .toggle-slider:before {
+  transform: translateX(20px);
+}
+
+/* THẺ VISA / MASTERCARD */
+.saved-card-widget {
+  background: var(--bg-surface);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-sm);
+  padding: 16px;
+}
+
+.card-chip-brand {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 10px;
+}
+
+.card-brand-badge {
+  background: var(--bg-accent);
+  color: var(--text-on-accent);
+  font-size: 11px;
+  font-weight: 700;
+  padding: 3px 8px;
+  border-radius: 4px;
+  text-transform: uppercase;
+}
+
+.card-last4 {
+  font-family: monospace;
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.card-details-row {
+  display: flex;
+  gap: 20px;
+  font-size: 12.5px;
+  color: var(--text-secondary);
+}
+
+.form-row-two {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+
+.form-actions-row {
+  display: flex;
+  gap: 10px;
+  margin-top: 12px;
+}
+
+/* MỨC SỬ DỤNG & GÓI THUÊ BAO */
 .usage-card {
   border: 1px solid var(--border-subtle);
   border-radius: var(--radius-md);

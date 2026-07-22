@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { CloseIcon, UserCircleIcon, GaugeIcon, CreditCardIcon, CheckIcon, HelpCircleIcon } from './Icons'
+import { CloseIcon, UserCircleIcon, GaugeIcon, CreditCardIcon, CheckIcon, HelpCircleIcon, KeyIcon, LockIcon } from './Icons'
 import { PLANS, getPlan } from '../data/account'
 import './SettingsModal.css'
 
@@ -7,6 +7,7 @@ const TABS = [
   { id: 'account', label: 'Tài khoản', Icon: UserCircleIcon },
   { id: 'usage', label: 'Mức sử dụng', Icon: GaugeIcon },
   { id: 'subscription', label: 'Gói thuê bao', Icon: CreditCardIcon },
+  { id: 'payment', label: 'Thanh toán', Icon: KeyIcon },
   { id: 'help', label: 'Trợ giúp & Phản hồi', Icon: HelpCircleIcon },
 ]
 
@@ -16,17 +17,37 @@ export default function SettingsModal({
   onChangeTab,
   account,
   onUpdateName,
+  onChangePassword,
+  onUpdateCard,
+  onToggleAutoRenew,
   onSetPlan,
   onSignOut,
   onFetchUsage,
+  showToast,
 }) {
-  const [nameDraft, setNameDraft] = useState(account.name)
+  const [nameDraft, setNameDraft] = useState(account?.name || '')
   const [usage, setUsage] = useState(null)
   const [usageError, setUsageError] = useState(null)
 
+  // State cho Đổi Mật Khẩu
+  const [oldPassword, setOldPassword] = useState('')
+  const [newPassword, setNewPassword] = useState('')
+  const [confirmPassword, setConfirmPassword] = useState('')
+  const [passwordStatus, setPasswordStatus] = useState(null)
+  const [passwordLoading, setPasswordLoading] = useState(false)
+
+  // State cho Thẻ Thanh Toán
+  const [cardNumber, setCardNumber] = useState('')
+  const [cardHolder, setCardHolder] = useState('')
+  const [cardExpiry, setCardExpiry] = useState('')
+  const [cardCvc, setCardCvc] = useState('')
+  const [cardStatus, setCardStatus] = useState(null)
+  const [cardLoading, setCardLoading] = useState(false)
+  const [editingCard, setEditingCard] = useState(!account?.billingDetails)
+
   useEffect(() => {
-    setNameDraft(account.name)
-  }, [account.name])
+    setNameDraft(account?.name || '')
+  }, [account?.name])
 
   useEffect(() => {
     function handleKey(e) {
@@ -52,12 +73,101 @@ export default function SettingsModal({
     }
   }, [activeTab, onFetchUsage])
 
-  if (!activeTab) return null
+  if (!activeTab || !account) return null
 
   const plan = getPlan(account.planId)
   const usagePercent = usage
     ? Math.min(100, Math.round((usage.tokensUsed / usage.tokenLimit) * 100))
     : 0
+
+  const isGoogleAccount = account.provider === 'google'
+  const isAutoRenewOn = account.autoRenew !== false
+
+  // Định dạng số thẻ tự động nhóm 4 số
+  function handleCardNumberChange(e) {
+    const raw = e.target.value.replace(/\D/g, '').slice(0, 19)
+    const formatted = raw.match(/.{1,4}/g)?.join(' ') || raw
+    setCardNumber(formatted)
+  }
+
+  // Định dạng ngày hết hạn MM/YY
+  function handleCardExpiryChange(e) {
+    const raw = e.target.value.replace(/\D/g, '').slice(0, 4)
+    if (raw.length >= 3) {
+      setCardExpiry(`${raw.slice(0, 2)}/${raw.slice(2)}`)
+    } else {
+      setCardExpiry(raw)
+    }
+  }
+
+  // Xử lý đổi mật khẩu
+  async function handleChangePasswordSubmit(e) {
+    e.preventDefault()
+    setPasswordStatus(null)
+
+    if (newPassword.length < 6) {
+      setPasswordStatus({ type: 'error', text: 'Mật khẩu mới phải có ít nhất 6 ký tự.' })
+      return
+    }
+    if (newPassword !== confirmPassword) {
+      setPasswordStatus({ type: 'error', text: 'Mật khẩu xác nhận không trùng khớp.' })
+      return
+    }
+
+    try {
+      setPasswordLoading(true)
+      await onChangePassword({ oldPassword, newPassword })
+      setPasswordStatus({ type: 'success', text: 'Đổi mật khẩu thành công!' })
+      setOldPassword('')
+      setNewPassword('')
+      setConfirmPassword('')
+      showToast?.('Đổi mật khẩu thành công!')
+    } catch (err) {
+      setPasswordStatus({ type: 'error', text: err.message || 'Không thể đổi mật khẩu.' })
+    } finally {
+      setPasswordLoading(false)
+    }
+  }
+
+  // Xử lý lưu thẻ thanh toán
+  async function handleSaveCardSubmit(e) {
+    e.preventDefault()
+    setCardStatus(null)
+
+    try {
+      setCardLoading(true)
+      await onUpdateCard({
+        cardNumber,
+        holderName: cardHolder,
+        expiry: cardExpiry,
+        cvc: cardCvc,
+      })
+      setCardStatus({ type: 'success', text: 'Đã lưu thẻ thanh toán thành công!' })
+      setEditingCard(false)
+      showToast?.('Đã lưu thẻ thanh toán thành công!')
+    } catch (err) {
+      setCardStatus({ type: 'error', text: err.message || 'Thẻ không hợp lệ.' })
+    } finally {
+      setCardLoading(false)
+    }
+  }
+
+  // Xử lý bật/tắt gia hạn tự động
+  async function handleToggleAutoRenewClick() {
+    try {
+      const nextState = !isAutoRenewOn
+      await onToggleAutoRenew(nextState)
+      showToast?.(nextState ? 'Đã BẬT gia hạn tự động' : 'Đã TẮT gia hạn tự động')
+    } catch (err) {
+      showToast?.(err.message)
+    }
+  }
+
+  // Tính ngày đăng ký & ngày hết hạn
+  const regDate = account.createdAt ? new Date(account.createdAt).toLocaleDateString('vi-VN') : '22/07/2026'
+  const expDate = account.subscriptionExpiresAt
+    ? new Date(account.subscriptionExpiresAt).toLocaleDateString('vi-VN')
+    : new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toLocaleDateString('vi-VN')
 
   return (
     <div className="modal-backdrop" onClick={onClose}>
@@ -85,32 +195,94 @@ export default function SettingsModal({
         </nav>
 
         <div className="settings-modal__content">
+          {/* TAB 1: TÀI KHOẢN (HỒ SƠ & ĐỔI MẬT KHẨU) */}
           {activeTab === 'account' && (
             <section>
               <h2>Hồ sơ tài khoản</h2>
               <p className="settings-modal__hint">
-                Thông tin tài khoản được lưu trên máy chủ backend (cơ sở dữ liệu JSON dùng cho môi
-                trường phát triển).
+                Thông tin tài khoản cá nhân được lưu trữ an toàn trên cơ sở dữ liệu hệ thống.
               </p>
-              <label className="settings-field">
-                <span>Tên hiển thị</span>
-                <input value={nameDraft} onChange={(e) => setNameDraft(e.target.value)} />
-              </label>
-              <label className="settings-field">
-                <span>Email</span>
-                <input value={account.email} disabled />
-              </label>
-              <div className="settings-modal__actions">
-                <button className="btn btn--primary" onClick={() => onUpdateName(nameDraft)}>
-                  Lưu thay đổi
-                </button>
-                <button className="btn btn--danger-outline" onClick={onSignOut}>
-                  Đăng xuất
-                </button>
+
+              <div className="settings-section-box">
+                <label className="settings-field">
+                  <span>Tên hiển thị</span>
+                  <input value={nameDraft} onChange={(e) => setNameDraft(e.target.value)} />
+                </label>
+                <label className="settings-field">
+                  <span>Email</span>
+                  <input value={account.email} disabled />
+                </label>
+                <div className="settings-modal__actions" style={{ marginTop: '12px' }}>
+                  <button className="btn btn--primary" onClick={() => onUpdateName(nameDraft)}>
+                    Lưu thay đổi tên
+                  </button>
+                  <button className="btn btn--danger-outline" onClick={onSignOut}>
+                    Đăng xuất
+                  </button>
+                </div>
+              </div>
+
+              <div className="settings-divider" />
+
+              {/* MỤC ĐỔI MẬT KHẨU */}
+              <div className="settings-section-box">
+                <h3 className="settings-subheading">
+                  <LockIcon /> Đổi mật khẩu
+                </h3>
+
+                {isGoogleAccount ? (
+                  <div className="settings-info-badge">
+                    <span>🔒</span>
+                    <p>Tài khoản của bạn đăng nhập bằng <strong>Google OAuth</strong> nên không sử dụng mật khẩu riêng.</p>
+                  </div>
+                ) : (
+                  <form onSubmit={handleChangePasswordSubmit} className="change-password-form">
+                    {passwordStatus && (
+                      <div className={`settings-alert settings-alert--${passwordStatus.type}`}>
+                        {passwordStatus.text}
+                      </div>
+                    )}
+                    <label className="settings-field">
+                      <span>Mật khẩu hiện tại</span>
+                      <input
+                        type="password"
+                        placeholder="Nhập mật khẩu hiện tại..."
+                        value={oldPassword}
+                        onChange={(e) => setOldPassword(e.target.value)}
+                      />
+                    </label>
+                    <label className="settings-field">
+                      <span>Mật khẩu mới</span>
+                      <input
+                        type="password"
+                        placeholder="Tối thiểu 6 ký tự..."
+                        value={newPassword}
+                        onChange={(e) => setNewPassword(e.target.value)}
+                        required
+                      />
+                    </label>
+                    <label className="settings-field">
+                      <span>Xác nhận mật khẩu mới</span>
+                      <input
+                        type="password"
+                        placeholder="Nhập lại mật khẩu mới..."
+                        value={confirmPassword}
+                        onChange={(e) => setConfirmPassword(e.target.value)}
+                        required
+                      />
+                    </label>
+                    <div style={{ marginTop: '14px' }}>
+                      <button type="submit" className="btn btn--primary" disabled={passwordLoading}>
+                        {passwordLoading ? 'Đang cập nhật...' : 'Cập nhật mật khẩu'}
+                      </button>
+                    </div>
+                  </form>
+                )}
               </div>
             </section>
           )}
 
+          {/* TAB 2: MỨC SỬ DỤNG */}
           {activeTab === 'usage' && (
             <section>
               <h2>Mức sử dụng &amp; Token</h2>
@@ -143,6 +315,7 @@ export default function SettingsModal({
             </section>
           )}
 
+          {/* TAB 3: GÓI THUÊ BAO */}
           {activeTab === 'subscription' && (
             <section>
               <h2>Gói thuê bao</h2>
@@ -176,11 +349,165 @@ export default function SettingsModal({
                 })}
               </div>
               <p className="settings-modal__hint">
-                Đây là giả lập nâng cấp/hạ cấp gói, chưa kết nối cổng thanh toán thật (ví dụ
-                Stripe, VNPay, Momo).
+                Chuyển đổi gói trải nghiệm linh hoạt giữa gói Miễn phí và Pro y tế cao cấp.
               </p>
             </section>
           )}
+
+          {/* TAB 4: THANH TOÁN (MỚI: VISA/MASTERCARD & THÔNG TIN HẠN PRO) */}
+          {activeTab === 'payment' && (
+            <section>
+              <h2>Thanh toán &amp; Thẻ ngân hàng</h2>
+              <p className="settings-modal__hint">
+                Quản lý thẻ Visa, MasterCard, JCB và thiết lập gia hạn tự động cho gói Pro y tế.
+              </p>
+
+              {/* THÔNG TIN HẠN SỬ DỤNG GÓI */}
+              <div className="subscription-status-box">
+                <div className="status-header">
+                  <div>
+                    <span className="status-label">Trạng thái gói Pro</span>
+                    <h3 className="status-title">
+                      {account.planId === 'pro' ? 'Gói Pro Chuyên Gia (Active)' : 'Gói Miễn Phí (Free)'}
+                    </h3>
+                  </div>
+                  <span className={`status-pill status-pill--${account.planId === 'pro' ? 'active' : 'free'}`}>
+                    {account.planId === 'pro' ? 'Đang hoạt động' : 'Miễn phí'}
+                  </span>
+                </div>
+
+                {account.planId === 'pro' && (
+                  <div className="date-info-grid">
+                    <div className="date-item">
+                      <span>Ngày đăng ký Pro</span>
+                      <strong>{regDate}</strong>
+                    </div>
+                    <div className="date-item">
+                      <span>Ngày hết hạn</span>
+                      <strong>{expDate}</strong>
+                    </div>
+                  </div>
+                )}
+
+                {/* CÔNG TẮC GIA HẠN TỰ ĐỘNG (DEFAULT ON) */}
+                <div className="auto-renew-row">
+                  <div className="auto-renew-text">
+                    <strong>Gia hạn tự động</strong>
+                    <p className="auto-renew-hint">
+                      {isAutoRenewOn
+                        ? 'Đang BẬT (Mặc định). Hệ thống sẽ tự động gia hạn gói Pro khi đến hạn.'
+                        : 'Đang TẮT. Gói Pro sẽ tự động chuyển về gói Miễn phí sau ngày hết hạn.'}
+                    </p>
+                  </div>
+                  <label className="toggle-switch">
+                    <input
+                      type="checkbox"
+                      checked={isAutoRenewOn}
+                      onChange={handleToggleAutoRenewClick}
+                    />
+                    <span className="toggle-slider" />
+                  </label>
+                </div>
+              </div>
+
+              <div className="settings-divider" />
+
+              {/* MỤC THÊM / QUẢN LÝ THẺ VISA, MASTERCARD */}
+              <div className="settings-section-box">
+                <h3 className="settings-subheading">
+                  <CreditCardIcon /> Thẻ thanh toán quốc tế (Visa / MasterCard / JCB)
+                </h3>
+
+                {account.billingDetails && !editingCard ? (
+                  <div className="saved-card-widget">
+                    <div className="card-chip-brand">
+                      <span className="card-brand-badge">{account.billingDetails.brand || 'Visa'}</span>
+                      <span className="card-last4">•••• •••• •••• {account.billingDetails.cardLast4}</span>
+                    </div>
+                    <div className="card-details-row">
+                      <span>Chủ thẻ: <strong>{account.billingDetails.holderName}</strong></span>
+                      <span>Hết hạn: <strong>{account.billingDetails.expiry}</strong></span>
+                    </div>
+                    <button
+                      className="btn btn--outline btn--sm"
+                      style={{ marginTop: '10px' }}
+                      onClick={() => setEditingCard(true)}
+                    >
+                      Thay đổi thẻ thanh toán
+                    </button>
+                  </div>
+                ) : (
+                  <form onSubmit={handleSaveCardSubmit} className="credit-card-form">
+                    {cardStatus && (
+                      <div className={`settings-alert settings-alert--${cardStatus.type}`}>
+                        {cardStatus.text}
+                      </div>
+                    )}
+                    <label className="settings-field">
+                      <span>Số thẻ (Visa, MasterCard, JCB, AMEX)</span>
+                      <input
+                        type="text"
+                        placeholder="4000 1234 5678 9010"
+                        value={cardNumber}
+                        onChange={handleCardNumberChange}
+                        required
+                      />
+                    </label>
+                    <label className="settings-field">
+                      <span>Tên in trên thẻ (Tên chủ thẻ)</span>
+                      <input
+                        type="text"
+                        placeholder="LE QUANG HUY"
+                        value={cardHolder}
+                        onChange={(e) => setCardHolder(e.target.value.toUpperCase())}
+                        required
+                      />
+                    </label>
+                    <div className="form-row-two">
+                      <label className="settings-field">
+                        <span>Hạn thẻ (MM/YY)</span>
+                        <input
+                          type="text"
+                          placeholder="12/28"
+                          value={cardExpiry}
+                          onChange={handleCardExpiryChange}
+                          required
+                        />
+                      </label>
+                      <label className="settings-field">
+                        <span>Mã bảo mật (CVC/CVV)</span>
+                        <input
+                          type="password"
+                          maxLength={4}
+                          placeholder="123"
+                          value={cardCvc}
+                          onChange={(e) => setCardCvc(e.target.value.replace(/\D/g, ''))}
+                          required
+                        />
+                      </label>
+                    </div>
+
+                    <div className="form-actions-row">
+                      <button type="submit" className="btn btn--primary" disabled={cardLoading}>
+                        {cardLoading ? 'Đang lưu...' : 'Lưu phương thức thanh toán'}
+                      </button>
+                      {account.billingDetails && (
+                        <button
+                          type="button"
+                          className="btn btn--outline"
+                          onClick={() => setEditingCard(false)}
+                        >
+                          Hủy
+                        </button>
+                      )}
+                    </div>
+                  </form>
+                )}
+              </div>
+            </section>
+          )}
+
+          {/* TAB 5: TRỢ GIÚP & PHẢN HỒI */}
           {activeTab === 'help' && (
             <section className="help-section">
               <h2>Trợ giúp &amp; Phản hồi</h2>

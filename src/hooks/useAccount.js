@@ -1,8 +1,5 @@
 import { useCallback, useEffect, useState } from 'react'
 
-// Nullish (not ||) so an explicitly empty string means "same origin" (the
-// production Docker setup proxies /api/* through nginx to the backend) —
-// falling through to the dev default only when the var is unset entirely.
 const envApiUrl = import.meta.env.VITE_API_URL
 const API_URL = (envApiUrl && envApiUrl !== 'http://localhost:4000')
   ? envApiUrl
@@ -19,8 +16,6 @@ async function apiRequest(path, options = {}) {
   return data
 }
 
-// account: undefined while the initial session check is in flight, null
-// once confirmed as a guest, or the user object once authenticated.
 export function useAccount() {
   const [account, setAccount] = useState(undefined)
 
@@ -56,9 +51,6 @@ export function useAccount() {
     return user
   }, [])
 
-  // payload is either { credential } (real Google ID token) or
-  // { email, name } (demo fallback when GOOGLE_CLIENT_ID isn't configured) —
-  // see components/GoogleAuthButton.jsx and back_end's /api/auth/google.
   const signInWithGoogle = useCallback(async (payload) => {
     const { user } = await apiRequest('/api/auth/google', {
       method: 'POST',
@@ -72,6 +64,31 @@ export function useAccount() {
     const { user } = await apiRequest('/api/account/name', {
       method: 'PATCH',
       body: JSON.stringify({ name }),
+    })
+    setAccount(user)
+    return user
+  }, [])
+
+  const changePassword = useCallback(async ({ oldPassword, newPassword }) => {
+    return await apiRequest('/api/account/password', {
+      method: 'PATCH',
+      body: JSON.stringify({ oldPassword, newPassword }),
+    })
+  }, [])
+
+  const updateCard = useCallback(async (cardData) => {
+    const { user } = await apiRequest('/api/account/card', {
+      method: 'PATCH',
+      body: JSON.stringify(cardData),
+    })
+    setAccount(user)
+    return user
+  }, [])
+
+  const toggleAutoRenew = useCallback(async (autoRenew) => {
+    const { user } = await apiRequest('/api/account/autorenew', {
+      method: 'PATCH',
+      body: JSON.stringify({ autoRenew }),
     })
     setAccount(user)
     return user
@@ -99,6 +116,9 @@ export function useAccount() {
     signInForm,
     signInWithGoogle,
     updateName,
+    changePassword,
+    updateCard,
+    toggleAutoRenew,
     setPlan,
     signOut,
     fetchUsage,
