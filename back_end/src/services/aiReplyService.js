@@ -428,7 +428,19 @@ export async function generateSmartTitle(userText, lang = 'vi') {
   const cleanInput = userText.trim().replace(/\[.*?\]/g, '').replace(/[*_`]/g, '')
   const lower = cleanInput.toLowerCase()
 
-  // 1. Phân tích triệu chứng lâm sàng (KHÔNG dùng từ "Chẩn đoán" hay phán đoán tên bệnh)
+  // 1. Xử lý các câu chào hỏi hoặc câu quá ngắn/bên lề (Greetings & Short words)
+  const isGreetingOnly = /^(hi|hello|chào|xin chào|chào bác sĩ|bác sĩ ơi|alo|cho tôi hỏi|tôi muốn hỏi|hỏi đáp|help)$/i.test(lower) || cleanInput.length < 5
+  if (isGreetingOnly) {
+    return lang === 'en' ? 'New Conversation' : 'Cuộc trò chuyện mới'
+  }
+
+  // 2. Xử lý trường hợp chỉ gõ thông tin hành chính/tuổi/giới (Ví dụ: "Tôi 22 tuổi", "Nam 25t", "Nữ 30 tuổi")
+  const isDemographicsOnly = /^(tôi|em|mình|bệnh nhân)?\s*(là\s*)?(nam|nữ)?\s*\d+\s*(tuổi|t|tuoi)?$/i.test(lower)
+  if (isDemographicsOnly) {
+    return lang === 'en' ? 'General Health Advice' : 'Tư vấn sức khỏe'
+  }
+
+  // 3. Phân tích triệu chứng lâm sàng cụ thể (KHÔNG dùng từ "Chẩn đoán" hay phán đoán tên bệnh)
   if ((lower.includes('đau họng') || lower.includes('amidan') || lower.includes('rát họng')) && lower.includes('sốt')) {
     return lang === 'en' ? 'Sore Throat & Fever' : 'Tư vấn sốt & đau họng'
   }
@@ -460,7 +472,7 @@ export async function generateSmartTitle(userText, lang = 'vi') {
     return lang === 'en' ? 'Skin Rash & Allergy' : 'Tư vấn mẩn ngứa & dị ứng'
   }
 
-  // 2. Gọi AI OpenRouter tạo tiêu đề theo cấu trúc Tư vấn / Đánh giá / Sàng lọc + Triệu chứng
+  // 4. Gọi AI OpenRouter tạo tiêu đề theo cấu trúc Tư vấn / Đánh giá / Sàng lọc + Triệu chứng
   if (env.llmApiKey) {
     try {
       const response = await fetch(`${env.llmBaseUrl}/chat/completions`, {
@@ -476,7 +488,7 @@ export async function generateSmartTitle(userText, lang = 'vi') {
           messages: [
             {
               role: 'system',
-              content: 'Bạn là chuyên gia tạo tiêu đề súc tích cho hệ thống tư vấn sức khỏe. QUY TẮC BẮT BUỘC:\n1. KHÔNG ĐƯỢC dùng từ "Chẩn đoán" hay "Dự đoán" vì hệ thống chỉ mang tính tư vấn/sàng lọc.\n2. KHÔNG ĐƯỢC tự gán tên bệnh lý khi chưa biết rõ.\n3. Hãy tạo tiêu đề theo cấu trúc: "Tư vấn + [Triệu chứng]" hoặc "Đánh giá + [Triệu chứng]" hoặc "Sàng lọc + [Triệu chứng]" (Ví dụ: "Tư vấn sốt & đau họng", "Đánh giá đau bụng cấp", "Sàng lọc mẩn ngứa & dị ứng", "Tư vấn triệu chứng đau đầu").\n4. Tiêu đề gồm 2 đến 4 từ tiếng Việt súc tích, ngắn gọn. CHỈ TRẢ VỀ DUY NHẤT CỤM TỪ TIÊU ĐỀ, KHÔNG THÊM CẶP NGOẶC HAY TỪ DẪN.'
+              content: 'Bạn là chuyên gia tạo tiêu đề súc tích cho hệ thống tư vấn sức khỏe. QUY TẮC BẮT BUỘC:\n1. Nếu lời nhắn là câu chào hỏi ("Hi", "Chào bác sĩ") -> Trả về "Cuộc trò chuyện mới".\n2. Nếu lời nhắn chỉ có thông tin hành chính ("Tôi 22 tuổi") -> Trả về "Tư vấn sức khỏe".\n3. KHÔNG ĐƯỢC dùng từ "Chẩn đoán" hay "Dự đoán". KHÔNG tự gán tên bệnh lý khi chưa biết rõ.\n4. Nếu có triệu chứng: Tạo tiêu đề dạng "Tư vấn + [Triệu chứng]" hoặc "Đánh giá + [Triệu chứng]" (Ví dụ: "Tư vấn sốt & đau họng", "Đánh giá đau bụng cấp", "Sàng lọc mẩn ngứa & dị ứng", "Tư vấn triệu chứng đau đầu").\n5. Độ dài: 2 đến 4 từ tiếng Việt. CHỈ TRẢ VỀ DUY NHẤT CỤM TỪ TIÊU ĐỀ, KHÔNG THÊM CẶP NGOẶC HAY TỪ DẪN.'
             },
             { role: 'user', content: cleanInput }
           ],
@@ -498,7 +510,6 @@ export async function generateSmartTitle(userText, lang = 'vi') {
     }
   }
 
-  // 3. Fallback Heuristic cắt ngắn câu thoại sạch
-  const words = cleanInput.split(/\s+/).slice(0, 4).join(' ')
-  return words.length <= 30 ? `Tư vấn ${words}` : `Tư vấn ${words.slice(0, 22)}…`
+  // 5. Fallback Heuristic
+  return lang === 'en' ? 'General Health Advice' : 'Tư vấn sức khỏe'
 }
