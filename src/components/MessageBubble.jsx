@@ -254,22 +254,26 @@ function renderBlock(block, key) {
                             blockText.includes('lý giải') || 
                             blockText.includes('dấu hiệu') || 
                             blockText.includes('xác suất') ||
+                            blockText.includes('khuyến nghị') ||
+                            blockText.includes('cảnh báo') ||
                             blockText.includes('evidence') ||
                             blockText.includes('differential') ||
-                            blockText.includes('watch for')
+                            blockText.includes('watch for') ||
+                            blockText.includes('recommend')
 
       const isOrdered = lines.length > 1 && lines.every(l => /^\d+\.\s/.test(l.trim()))
       const isBulleted = lines.length > 1 && lines.every(l => /^[-*]\s/.test(l.trim()))
 
-      // Phase 1: Danh sách câu hỏi làm rõ dạng gạch đầu dòng -> Render Thẻ Question Card
+      // Phase 1: Danh sách câu hỏi làm rõ dạng gạch đầu dòng (Chỉ khi KHÔNG phải là báo cáo/khuyến nghị)
       if (isBulleted && !isReportBlock) {
         return (
           <div className="msg-question-cards-list" key={key}>
             {lines.map((line, i) => {
               const content = line.trim().replace(/^[-*]\s/, '')
+              const isQuestion = content.includes('?') || content.toLowerCase().startsWith('bạn') || content.toLowerCase().startsWith('tình trạng')
               return (
                 <div className="msg-question-card" key={i}>
-                  <span className="msg-question-card__icon">❓</span>
+                  <span className="msg-question-card__icon">{isQuestion ? '❓' : '💡'}</span>
                   <div className="msg-question-card__content">
                     {renderInline(content, `${key}-${i}`)}
                   </div>
@@ -280,7 +284,7 @@ function renderBlock(block, key) {
         )
       }
 
-      // Phase 1: Danh sách câu hỏi dạng số thứ tự -> Render Thẻ Question Card với số thứ tự
+      // Phase 1: Danh sách câu hỏi dạng số thứ tự (Chỉ khi KHÔNG phải là báo cáo/khuyến nghị)
       if (isOrdered && !isReportBlock) {
         return (
           <div className="msg-question-cards-list" key={key}>
@@ -301,7 +305,7 @@ function renderBlock(block, key) {
         )
       }
 
-      // Phase 2: Báo cáo kết luận hoặc Khối hỗn hợp -> Giữ nguyên giao diện đẹp nguyên bản của Phase 2
+      // Phase 2: Báo cáo kết luận / Khuyến nghị hoặc Khối hỗn hợp
       return (
         <div key={key} className="msg-mixed-block">
           {lines.map((line, i) => {
@@ -330,13 +334,16 @@ function renderBlock(block, key) {
               const isEvidence = lowerContent.includes('dẫn chứng') || lowerContent.includes('evidence')
               const isReasoning = lowerContent.includes('lý giải') || lowerContent.includes('differential')
               const isWatch = lowerContent.includes('dấu hiệu') || lowerContent.includes('watch for')
+              const isQuestion = content.includes('?')
 
-              // Chi tiết báo cáo Phase 2 -> Giữ nguyên giao diện nguyên bản Phase 2 với bullet icon chuẩn
-              if (isReportBlock || isEvidence || isReasoning || isWatch) {
-                let icon = '•'
+              // Chi tiết báo cáo / khuyến nghị -> Dùng icon y tế phù hợp (không dùng dấu ?)
+              if (isReportBlock || isEvidence || isReasoning || isWatch || !isQuestion) {
+                let icon = '📌'
                 if (isEvidence) icon = '📋'
                 else if (isReasoning) icon = '🔍'
                 else if (isWatch) icon = '⚠️'
+                else if (lowerContent.includes('xét nghiệm') || lowerContent.includes('khám') || lowerContent.includes('chuyên khoa')) icon = '🩺'
+                else if (lowerContent.includes('nghỉ ngơi') || lowerContent.includes('uống nước')) icon = '💊'
 
                 return (
                   <div key={i} className={`disease-detail-line ${isEvidence ? 'disease-detail-line--evidence' : ''}`}>
