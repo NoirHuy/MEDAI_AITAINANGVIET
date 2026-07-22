@@ -254,20 +254,39 @@ function renderBlock(block, key) {
 
       if (isOrdered) {
         return (
-          <ol className="message-list" key={key}>
-            {lines.map((line, i) => (
-              <li key={i}>{renderInlineNoBold(line.trim().replace(/^\d+\.\s/, ''), `${key}-${i}`)}</li>
-            ))}
-          </ol>
+          <div className="msg-question-cards-list" key={key}>
+            {lines.map((line, i) => {
+              const match = line.trim().match(/^(\d+)\.\s*(.*)/)
+              const num = match ? match[1] : (i + 1)
+              const content = match ? match[2] : line.trim()
+              return (
+                <div className="msg-question-card" key={i}>
+                  <span className="msg-question-card__badge">{num}</span>
+                  <div className="msg-question-card__content">
+                    {renderInline(content, `${key}-${i}`)}
+                  </div>
+                </div>
+              )
+            })}
+          </div>
         )
       }
+
       if (isBulleted) {
         return (
-          <ul className="message-list" key={key}>
-            {lines.map((line, i) => (
-              <li key={i}>{renderInlineNoBold(line.trim().replace(/^[-*]\s/, ''), `${key}-${i}`)}</li>
-            ))}
-          </ul>
+          <div className="msg-question-cards-list" key={key}>
+            {lines.map((line, i) => {
+              const content = line.trim().replace(/^[-*]\s/, '')
+              return (
+                <div className="msg-question-card" key={i}>
+                  <span className="msg-question-card__icon">❓</span>
+                  <div className="msg-question-card__content">
+                    {renderInline(content, `${key}-${i}`)}
+                  </div>
+                </div>
+              )
+            })}
+          </div>
         )
       }
 
@@ -279,7 +298,6 @@ function renderBlock(block, key) {
             const cleanLine = trimmed.replace(/\*\*/g, '')
 
             // 1. Kiểm tra dòng tên bệnh kèm xác suất:
-            // Match các dạng: "1. Tên bệnh: 60% xác suất" hoặc "1. Tên bệnh: ~60% xác suất"
             const diseaseMatch = cleanLine.match(/^(\d+)\.\s*(.*?):\s*~?(\d+)%\s*(xác suất|khả năng|ước tính)?/i)
             if (diseaseMatch) {
               const num = diseaseMatch[1]
@@ -296,16 +314,32 @@ function renderBlock(block, key) {
 
             // 2. Kiểm tra dòng bắt đầu bằng bullet point "-"
             if (trimmed.startsWith('-')) {
-              // Bỏ dấu gạch ngang đầu dòng
               const content = trimmed.substring(1).trim()
-              
-              // Nếu là dòng "Dẫn chứng từ đồ thị" hoặc "Dẫn chứng"
               const isEvidence = content.toLowerCase().includes('dẫn chứng')
-              
+              if (isEvidence) {
+                return (
+                  <div key={i} className="disease-detail-line disease-detail-line--evidence">
+                    <span className="bullet-dot">📋</span>
+                    <span className="detail-content">{renderInline(content, `${key}-${i}`)}</span>
+                  </div>
+                )
+              }
               return (
-                <div key={i} className={`disease-detail-line ${isEvidence ? 'disease-detail-line--evidence' : ''}`}>
-                  <span className="bullet-dot">{isEvidence ? '📋' : '•'}</span>
-                  <span className="detail-content">{renderInline(content, `${key}-${i}`)}</span>
+                <div key={i} className="msg-question-card">
+                  <span className="msg-question-card__icon">❓</span>
+                  <div className="msg-question-card__content">
+                    {renderInline(content, `${key}-${i}`)}
+                  </div>
+                </div>
+              )
+            }
+
+            // 3. Dòng hướng dẫn (Ví dụ: kết thúc bằng dấu :)
+            if (trimmed.endsWith(':') && (trimmed.toLowerCase().includes('thông tin') || trimmed.toLowerCase().includes('câu hỏi') || trimmed.toLowerCase().includes('hiểu rõ'))) {
+              return (
+                <div key={i} className="msg-intro-guidance">
+                  <span className="msg-intro-guidance__icon">🩺</span>
+                  <span className="msg-intro-guidance__text">{renderInline(line, `${key}-${i}`)}</span>
                 </div>
               )
             }

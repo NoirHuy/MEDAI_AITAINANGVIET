@@ -332,4 +332,88 @@
   transform: translateY(-1px);
 }
 
+/* ─── Question Cards List & Items (Redesigned Phase 1 UI) ────── */
+.msg-question-cards-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin: 10px 0;
+  width: 100%;
+}
+
+.msg-question-card {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  background: color-mix(in srgb, var(--bg-accent) 5%, var(--bg-app));
+  border: 1px solid color-mix(in srgb, var(--bg-accent) 15%, var(--border-subtle));
+  border-left: 4px solid var(--bg-accent);
+  border-radius: 12px;
+  padding: 10px 14px;
+  font-size: 14.5px;
+  line-height: 1.6;
+  color: var(--text-primary);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.02);
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.msg-question-card:hover {
+  transform: translateY(-1px);
+  background: color-mix(in srgb, var(--bg-accent) 8%, var(--bg-app));
+  border-color: var(--bg-accent);
+  box-shadow: 0 4px 12px rgba(26, 115, 232, 0.08);
+}
+
+.msg-question-card__icon {
+  flex-shrink: 0;
+  font-size: 14px;
+  margin-top: 2px;
+  width: 24px;
+  height: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  background: color-mix(in srgb, var(--bg-accent) 12%, transparent);
+}
+
+.msg-question-card__badge {
+  flex-shrink: 0;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  background: var(--bg-accent);
+  color: #ffffff;
+  font-size: 12px;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-top: 2px;
+}
+
+.msg-question-card__content {
+  flex-grow: 1;
+}
+
+/* ─── Intro Guidance Callout ──────────────────────────────── */
+.msg-intro-guidance {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: color-mix(in srgb, var(--bg-accent) 8%, transparent);
+  border-radius: 10px;
+  padding: 8px 14px;
+  margin: 10px 0 6px;
+  font-size: 14px;
+  font-weight: 550;
+  color: var(--text-primary);
+  border-left: 3px solid var(--bg-accent);
+}
+
+.msg-intro-guidance__icon {
+  font-size: 16px;
+}
+
+
 

@@ -201,6 +201,10 @@
 
 .pane-header {
   margin-bottom: 1.5rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 1rem;
 }
 
 .pane-header h1 {
@@ -215,6 +219,40 @@
   color: #64748b;
   margin: 0;
   font-size: 0.85rem;
+}
+
+.btn-reload-dashboard {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  background-color: #ffffff;
+  border: 1px solid #cbd5e1;
+  color: #334155;
+  padding: 0.5rem 0.95rem;
+  border-radius: 10px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+  flex-shrink: 0;
+}
+
+.btn-reload-dashboard:hover:not(:disabled) {
+  background-color: #f8fafc;
+  border-color: #1a73e8;
+  color: #1a73e8;
+  box-shadow: 0 2px 6px rgba(26, 115, 232, 0.12);
+}
+
+.btn-reload-dashboard:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.btn-reload-dashboard svg {
+  width: 15px;
+  height: 15px;
 }
 
 /* Card Hộp Bo Tròn Mềm Mại */

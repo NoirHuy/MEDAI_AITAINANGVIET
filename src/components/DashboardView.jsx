@@ -9,7 +9,8 @@ import {
   CheckIcon,
   SpinnerIcon,
   PulseIcon,
-  CloseIcon
+  CloseIcon,
+  RefreshIcon
 } from './Icons'
 import './DashboardView.css'
 
@@ -59,75 +60,75 @@ export default function DashboardView({ account, onBack, onSignOut, lang, initia
     setIsAdmin(account.role === 'admin')
   }, [account])
 
+  // Hàm tải lại dữ liệu Admin cho tab hiện tại
+  const fetchAdminData = async () => {
+    if (!isAdmin) return
+    setLoading(true)
+    try {
+      if (activeTab === 'overview') {
+        const res = await fetch('/api/admin/stats/overview')
+        if (res.ok) {
+          const data = await res.json()
+          setOverviewStats(data.overview)
+        }
+      } else if (activeTab === 'conversations') {
+        const queryParams = new URLSearchParams({
+          page: convPage,
+          limit: 8,
+          search: searchConv,
+          urgency: filterUrgency,
+          lang: filterLang,
+          isGuest: filterGuest
+        })
+        const res = await fetch(`/api/admin/conversations?${queryParams}`)
+        if (res.ok) {
+          const data = await res.json()
+          setConversations(data.conversations || [])
+          setTotalConvPages(data.pagination?.totalPages || 1)
+        }
+      } else if (activeTab === 'safety') {
+        const res = await fetch('/api/admin/safety-logs')
+        if (res.ok) {
+          const data = await res.json()
+          setSafetyLogs(data.logs || [])
+        }
+      } else if (activeTab === 'users') {
+        const res = await fetch(`/api/admin/users?page=${userPage}&search=${encodeURIComponent(searchUser)}`)
+        if (res.ok) {
+          const data = await res.json()
+          setUsers(data.users || [])
+          setTotalUserPages(data.pagination?.totalPages || 1)
+        }
+      } else if (activeTab === 'ops') {
+        const res = await fetch('/api/admin/ops/logs')
+        if (res.ok) {
+          const data = await res.json()
+          setOpsLogs(data.ops)
+        }
+      } else if (activeTab === 'payments') {
+        const queryParams = new URLSearchParams({
+          page: payPage,
+          limit: 8,
+          status: filterPayStatus,
+          gateway: filterPayGateway
+        })
+        const res = await fetch(`/api/admin/payments?${queryParams}`)
+        if (res.ok) {
+          const data = await res.json()
+          setPayments(data.payments || [])
+          setTotalPayPages(data.pagination?.totalPages || 1)
+        }
+      }
+    } catch (err) {
+      console.error('Lỗi khi lấy dữ liệu admin:', err)
+    } finally {
+      setLoading(false)
+    }
+  }
+
   // Tự động load dữ liệu tùy thuộc vào tab đang active
   useEffect(() => {
-    if (!isAdmin) return
-
-    const loadData = async () => {
-      setLoading(true)
-      try {
-        if (activeTab === 'overview') {
-          const res = await fetch('/api/admin/stats/overview')
-          if (res.ok) {
-            const data = await res.json()
-            setOverviewStats(data.overview)
-          }
-        } else if (activeTab === 'conversations') {
-          const queryParams = new URLSearchParams({
-            page: convPage,
-            limit: 8,
-            search: searchConv,
-            urgency: filterUrgency,
-            lang: filterLang,
-            isGuest: filterGuest
-          })
-          const res = await fetch(`/api/admin/conversations?${queryParams}`)
-          if (res.ok) {
-            const data = await res.json()
-            setConversations(data.conversations || [])
-            setTotalConvPages(data.pagination?.totalPages || 1)
-          }
-        } else if (activeTab === 'safety') {
-          const res = await fetch('/api/admin/safety-logs')
-          if (res.ok) {
-            const data = await res.json()
-            setSafetyLogs(data.logs || [])
-          }
-        } else if (activeTab === 'users') {
-          const res = await fetch(`/api/admin/users?page=${userPage}&search=${encodeURIComponent(searchUser)}`)
-          if (res.ok) {
-            const data = await res.json()
-            setUsers(data.users || [])
-            setTotalUserPages(data.pagination?.totalPages || 1)
-          }
-        } else if (activeTab === 'ops') {
-          const res = await fetch('/api/admin/ops/logs')
-          if (res.ok) {
-            const data = await res.json()
-            setOpsLogs(data.ops)
-          }
-        } else if (activeTab === 'payments') {
-          const queryParams = new URLSearchParams({
-            page: payPage,
-            limit: 8,
-            status: filterPayStatus,
-            gateway: filterPayGateway
-          })
-          const res = await fetch(`/api/admin/payments?${queryParams}`)
-          if (res.ok) {
-            const data = await res.json()
-            setPayments(data.payments || [])
-            setTotalPayPages(data.pagination?.totalPages || 1)
-          }
-        }
-      } catch (err) {
-        console.error('Lỗi khi lấy dữ liệu admin:', err)
-      } finally {
-        setLoading(false)
-      }
-    }
-
-    loadData()
+    fetchAdminData()
   }, [activeTab, convPage, searchConv, filterUrgency, filterLang, filterGuest, userPage, searchUser, payPage, filterPayStatus, filterPayGateway, isAdmin])
 
   // Xem chi tiết hội thoại
@@ -321,8 +322,14 @@ export default function DashboardView({ account, onBack, onSignOut, lang, initia
         {activeTab === 'overview' && overviewStats && (
           <div className="tab-pane">
             <header className="pane-header">
-              <h1>Tổng Quan Vận Hành</h1>
-              <p>Thống kê xu hướng triệu chứng và chất lượng tư vấn lâm sàng của Bot.</p>
+              <div>
+                <h1>Tổng Quan Vận Hành</h1>
+                <p>Thống kê xu hướng triệu chứng và chất lượng tư vấn lâm sàng của Bot.</p>
+              </div>
+              <button className="btn-reload-dashboard" onClick={fetchAdminData} disabled={loading} title="Tải lại dữ liệu mới nhất">
+                <RefreshIcon className={loading ? 'animate-spin' : ''} />
+                <span>{loading ? 'Đang tải...' : 'Làm mới dữ liệu'}</span>
+              </button>
             </header>
 
             {/* Metrics cards */}
@@ -436,8 +443,14 @@ export default function DashboardView({ account, onBack, onSignOut, lang, initia
         {activeTab === 'conversations' && (
           <div className="tab-pane">
             <header className="pane-header">
-              <h1>Quản Lý Hội Thoại</h1>
-              <p>Audit và giám sát lịch sử tư vấn y khoa của chatbot.</p>
+              <div>
+                <h1>Quản Lý Lịch Sử Hội Thoại</h1>
+                <p>Xem toàn bộ phiên tư vấn, lọc theo độ khẩn cấp, ngôn ngữ và xuất báo cáo audit.</p>
+              </div>
+              <button className="btn-reload-dashboard" onClick={fetchAdminData} disabled={loading} title="Tải lại dữ liệu mới nhất">
+                <RefreshIcon className={loading ? 'animate-spin' : ''} />
+                <span>{loading ? 'Đang tải...' : 'Làm mới dữ liệu'}</span>
+              </button>
             </header>
 
             {/* Search & Filters */}
@@ -550,8 +563,14 @@ export default function DashboardView({ account, onBack, onSignOut, lang, initia
         {activeTab === 'safety' && (
           <div className="tab-pane">
             <header className="pane-header">
-              <h1>An Toàn Y Tế</h1>
-              <p>Audit lâm sàng các trường hợp bot đã đưa ra cảnh báo khẩn cấp hoặc bị gắn cờ review.</p>
+              <div>
+                <h1>Giám Sát An Toàn Y Tế</h1>
+                <p>Danh sách các trường hợp bot đưa ra cảnh báo khẩn cấp (cấp cứu) hoặc bị gắn cờ review.</p>
+              </div>
+              <button className="btn-reload-dashboard" onClick={fetchAdminData} disabled={loading} title="Tải lại dữ liệu mới nhất">
+                <RefreshIcon className={loading ? 'animate-spin' : ''} />
+                <span>{loading ? 'Đang tải...' : 'Làm mới dữ liệu'}</span>
+              </button>
             </header>
 
             <div className="card-box">
@@ -606,8 +625,14 @@ export default function DashboardView({ account, onBack, onSignOut, lang, initia
         {activeTab === 'users' && (
           <div className="tab-pane">
             <header className="pane-header">
-              <h1>Quản Lý Thành Viên</h1>
-              <p>Phân quyền quản trị và điều chỉnh gói cước thành viên.</p>
+              <div>
+                <h1>Quản Lý Thành Viên</h1>
+                <p>Danh sách người dùng hệ thống, phân quyền và điều chỉnh hạn mức Token.</p>
+              </div>
+              <button className="btn-reload-dashboard" onClick={fetchAdminData} disabled={loading} title="Tải lại dữ liệu mới nhất">
+                <RefreshIcon className={loading ? 'animate-spin' : ''} />
+                <span>{loading ? 'Đang tải...' : 'Làm mới dữ liệu'}</span>
+              </button>
             </header>
 
             <div className="filters-bar card-box mb-4">
@@ -705,8 +730,14 @@ export default function DashboardView({ account, onBack, onSignOut, lang, initia
         {activeTab === 'ops' && opsLogs && (
           <div className="tab-pane">
             <header className="pane-header">
-              <h1>Giám Sát Vận Hành &amp; Chi Phí</h1>
-              <p>Theo dõi uptime, chi phí sử dụng API LLM và lịch sử lỗi hệ thống.</p>
+              <div>
+                <h1>Giám Sát Vận Hành &amp; Chi Phí</h1>
+                <p>Theo dõi chi phí gọi API LLM và nhật ký lỗi kỹ thuật trên toàn hệ thống.</p>
+              </div>
+              <button className="btn-reload-dashboard" onClick={fetchAdminData} disabled={loading} title="Tải lại dữ liệu mới nhất">
+                <RefreshIcon className={loading ? 'animate-spin' : ''} />
+                <span>{loading ? 'Đang tải...' : 'Làm mới dữ liệu'}</span>
+              </button>
             </header>
 
             {/* Overview stats for ops */}
@@ -793,8 +824,14 @@ export default function DashboardView({ account, onBack, onSignOut, lang, initia
         {activeTab === 'payments' && (
           <div className="tab-pane">
             <header className="pane-header">
-              <h1>Quản Lý Giao Dịch &amp; Doanh Thu</h1>
-              <p>Danh sách toàn bộ các hóa đơn nâng cấp và gia hạn định kỳ (Auto-billing) trên hệ thống.</p>
+              <div>
+                <h1>Quản Lý Giao Dịch &amp; Doanh Thu</h1>
+                <p>Danh sách toàn bộ các hóa đơn nâng cấp và gia hạn định kỳ (Auto-billing) trên hệ thống.</p>
+              </div>
+              <button className="btn-reload-dashboard" onClick={fetchAdminData} disabled={loading} title="Tải lại dữ liệu mới nhất">
+                <RefreshIcon className={loading ? 'animate-spin' : ''} />
+                <span>{loading ? 'Đang tải...' : 'Làm mới dữ liệu'}</span>
+              </button>
             </header>
 
             {/* Filters bar */}
