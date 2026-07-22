@@ -1,0 +1,110 @@
+import { env } from '../../config/env.js'
+import { getSpecialty } from '../../config/specialties.js'
+import { auditLog } from '../../utils/auditLog.js'
+import { streamText } from '../llm/streaming.js'
+import { callLLM } from '../llm/llmClient.js'
+import { renderSystemPrompt } from '../prompts/promptRegistry.js'
+import { computeAdaptiveContext } from '../graphrag/adaptiveContext.js'
+import { extractSymptomsFromHistory } from '../graphrag/symptomExtraction.js'
+import { formatAdaptiveContext } from '../graphrag/formatContext.js'
+import { evaluatePhase } from './phaseEvaluator.js'
+
+function buildMockReply(userText, specialtyId, lang = 'vi') {
+  const specialty = getSpecialty(specialtyId)
+  const isEn = lang === 'en'
+  const name = isEn ? specialty.name.en : specialty.name.vi
+
+  if (isEn) {
+    return `[Demo Mode — OPENROUTER_API_KEY not configured]\n\n` +
+      `Thank you for contacting MedAI specialty **${name}**. ` +
+      `Please add your API Key in the \`.env\` file to activate real AI ` +
+      `integrated with the NLICE clinical knowledge graph.\n\n` +
+      `*Instructions: Open \`medchat/back_end/.env\` and fill in \`OPENROUTER_API_KEY=...\`*`
+  }
+
+  return `[Chế độ demo — chưa cấu hình OPENROUTER_API_KEY]\n\n` +
+    `Cảm ơn bạn đã liên hệ với MedAI chuyên khoa **${name}**. ` +
+    `Vui lòng thêm API Key vào tệp \`.env\` để kích hoạt trí tuệ nhân tạo thật sự ` +
+    `tích hợp đồ thị tri thức lâm sàng NLICE.\n\n` +
+    `*Hướng dẫn: Mở \`medchat/back_end/.env\` và điền vào \`OPENROUTER_API_KEY=...\`*`
+}
+
+export async function generateReply({ messages, specialtyId, lang = 'vi', isSuggestionDemo = false, onChunk, signal }) {
+  const isEn = lang === 'en'
+
+  // No API Key: return demo mock streaming reply
+  if (!env.llmApiKey) {
+    const lastUser = [...messages].reverse().find(m => m.role === 'user')
+    return streamText(buildMockReply(lastUser?.content ?? '', specialtyId, lang), onChunk, signal)
+  }
+
+  // TRUE ADAPTIVE GRAPHRAG for Pediatrics specialty
+  if (specialtyId === 'pediatrics') {
+    let adaptiveCtx = null
+    let sceResult = null
+    try {
+      const firstCtx = await computeAdaptiveContext(new Set(), new Set())
+      sceResult = await extractSymptomsFromHistory(messages, firstCtx.allSymptoms, lang)
+      adaptiveCtx = await computeAdaptiveContext(sceResult)
+    } catch (err) {
+      auditLog('Adaptive GraphRAG', 'Error', err.message, 'error')
+      throw err
+    }
+
+    const checklistStatus = {
+      hasAgeSex: !!(sceResult?.demographics?.age || sceResult?.demographics?.sex),
+      hasDuration: !!(sceResult?.temporal?.durationValue),
+      hasSeverity: !!(sceResult?.symptoms?.some(s => s.status === 'positive' && s.attributes?.severity))
+    }
+
+    const userMessages = messages.filter((m) => m.role === 'user')
+    const turnCount = userMessages.length
+
+    const phaseInfo = evaluatePhase({ checklistStatus, sceResult, turnCount, isSuggestionDemo })
+    const phase = phaseInfo.phase
+
+    const adaptiveText = adaptiveCtx
+      ? formatAdaptiveContext(adaptiveCtx, lang)
+      : (isEn ? '*[No graph data yet — please ask for symptoms]*' : '*[Chưa có dữ liệu đồ thị — hãy hỏi triệu chứng ban đầu]*')
+
+    const systemPrompt = renderSystemPrompt(specialtyId, lang, {
+      checklistStatus,
+      phase,
+      ADAPTIVE_CONTEXT: adaptiveText
+    })
+
+    const chatMessages = [
+      { role: 'system', content: systemPrompt },
+      ...messages
+    ]
+
+    const maxTokens = phase === 1 ? 800 : 2500
+    return callLLM({
+      messages: chatMessages,
+      model: env.openrouterModelChat,
+      stream: true,
+      maxTokens,
+      onChunk,
+      signal
+    })
+  }
+
+  // Other specialties (General, Dermatology, Nutrition)
+  const systemPrompt = renderSystemPrompt(specialtyId, lang, {})
+  const chatMessages = [
+    { role: 'system', content: systemPrompt },
+    ...messages
+  ]
+  return callLLM({
+    messages: chatMessages,
+    model: null,
+    stream: true,
+    maxTokens: 1500,
+    onChunk,
+    signal
+  })
+}
+
+export function estimateTokens(text) {
+  return text ? Math.ceil(text.length / 4) : 0
+}
