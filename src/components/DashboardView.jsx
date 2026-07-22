@@ -316,7 +316,6 @@ export default function DashboardView({ account, onBack, onSignOut, lang, initia
 
       {/* Main Panel Content */}
       <main className="admin-main">
-        {loading && <div className="loading-bar-spinner"><SpinnerIcon className="animate-spin" /><span>Đang kết nối dữ liệu y khoa...</span></div>}
 
         {/* TAB 1: OVERVIEW */}
         {activeTab === 'overview' && overviewStats && (
@@ -328,7 +327,7 @@ export default function DashboardView({ account, onBack, onSignOut, lang, initia
               </div>
               <button className="btn-reload-dashboard" onClick={fetchAdminData} disabled={loading} title="Tải lại dữ liệu mới nhất">
                 <RefreshIcon className={loading ? 'animate-spin' : ''} />
-                <span>{loading ? 'Đang tải...' : 'Làm mới dữ liệu'}</span>
+                <span>Làm mới dữ liệu</span>
               </button>
             </header>
 
@@ -449,7 +448,7 @@ export default function DashboardView({ account, onBack, onSignOut, lang, initia
               </div>
               <button className="btn-reload-dashboard" onClick={fetchAdminData} disabled={loading} title="Tải lại dữ liệu mới nhất">
                 <RefreshIcon className={loading ? 'animate-spin' : ''} />
-                <span>{loading ? 'Đang tải...' : 'Làm mới dữ liệu'}</span>
+                <span>Làm mới dữ liệu</span>
               </button>
             </header>
 
@@ -569,7 +568,7 @@ export default function DashboardView({ account, onBack, onSignOut, lang, initia
               </div>
               <button className="btn-reload-dashboard" onClick={fetchAdminData} disabled={loading} title="Tải lại dữ liệu mới nhất">
                 <RefreshIcon className={loading ? 'animate-spin' : ''} />
-                <span>{loading ? 'Đang tải...' : 'Làm mới dữ liệu'}</span>
+                <span>Làm mới dữ liệu</span>
               </button>
             </header>
 
@@ -631,7 +630,7 @@ export default function DashboardView({ account, onBack, onSignOut, lang, initia
               </div>
               <button className="btn-reload-dashboard" onClick={fetchAdminData} disabled={loading} title="Tải lại dữ liệu mới nhất">
                 <RefreshIcon className={loading ? 'animate-spin' : ''} />
-                <span>{loading ? 'Đang tải...' : 'Làm mới dữ liệu'}</span>
+                <span>Làm mới dữ liệu</span>
               </button>
             </header>
 
@@ -736,7 +735,7 @@ export default function DashboardView({ account, onBack, onSignOut, lang, initia
               </div>
               <button className="btn-reload-dashboard" onClick={fetchAdminData} disabled={loading} title="Tải lại dữ liệu mới nhất">
                 <RefreshIcon className={loading ? 'animate-spin' : ''} />
-                <span>{loading ? 'Đang tải...' : 'Làm mới dữ liệu'}</span>
+                <span>Làm mới dữ liệu</span>
               </button>
             </header>
 
@@ -830,7 +829,7 @@ export default function DashboardView({ account, onBack, onSignOut, lang, initia
               </div>
               <button className="btn-reload-dashboard" onClick={fetchAdminData} disabled={loading} title="Tải lại dữ liệu mới nhất">
                 <RefreshIcon className={loading ? 'animate-spin' : ''} />
-                <span>{loading ? 'Đang tải...' : 'Làm mới dữ liệu'}</span>
+                <span>Làm mới dữ liệu</span>
               </button>
             </header>
 
