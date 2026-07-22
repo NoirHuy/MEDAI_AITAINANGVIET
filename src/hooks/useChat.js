@@ -34,6 +34,8 @@ export function useChat(account) {
     setActiveId(id)
     if (id) {
       localStorage.setItem('medai_active_chat_id', id)
+    } else {
+      localStorage.removeItem('medai_active_chat_id')
     }
   }, [])
 
@@ -146,24 +148,38 @@ export function useChat(account) {
         convId = conv.id
         specialtyId = conv.specialtyId
         baseMessages = []
-        setConversations((prev) => [conv, ...prev])
-        setActiveId(convId)
+        setActiveIdAndPersist(convId)
       }
 
       const userMessage = { id: createId(), role: 'user', content: trimmed }
+      const assistantId = createId()
+      const assistantMessage = { id: assistantId, role: 'assistant', content: '', streaming: true }
       const messagesForApi = [...baseMessages, userMessage]
 
-      setConversations((prev) =>
-        prev.map((c) =>
+      // Thêm cuộc hội thoại và tin nhắn đồng bộ vào state
+      setConversations((prev) => {
+        const exists = prev.some((c) => c.id === convId)
+        if (!exists) {
+          const newConv = {
+            id: convId,
+            title: titleFromText(trimmed),
+            specialtyId,
+            messages: [userMessage, assistantMessage],
+            createdAt: Date.now(),
+          }
+          return [newConv, ...prev]
+        }
+
+        return prev.map((c) =>
           c.id === convId
             ? {
                 ...c,
                 title: c.messages.length === 0 ? titleFromText(trimmed) : c.title,
-                messages: [...c.messages, userMessage],
+                messages: [...c.messages, userMessage, assistantMessage],
               }
             : c,
-        ),
-      )
+        )
+      })
 
       // Nếu là câu thoại đầu tiên của đoạn chat, tự động tạo tiêu đề ChatGPT súc tích
       if (baseMessages.length === 0) {
@@ -176,21 +192,6 @@ export function useChat(account) {
           }
         })
       }
-
-      const assistantId = createId()
-      setConversations((prev) =>
-        prev.map((c) =>
-          c.id === convId
-            ? {
-                ...c,
-                messages: [
-                  ...c.messages,
-                  { id: assistantId, role: 'assistant', content: '', streaming: true },
-                ],
-              }
-            : c,
-        ),
-      )
 
       const controller = new AbortController()
       abortRef.current = controller
@@ -259,19 +260,19 @@ export function useChat(account) {
         abortRef.current = null
       }
     },
-    [activeId, activeConversation, isResponding, account],
+    [activeId, activeConversation, isResponding, account, setActiveIdAndPersist],
   )
 
   return {
     conversations,
-    activeConversation,
     activeId,
+    activeConversation,
     isResponding,
+    sendMessage,
+    stopResponding,
     startNewConversation,
     selectConversation,
     deleteConversation,
     setSpecialty,
-    sendMessage,
-    stopResponding,
   }
 }
