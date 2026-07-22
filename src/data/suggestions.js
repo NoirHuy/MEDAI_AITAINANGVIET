@@ -1,58 +1,30 @@
 export const SUGGESTIONS = [
   {
     title: {
-      vi: 'Mô tả triệu chứng để AI hỏi thêm',
-      en: 'Describe your symptoms and let AI ask follow-up questions'
+      vi: 'Xem ngay Báo cáo Sàng lọc Kết luận (Demo mẫu)',
+      en: 'View Instant Screening Report (Demo)'
     },
     detail: {
-      vi: 'Tôi cảm thấy mệt, sốt và đau đầu.',
-      en: 'I feel tired, have a fever, and a headache.'
+      vi: 'Xem trực tiếp giao diện Báo cáo Sàng lọc Chẩn đoán Y khoa đầy đủ.',
+      en: 'Instantly view a complete medical diagnostic screening report.'
     },
     prompt: {
-      vi: 'Tôi cảm thấy mệt, sốt và đau đầu.',
-      en: 'I feel tired, have a fever, and a headache.'
+      vi: 'Tôi là nam 25 tuổi, bị sốt 38.5 độ kèm đau rát họng khi nuốt 2 ngày nay, nhìn họng thấy 2 bên amidan đỏ rực, cảm giác nuốt vướng và mệt mỏi nhiều. Tôi không bị ho, không bị nghẹt mũi hay chảy nước mũi.',
+      en: 'I am a 25-year-old male with a 38.5°C fever and severe sore throat when swallowing for 2 days, bright red tonsils, and fatigue. I do not have a cough, nasal congestion, or runny nose.'
     },
   },
   {
     title: {
-      vi: 'Đánh giá mức độ khẩn cấp của triệu chứng',
-      en: 'Assess how urgent your symptoms are'
+      vi: 'Trải nghiệm quy trình AI hỏi bệnh thông minh',
+      en: 'Experience Intelligent AI Symptom Interview'
     },
     detail: {
-      vi: 'Tôi bị đau ngực và khó thở nhẹ, có cần đi cấp cứu không?',
-      en: 'I have chest pain and mild shortness of breath. Should I seek emergency care?'
+      vi: 'Mô tả triệu chứng ban đầu để AI đặt câu hỏi làm rõ từng bước.',
+      en: 'Describe initial symptoms and let AI ask clarifying questions step-by-step.'
     },
     prompt: {
-      vi: 'Tôi bị đau ngực và khó thở nhẹ, có cần đi cấp cứu không?',
-      en: 'I have chest pain and mild shortness of breath. Should I seek emergency care?'
-    },
-  },
-  {
-    title: {
-      vi: 'Trải nghiệm quy trình hỏi bệnh thông minh',
-      en: 'Experience the intelligent symptom interview'
-    },
-    detail: {
-      vi: 'Tôi bị đau bụng, hãy bắt đầu hỏi tôi để tìm nguyên nhân.',
-      en: 'I have abdominal pain. Please start asking questions to find the cause.'
-    },
-    prompt: {
-      vi: 'Tôi bị đau bụng, hãy bắt đầu hỏi tôi để tìm nguyên nhân.',
-      en: 'I have abdominal pain. Please start asking questions to find the cause.'
-    },
-  },
-  {
-    title: {
-      vi: 'Khám phá các triệu chứng thường gặp',
-      en: 'Explore common symptoms'
-    },
-    detail: {
-      vi: 'Tôi bị ho và sốt từ hôm qua.',
-      en: 'I have had a cough and fever since yesterday.'
-    },
-    prompt: {
-      vi: 'Tôi bị ho và sốt từ hôm qua.',
-      en: 'I have had a cough and fever since yesterday.'
+      vi: 'Tôi là nam 22 tuổi, bị đau bụng từ sáng nay kèm sốt nhẹ và chán ăn, hãy hỏi thêm để giúp tôi tìm nguyên nhân.',
+      en: 'I am a 22-year-old male experiencing abdominal pain since this morning with a mild fever and loss of appetite. Please ask follow-up questions to help find the cause.'
     },
   },
 ]
