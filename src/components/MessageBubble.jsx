@@ -249,31 +249,30 @@ function renderBlock(block, key) {
 
     case 'paragraph': {
       const lines = block.lines
-      const blockText = lines.join('\n').toLowerCase()
-      const isReportBlock = blockText.includes('dẫn chứng') || 
-                            blockText.includes('lý giải') || 
-                            blockText.includes('dấu hiệu') || 
-                            blockText.includes('xác suất') ||
-                            blockText.includes('khuyến nghị') ||
-                            blockText.includes('cảnh báo') ||
-                            blockText.includes('evidence') ||
-                            blockText.includes('differential') ||
-                            blockText.includes('watch for') ||
-                            blockText.includes('recommend')
 
       const isOrdered = lines.length > 1 && lines.every(l => /^\d+\.\s/.test(l.trim()))
       const isBulleted = lines.length > 1 && lines.every(l => /^[-*]\s/.test(l.trim()))
 
-      // Phase 1: Danh sách câu hỏi làm rõ dạng gạch đầu dòng (Chỉ khi KHÔNG phải là báo cáo/khuyến nghị)
-      if (isBulleted && !isReportBlock) {
+      // Phase 1: Danh sách câu hỏi làm rõ dạng gạch đầu dòng (Chỉ khi TẤT CẢ các mục đều chứa dấu hỏi ?)
+      const allLinesAreQuestions = isBulleted && lines.every(l => {
+        const content = l.trim().replace(/^[-*]\s/, '')
+        return content.includes('?')
+      })
+
+      // Phase 1: Danh sách câu hỏi làm rõ dạng số thứ tự (Chỉ khi TẤT CẢ các mục đều chứa dấu hỏi ?)
+      const allLinesAreOrderedQuestions = isOrdered && lines.every(l => {
+        const content = l.trim().replace(/^\d+\.\s*/, '')
+        return content.includes('?')
+      })
+
+      if (allLinesAreQuestions) {
         return (
           <div className="msg-question-cards-list" key={key}>
             {lines.map((line, i) => {
               const content = line.trim().replace(/^[-*]\s/, '')
-              const isQuestion = content.includes('?') || content.toLowerCase().startsWith('bạn') || content.toLowerCase().startsWith('tình trạng')
               return (
                 <div className="msg-question-card" key={i}>
-                  <span className="msg-question-card__icon">{isQuestion ? '❓' : '💡'}</span>
+                  <span className="msg-question-card__icon">❓</span>
                   <div className="msg-question-card__content">
                     {renderInline(content, `${key}-${i}`)}
                   </div>
@@ -284,8 +283,7 @@ function renderBlock(block, key) {
         )
       }
 
-      // Phase 1: Danh sách câu hỏi dạng số thứ tự (Chỉ khi KHÔNG phải là báo cáo/khuyến nghị)
-      if (isOrdered && !isReportBlock) {
+      if (allLinesAreOrderedQuestions) {
         return (
           <div className="msg-question-cards-list" key={key}>
             {lines.map((line, i) => {
@@ -312,7 +310,7 @@ function renderBlock(block, key) {
             const trimmed = line.trim()
             const cleanLine = trimmed.replace(/\*\*/g, '')
 
-            // 1. Kiểm tra dòng tên bệnh kèm xác suất: "1. Viêm màng não: 60% xác suất"
+            // 1. Dòng tên bệnh kèm xác suất: "1. Viêm màng não: 60% xác suất"
             const diseaseMatch = cleanLine.match(/^(\d+)\.\s*(.*?):\s*~?(\d+)%\s*(xác suất|khả năng|ước tính)?/i)
             if (diseaseMatch) {
               const num = diseaseMatch[1]
@@ -327,7 +325,7 @@ function renderBlock(block, key) {
               )
             }
 
-            // 2. Kiểm tra các dòng chi tiết bắt đầu bằng "-"
+            // 2. Dòng bắt đầu bằng "-"
             if (trimmed.startsWith('-')) {
               const content = trimmed.substring(1).trim()
               const lowerContent = content.toLowerCase()
@@ -336,30 +334,30 @@ function renderBlock(block, key) {
               const isWatch = lowerContent.includes('dấu hiệu') || lowerContent.includes('watch for')
               const isQuestion = content.includes('?')
 
-              // Chi tiết báo cáo / khuyến nghị -> Dùng icon y tế phù hợp (không dùng dấu ?)
-              if (isReportBlock || isEvidence || isReasoning || isWatch || !isQuestion) {
-                let icon = '📌'
-                if (isEvidence) icon = '📋'
-                else if (isReasoning) icon = '🔍'
-                else if (isWatch) icon = '⚠️'
-                else if (lowerContent.includes('xét nghiệm') || lowerContent.includes('khám') || lowerContent.includes('chuyên khoa')) icon = '🩺'
-                else if (lowerContent.includes('nghỉ ngơi') || lowerContent.includes('uống nước')) icon = '💊'
-
+              // Nếu thực sự là câu hỏi lẻ ở Phase 1 (có dấu ?) -> Dùng Thẻ Question Card
+              if (isQuestion) {
                 return (
-                  <div key={i} className={`disease-detail-line ${isEvidence ? 'disease-detail-line--evidence' : ''}`}>
-                    <span className="bullet-dot">{icon}</span>
-                    <span className="detail-content">{renderInline(content, `${key}-${i}`)}</span>
+                  <div key={i} className="msg-question-card">
+                    <span className="msg-question-card__icon">❓</span>
+                    <div className="msg-question-card__content">
+                      {renderInline(content, `${key}-${i}`)}
+                    </div>
                   </div>
                 )
               }
 
-              // Câu hỏi Phase 1 đơn lẻ -> Dùng Thẻ Question Card
+              // Ngược lại (Khuyến nghị, hướng dẫn, dẫn chứng, dấu hiệu...) -> Dùng giao diện dòng chi tiết với icon y tế chuẩn
+              let icon = '📌'
+              if (isEvidence) icon = '📋'
+              else if (isReasoning) icon = '🔍'
+              else if (isWatch) icon = '⚠️'
+              else if (lowerContent.includes('xét nghiệm') || lowerContent.includes('khám') || lowerContent.includes('chuyên khoa')) icon = '🩺'
+              else if (lowerContent.includes('nghỉ ngơi') || lowerContent.includes('uống nước')) icon = '💊'
+
               return (
-                <div key={i} className="msg-question-card">
-                  <span className="msg-question-card__icon">❓</span>
-                  <div className="msg-question-card__content">
-                    {renderInline(content, `${key}-${i}`)}
-                  </div>
+                <div key={i} className={`disease-detail-line ${isEvidence ? 'disease-detail-line--evidence' : ''}`}>
+                  <span className="bullet-dot">{icon}</span>
+                  <span className="detail-content">{renderInline(content, `${key}-${i}`)}</span>
                 </div>
               )
             }
