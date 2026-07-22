@@ -310,11 +310,12 @@ function renderBlock(block, key) {
             const trimmed = line.trim()
             const cleanLine = trimmed.replace(/\*\*/g, '')
 
-            // 1. Dòng tên bệnh kèm xác suất: "1. Viêm màng não: 60% xác suất"
-            const diseaseMatch = cleanLine.match(/^(\d+)\.\s*(.*?):\s*~?(\d+)%\s*(xác suất|khả năng|ước tính)?/i)
+            // 1. Dòng tên bệnh kèm xác suất (Disease Header)
+            const diseaseMatch = cleanLine.match(/^(\d+)\.\s*(.*?)(?::|\s+)?~?(\d+)%\s*(xác suất|khả năng|ước tính)?$/i) ||
+                                 cleanLine.match(/^(\d+)\.\s*(.*?)\s*\((\d+)%\)/i)
             if (diseaseMatch) {
               const num = diseaseMatch[1]
-              const name = diseaseMatch[2].trim()
+              const name = diseaseMatch[2].replace(/:$/, '').trim()
               const percent = parseInt(diseaseMatch[3], 10)
               return (
                 <div key={i} className="disease-item-header">
@@ -325,14 +326,19 @@ function renderBlock(block, key) {
               )
             }
 
-            // 2. Dòng bắt đầu bằng "-"
-            if (trimmed.startsWith('-')) {
-              const content = trimmed.substring(1).trim()
-              const lowerContent = content.toLowerCase()
-              const isEvidence = lowerContent.includes('dẫn chứng') || lowerContent.includes('evidence')
-              const isReasoning = lowerContent.includes('lý giải') || lowerContent.includes('differential')
-              const isWatch = lowerContent.includes('dấu hiệu') || lowerContent.includes('watch for')
-              const isQuestion = content.includes('?')
+            // 2. Dòng chi tiết (Dẫn chứng, Lý giải phân biệt, Dấu hiệu cần chú ý, Khuyến nghị...)
+            const cleanBullet = trimmed.replace(/^[-*•]\s*/, '').replace(/^(📋|🔍|⚠️|🩺|💊|📌)\s*/, '').trim()
+            const lowerContent = cleanBullet.toLowerCase()
+            const isEvidence = lowerContent.includes('dẫn chứng') || lowerContent.includes('evidence')
+            const isReasoning = lowerContent.includes('lý giải') || lowerContent.includes('differential')
+            const isWatch = lowerContent.includes('dấu hiệu') || lowerContent.includes('watch for')
+            const isRecommendation = lowerContent.includes('xét nghiệm') || lowerContent.includes('khám') || lowerContent.includes('chuyên khoa') || lowerContent.includes('nghỉ ngơi')
+
+            const isBulletedLine = trimmed.startsWith('-') || trimmed.startsWith('*') || trimmed.startsWith('•')
+
+            // Nếu là dòng Dẫn chứng, Lý giải, Dấu hiệu, Khuyến nghị hoặc có gạch đầu dòng
+            if (isEvidence || isReasoning || isWatch || isRecommendation || isBulletedLine) {
+              const isQuestion = cleanBullet.includes('?')
 
               // Nếu thực sự là câu hỏi lẻ ở Phase 1 (có dấu ?) -> Dùng Thẻ Question Card
               if (isQuestion) {
@@ -340,13 +346,13 @@ function renderBlock(block, key) {
                   <div key={i} className="msg-question-card">
                     <span className="msg-question-card__icon">❓</span>
                     <div className="msg-question-card__content">
-                      {renderInline(content, `${key}-${i}`)}
+                      {renderInline(cleanBullet, `${key}-${i}`)}
                     </div>
                   </div>
                 )
               }
 
-              // Ngược lại (Khuyến nghị, hướng dẫn, dẫn chứng, dấu hiệu...) -> Dùng giao diện dòng chi tiết với icon y tế chuẩn
+              // Ngược lại (Dẫn chứng, Lý giải, Dấu hiệu, Khuyến nghị) -> Dùng giao diện dòng chi tiết với icon y tế chuẩn
               let icon = '📌'
               if (isEvidence) icon = '📋'
               else if (isReasoning) icon = '🔍'
@@ -357,7 +363,7 @@ function renderBlock(block, key) {
               return (
                 <div key={i} className={`disease-detail-line ${isEvidence ? 'disease-detail-line--evidence' : ''}`}>
                   <span className="bullet-dot">{icon}</span>
-                  <span className="detail-content">{renderInline(content, `${key}-${i}`)}</span>
+                  <span className="detail-content">{renderInline(cleanBullet, `${key}-${i}`)}</span>
                 </div>
               )
             }
