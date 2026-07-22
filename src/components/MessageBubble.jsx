@@ -308,10 +308,10 @@ function renderBlock(block, key) {
         <div key={key} className="msg-mixed-block">
           {lines.map((line, i) => {
             const trimmed = line.trim()
-            const cleanLine = trimmed.replace(/\*\*/g, '')
+            const cleanLine = trimmed.replace(/[*#_`]/g, '').trim()
 
-            // 1. Dòng tên bệnh kèm xác suất (Disease Header)
-            const diseaseMatch = cleanLine.match(/^(\d+)\.\s*(.*?)(?::|\s+)?~?(\d+)%\s*(xác suất|khả năng|ước tính)?$/i) ||
+            // 1. Dòng tên bệnh kèm xác suất (Disease Header) - Song ngữ Việt & Anh
+            const diseaseMatch = cleanLine.match(/^(\d+)\.\s*(.*?)(?::|\s+)?~?(\d+)%\s*(xác suất|khả năng|ước tính|probability|percent|chance|prob)?$/i) ||
                                  cleanLine.match(/^(\d+)\.\s*(.*?)\s*\((\d+)%\)/i)
             if (diseaseMatch) {
               const num = diseaseMatch[1]
@@ -326,13 +326,13 @@ function renderBlock(block, key) {
               )
             }
 
-            // 2. Dòng chi tiết (Dẫn chứng, Lý giải phân biệt, Dấu hiệu cần chú ý, Khuyến nghị...)
+            // 2. Dòng chi tiết (Dẫn chứng, Lý giải phân biệt, Dấu hiệu cần chú ý, Khuyến nghị...) - Song ngữ
             const cleanBullet = trimmed.replace(/^[-*•]\s*/, '').replace(/^(📋|🔍|⚠️|🩺|💊|📌)\s*/, '').trim()
             const lowerContent = cleanBullet.toLowerCase()
-            const isEvidence = lowerContent.includes('dẫn chứng') || lowerContent.includes('evidence')
-            const isReasoning = lowerContent.includes('lý giải') || lowerContent.includes('differential')
-            const isWatch = lowerContent.includes('dấu hiệu') || lowerContent.includes('watch for')
-            const isRecommendation = lowerContent.includes('xét nghiệm') || lowerContent.includes('khám') || lowerContent.includes('chuyên khoa') || lowerContent.includes('nghỉ ngơi')
+            const isEvidence = lowerContent.includes('dẫn chứng') || lowerContent.includes('bằng chứng') || lowerContent.includes('evidence')
+            const isReasoning = lowerContent.includes('lý giải') || lowerContent.includes('differential') || lowerContent.includes('reasoning')
+            const isWatch = lowerContent.includes('dấu hiệu') || lowerContent.includes('cảnh báo') || lowerContent.includes('watch for') || lowerContent.includes('warning')
+            const isRecommendation = lowerContent.includes('xét nghiệm') || lowerContent.includes('khám') || lowerContent.includes('chuyên khoa') || lowerContent.includes('nghỉ ngơi') || lowerContent.includes('recommendation')
 
             const isBulletedLine = trimmed.startsWith('-') || trimmed.startsWith('*') || trimmed.startsWith('•')
 
