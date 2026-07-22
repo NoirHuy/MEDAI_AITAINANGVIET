@@ -21,15 +21,25 @@ function titleFromText(text) {
 
 export function useChat(account) {
   const [conversations, setConversations] = useState([])
-  const [activeId, setActiveId] = useState(null)
+  const [activeId, setActiveId] = useState(() => localStorage.getItem('medai_active_chat_id') || null)
   const [isResponding, setIsResponding] = useState(false)
   const abortRef = useRef(null)
+
+  // Lưu activeId vào localStorage mỗi khi thay đổi
+  const setActiveIdAndPersist = useCallback((id) => {
+    setActiveId(id)
+    if (id) {
+      localStorage.setItem('medai_active_chat_id', id)
+    } else {
+      localStorage.removeItem('medai_active_chat_id')
+    }
+  }, [])
 
   // Load conversations from MongoDB when logged in
   useEffect(() => {
     if (!account) {
       setConversations([])
-      setActiveId(null)
+      setActiveIdAndPersist(null)
       return
     }
 
@@ -43,7 +53,13 @@ export function useChat(account) {
         if (!cancelled && data.conversations) {
           setConversations(data.conversations)
           if (data.conversations.length > 0) {
-            setActiveId(data.conversations[0].id)
+            const savedId = localStorage.getItem('medai_active_chat_id')
+            const exists = data.conversations.some((c) => c.id === savedId)
+            if (savedId && exists) {
+              setActiveIdAndPersist(savedId)
+            } else {
+              setActiveIdAndPersist(data.conversations[0].id)
+            }
           }
         }
       })
@@ -54,7 +70,7 @@ export function useChat(account) {
     return () => {
       cancelled = true
     }
-  }, [account])
+  }, [account, setActiveIdAndPersist])
 
   const activeConversation = useMemo(
     () => conversations.find((c) => c.id === activeId) ?? null,
@@ -64,23 +80,30 @@ export function useChat(account) {
   const startNewConversation = useCallback((specialtyId) => {
     const conv = makeConversation(specialtyId)
     setConversations((prev) => [conv, ...prev])
-    setActiveId(conv.id)
+    setActiveIdAndPersist(conv.id)
     return conv.id
-  }, [])
+  }, [setActiveIdAndPersist])
 
   const selectConversation = useCallback((id) => {
-    setActiveId(id)
-  }, [])
+    setActiveIdAndPersist(id)
+  }, [setActiveIdAndPersist])
 
   const deleteConversation = useCallback((id) => {
-    setConversations((prev) => prev.filter((c) => c.id !== id))
-    setActiveId((current) => (current === id ? null : current))
+    setConversations((prev) => {
+      const remaining = prev.filter((c) => c.id !== id)
+      const currentSaved = localStorage.getItem('medai_active_chat_id')
+      if (currentSaved === id) {
+        const nextActive = remaining.length > 0 ? remaining[0].id : null
+        setActiveIdAndPersist(nextActive)
+      }
+      return remaining
+    })
     if (account) {
       fetch(`/api/chat/conversations/${id}`, { method: 'DELETE' }).catch((err) =>
         console.error('Không thể xóa cuộc trò chuyện:', err),
       )
     }
-  }, [account])
+  }, [account, setActiveIdAndPersist])
 
   const setSpecialty = useCallback((convId, specialtyId) => {
     setConversations((prev) => {
