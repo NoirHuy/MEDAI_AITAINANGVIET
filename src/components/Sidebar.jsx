@@ -1,3 +1,4 @@
+import { useState } from 'react'
 import { MenuIcon, PlusIcon, SearchIcon, TrashIcon, PulseIcon, LogInIcon } from './Icons'
 import AccountMenu from './AccountMenu'
 import './Sidebar.css'
