@@ -304,13 +304,12 @@ export function LockIcon(props) {
   )
 }
 
-export function KeyIcon(props) {
+export function SparklesIcon(props) {
   return (
     <svg {...base} {...props}>
-      <path d="M21 2l-2 2m-2-2l2 2m7 0a9 9 0 1 1-18 0 9 9 0 0 1 18 0z" />
-      <circle cx="7.5" cy="16.5" r="3.5" />
-      <path d="M10 14l10-10" />
-      <path d="M15 9l3 3" />
+      <path d="M12 3l1.9 4.1L18 9l-4.1 1.9L12 15l-1.9-4.1L6 9l4.1-1.9z" />
+      <path d="M5 3l1 2 2 1-2 1-1 2-1-2-2-1 2-1z" />
+      <path d="M19 15l1 2 2 1-2 1-1 2-1-2-2-1 2-1z" />
     </svg>
   )
 }

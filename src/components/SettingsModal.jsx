@@ -1,13 +1,13 @@
 import { useEffect, useState } from 'react'
-import { CloseIcon, UserCircleIcon, GaugeIcon, CreditCardIcon, CheckIcon, HelpCircleIcon, KeyIcon, LockIcon } from './Icons'
+import { CloseIcon, UserCircleIcon, GaugeIcon, CreditCardIcon, CheckIcon, HelpCircleIcon, SparklesIcon, LockIcon } from './Icons'
 import { PLANS, getPlan } from '../data/account'
 import './SettingsModal.css'
 
 const TABS = [
   { id: 'account', label: 'Tài khoản', Icon: UserCircleIcon },
   { id: 'usage', label: 'Mức sử dụng', Icon: GaugeIcon },
-  { id: 'subscription', label: 'Gói thuê bao', Icon: CreditCardIcon },
-  { id: 'payment', label: 'Thanh toán', Icon: KeyIcon },
+  { id: 'subscription', label: 'Gói thuê bao', Icon: SparklesIcon },
+  { id: 'payment', label: 'Thanh toán', Icon: CreditCardIcon },
   { id: 'help', label: 'Trợ giúp & Phản hồi', Icon: HelpCircleIcon },
 ]
 
