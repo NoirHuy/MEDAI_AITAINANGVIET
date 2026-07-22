@@ -14,9 +14,13 @@ function makeConversation(specialtyId = DEFAULT_SPECIALTY_ID) {
 }
 
 function titleFromText(text) {
-  const trimmed = text.trim().replace(/\s+/g, ' ')
-  if (trimmed.length <= 42) return trimmed
-  return `${trimmed.slice(0, 42)}…`
+  const cleaned = text
+    .replace(/\[.*?\]/g, '')
+    .replace(/[*_`]/g, '')
+    .replace(/\s+/g, ' ')
+    .trim()
+  if (cleaned.length <= 32) return cleaned
+  return `${cleaned.slice(0, 32)}…`
 }
 
 export function useChat(account) {
