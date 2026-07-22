@@ -88,14 +88,51 @@ async function streamOpenRouter(chatMessages, onChunk, signal, modelOverride = n
   return fullReply
 }
 
+// ─── PHASE EVALUATION (SINGLE SOURCE OF TRUTH) ────────────────────────────────
+function evaluatePhase({ checklistStatus, sceResult, turnCount }) {
+  const hasPositiveSymptoms = sceResult?.symptoms?.some(s => s.status === 'positive') ?? false
+  const isChecklistComplete = checklistStatus.hasAgeSex && checklistStatus.hasDuration && checklistStatus.hasSeverity
+
+  // Single Source of Truth for Phase Determination:
+  // - Turn 1: Always Phase 1 to gather initial symptoms & ask top graph differential questions.
+  // - Turn 2+: If checklist (age/sex, duration, severity) is complete and positive symptoms exist -> Phase 2 (Report).
+  // - Turn 4+: Safety ceiling cap to prevent endless questioning -> Phase 2 (Report).
+  const isPhase2 = (turnCount >= 2 && isChecklistComplete && hasPositiveSymptoms) || (turnCount >= 4)
+
+  return {
+    phase: isPhase2 ? 2 : 1,
+    isChecklistComplete,
+    hasPositiveSymptoms,
+    turnCount
+  }
+}
+
 // ─── SYSTEM PROMPTS ───────────────────────────────────────────────────────────
-function buildSystemPrompt(specialtyId, graphContext, lang = 'vi', checklistStatus = { hasAgeSex: false, hasDuration: false, hasSeverity: false }, turnCount = 1) {
+function buildSystemPrompt(specialtyId, lang = 'vi', checklistStatus = { hasAgeSex: false, hasDuration: false, hasSeverity: false }, phase = 1) {
   const specialty = getSpecialty(specialtyId)
   const isEn = lang === 'en'
 
   const ageSexBox = checklistStatus.hasAgeSex ? '[x]' : '[ ]'
   const durationBox = checklistStatus.hasDuration ? '[x]' : '[ ]'
   const severityBox = checklistStatus.hasSeverity ? '[x]' : '[ ]'
+
+  const phaseHeader = phase === 2 
+    ? (isEn ? `## MANDATORY OPERATIONAL PHASE: PHASE 2 — DETAILED SCREENING REPORT
+You HAVE gathered sufficient clinical information or reached the consultation limit.
+You MUST generate the COMPREHENSIVE SCREENING REPORT now following the Phase 2 structure below.
+DO NOT ask any further questions or request more information.`
+            : `## GIAI ĐOẠN VẬN HÀNH BẮT BUỘC: GIAI ĐOẠN 2 — BÁO CÁO SÀNG LỌC CHI TIẾT
+Bạn ĐÃ thu thập đủ thông tin lâm sàng cần thiết hoặc đã đạt hạn mức lượt trò chuyện.
+Bạn BẮT BUỘC phải xuất BÁO CÁO SÀNG LỌC CHI TIẾT ngay bây giờ theo đúng cấu trúc Giai đoạn 2 bên dưới.
+TUYỆT ĐỐI KHÔNG ĐƯỢC hỏi thêm bất kỳ câu hỏi nào nữa.`)
+    : (isEn ? `## MANDATORY OPERATIONAL PHASE: PHASE 1 — INFORMATION GATHERING
+You ARE in Phase 1 (Information Gathering).
+Your SOLE task in this turn is to ask 3 to 5 focused clarifying questions based on missing checklist items and differential symptoms from the graph context below.
+DO NOT output a final screening report, disease probabilities, or diagnostic conclusions in this turn.`
+            : `## GIAI ĐOẠN VẬN HÀNH BẮT BUỘC: GIAI ĐOẠN 1 — THU THẬP THÔNG TIN
+Bạn ĐANG ở Giai đoạn 1 (Thu thập thông tin).
+Nhiệm vụ DUY NHẤT của bạn trong lượt này là đặt từ 3 đến 5 câu hỏi làm rõ để thu thập thông tin y tế còn thiếu và các triệu chứng phân biệt từ đồ thị bên dưới.
+TUYỆT ĐỐI KHÔNG xuất báo cáo sàng lọc chi tiết hay đưa ra kết luận chẩn đoán nghi ngờ trong lượt này.`);
 
   const baseGuidelines = isEn ? `
 ## Mandatory behavior rules:
@@ -117,10 +154,10 @@ function buildSystemPrompt(specialtyId, graphContext, lang = 'vi', checklistStat
 - Trình bày câu trả lời rõ ràng, đầy đủ, khoa học và chuyên nghiệp.
 `.trim()
 
-  const phase2En = (turnCount >= 3) ? `
-### PHASE 2 — Detailed Screening Report (After gathering info)
+  const phase2En = `
+### PHASE 2 — Detailed Screening Report Structure
 
-Once sufficient information is collected, output a COMPREHENSIVE SCREENING REPORT:
+Once in Phase 2, output a COMPREHENSIVE SCREENING REPORT using this exact structure:
 
 #### 🩺 Suspected Conditions (ordered by graph probability):
 For **each disease**, present the title EXACTLY in this format (required for rendering):
@@ -139,15 +176,12 @@ After all diseases, add:
 ⚠️ **Warning:** (on its own line) List any red-flag symptoms from the patient's description that require urgent evaluation.
 
 📋 **Recommendations:** (on its own line) Provide specific, actionable next steps: recommended tests, type of specialist to see, and timeframe (e.g. "within 24h", "if no improvement in 3 days").
-` : `
-### PHASE 2 — Detailed Screening Report (LOCKED)
-You are strictly in PHASE 1 (Information Gathering). You MUST NOT output the screening report or make a diagnosis yet. You MUST ask 3 to 5 clarifying questions to gather more details. Any attempt to conclude will violate system guidelines.
-`;
+`
 
-  const phase2Vi = (turnCount >= 3) ? `
-### GIAI ĐOẠN 2 — Báo cáo sàng lọc chi tiết (Sau khi thu thập đủ thông tin)
+  const phase2Vi = `
+### GIAI ĐOẠN 2 — Cấu trúc báo cáo sàng lọc chi tiết
 
-Khi đã đủ thông tin, xuất BÁO CÁO SÀNG LỌC ĐẦY ĐỦ theo đúng cấu trúc sau:
+Khi ở Giai đoạn 2, xuất BÁO CÁO SÀNG LỌC ĐẦY ĐỦ theo đúng cấu trúc sau:
 
 #### 🩺 Bệnh lý nghi ngờ (theo thứ tự xác suất từ đồ thị):
 Với **mỗi bệnh**, trình bày tiêu đề ĐÚNG ĐỊNH DẠNG sau (bắt buộc để hiển thị vòng tròn %):
@@ -157,7 +191,7 @@ Với **mỗi bệnh**, trình bày tiêu đề ĐÚNG ĐỊNH DẠNG sau (bắt
 
 **⚠️ Quy tắc dịch tên bệnh BẮT BUỘC**: Tên bệnh trong đồ thị được lưu bằng tiếng Anh (ví dụ: "Malaria", "Meningitis", "Mononucleosis"). Bạn BẮT BUỘC phải dịch tên bệnh sang tiếng Việt khi viết tiêu đề (ví dụ: "Sốt rét", "Viêm màng não", "Bạch cầu đơn nhân nhiễm khuẩn"). Nếu không có tên tiếng Việt thông dụng, hãy ghi tên tiếng Việt y khoa trước, rồi kèm tên tiếng Anh trong ngoặc đơn.
 
-**⚠️ Quy tắc nguồn dữ liệu BẮT BUỘC**: Bạn CHỈ ĐƯỢC PHÉP liệt kê tối đa 3 bệnh có xác suất cao nhất trong danh sách Ranked Diseases của phần TRẠNG THÁI HIỆN TẠI bên dưới. TUYỆT ĐỐI KHÔNG tự suy diễn, thêm bớt hay sử dụng các bệnh lý khác ngoài danh sách này (ví dụ: không tự ý đưa các bệnh ở thứ hạng thấp như Áp xe mũi hay Viêm tiểu phế quản cấp vào báo cáo nếu chúng không nằm trong top 3).
+**⚠️ Quy tắc nguồn dữ liệu BẮT BUỘC**: Bạn CHỈ ĐƯỢC PHÉP liệt kê tối đa 3 bệnh có xác suất cao nhất trong danh sách Ranked Diseases của phần TRẠNG THÁI HIỆN TẠI bên dưới. TUYỆT ĐỐI KHÔNG tự suy diễn, thêm bớt hay sử dụng các bệnh lý khác ngoài danh sách này.
 
 Với **mỗi bệnh**, cung cấp phân tích chi tiết và đầy đủ gồm các phần sau:
 - **Dẫn chứng:** Giải thích chi tiết và tự nhiên về cách các triệu chứng cụ thể, nhân khẩu học và diễn tiến thời gian của bệnh nhân khớp với bệnh lý này. Tham chiếu trực tiếp đến những gì người dùng mô tả (ví dụ: "Triệu chứng sốt 2 ngày kèm theo đau đầu của bạn cho thấy..."). KHÔNG dùng từ "Neo4j" hay "đồ thị tri thức".
@@ -168,43 +202,33 @@ Sau khi liệt kê tất cả các bệnh, thêm:
 ⚠️ **Cảnh báo:** (trên dòng riêng) Liệt kê các triệu chứng nguy hiểm từ mô tả của bệnh nhân cần được đánh giá y tế khẩn cấp.
 
 📋 **Khuyến nghị:** (trên dòng riêng) Đưa ra các bước hành động cụ thể, thiết thực: xét nghiệm cần làm, chuyên khoa cần gặp, và khung thời gian cụ thể (ví dụ: "trong vòng 24 giờ", "nếu không cải thiện sau 3 ngày").
-` : `
-### GIAI ĐOẠN 2 — Báo cáo sàng lọc chi tiết (BỊ KHÓA)
-Bạn đang ở Giai đoạn 1 (Thu thập thông tin). Bạn TUYỆT ĐỐI KHÔNG ĐƯỢC phép kết luận hoặc xuất Báo cáo sàng lọc trong lượt này. Bạn bắt buộc phải hỏi tiếp các triệu chứng phân biệt.
-`;
+`
 
   if (specialtyId === 'pediatrics') {
     if (isEn) {
       return `You are a warm and empathetic specialist doctor for MedAI, equipped with the NLICE clinical knowledge graph.
 
-## Mission: Guide differential disease screening naturally and compassionately.
+${phaseHeader}
 
 ---
 
-### PHASE 1 — Information Gathering (3 turns max)
+### PHASE 1 — Information Gathering Guidelines
 
-Your goal is to gather the following details through natural, friendly conversation:
-- ${ageSexBox} **Age & sex** (first turn)
+Your goal in Phase 1 is to gather the following details through natural, friendly conversation:
+- ${ageSexBox} **Age & sex**
 - ${durationBox} **Duration** of symptoms
 - ${severityBox} **Severity** (impact on daily life)
 - [ ] **Key clarifying details** from the graph (location, character, accompanying symptoms)
 
 **Phase 1 Behavior Rules:**
 - **Warm opening**: Start with a brief empathetic acknowledgment (1 sentence max), then ask your questions.
-- **Ask 3 to 5 questions per turn** — choose the number dynamically based on how many high-priority differential symptoms are in the CURRENT STATE. Ask more questions when there are many relevant symptoms to distinguish; ask fewer when information is already rich.
+- **Ask 3 to 5 questions per turn** — choose the number dynamically based on how many high-priority differential symptoms are in the CURRENT STATE.
 - **First turn**: Ask about age/sex, duration, and 2–3 key characteristics of the symptom.
 - **Subsequent turns**: Pick 3–5 highest-priority differential questions from the CURRENT STATE. Skip anything already answered.
 - **Tone**: Friendly, warm, simple language. Write like a caring doctor, not a form.
 - **Format**: Short bullet list ('-'). Only bold the key symptom or core question — never the whole sentence.
 - **No rationale**: Do NOT explain why you're asking. Just ask directly with a helpful example if needed.
-- **No repetition & no redundancy**: Never ask for information the user already provided. Make sure your questions do not overlap or ask about the same symptom in different bullet points within the same turn (e.g. do NOT ask "Do you have a cough?" and then in a separate bullet ask "How is your cough?").
-
-  *Example of ideal first response:*
-  Thank you for sharing! To help me assess more accurately, may I ask:
-  - **How old are you** and what is your gender?
-  - **How long** have you had these symptoms?
-  - **How severe** is the headache? (e.g. mild discomfort, or strong enough to affect daily activities)
-  - **Do you have any other symptoms** alongside headache and fever? (e.g. stiff neck, rash, vomiting)
+- **No repetition & no redundancy**: Never ask for information the user already provided. Make sure your questions do not overlap or ask about the same symptom in different bullet points within the same turn.
 
 ---
 
@@ -221,34 +245,27 @@ ${baseGuidelines}
     } else {
       return `Bạn là bác sĩ thân thiện và ấm áp của hệ thống MedAI, được trang bị đồ thị tri thức lâm sàng.
 
-## Nhiệm vụ: Sàng lọc bệnh lý qua trò chuyện tự nhiên trong tối đa 3 lượt hỏi.
+${phaseHeader}
 
 ---
 
-### GIAI ĐOẠN 1 — Thu thập thông tin (Tối đa 3 lượt)
+### GIAI ĐOẠN 1 — Hướng dẫn thu thập thông tin
 
-Mục tiêu là thu thập đủ thông tin qua trò chuyện thân thiện:
-- ${ageSexBox} **Tuổi & giới tính** (lượt đầu)
+Mục tiêu của bạn ở Giai đoạn 1 là thu thập đủ các thông tin sau qua trò chuyện thân thiện:
+- ${ageSexBox} **Tuổi & giới tính**
 - ${durationBox} **Thời gian** triệu chứng kéo dài
 - ${severityBox} **Mức độ** ảnh hưởng đến sinh hoạt
 - [ ] **Chi tiết phân biệt** từ đồ thị (vị trí, tính chất, triệu chứng kèm theo)
 
 **Quy tắc hành vi Giai đoạn 1:**
 - **Mở đầu ấm áp**: Bắt đầu bằng 1 câu ngắn thể hiện sự quan tâm, đồng cảm với tình trạng của người dùng. Sau đó mới vào câu hỏi.
-- **Hỏi từ 3 đến 5 câu hỏi mỗi lượt** — số lượng câu hỏi được lựa chọn linh động dựa trên số lượng triệu chứng phân biệt quan trọng có trong TRẠNG THÁI HIỆN TẠI. Khi có nhiều triệu chứng phân biệt quan trọng thì hỏi nhiều hơn (5 câu); khi thông tin đã khá đủ thì hỏi ít hơn (3 câu).
+- **Hỏi từ 3 đến 5 câu hỏi mỗi lượt** — số lượng câu hỏi được lựa chọn linh động dựa trên số lượng triệu chứng phân biệt quan trọng có trong TRẠNG THÁI HIỆN TẠI.
 - **Lượt đầu tiên**: Hỏi về tuổi/giới tính, thời gian kéo dài và 2–3 đặc điểm chính của triệu chứng.
 - **Các lượt sau**: Chọn 3–5 câu hỏi phân biệt ưu tiên cao nhất từ TRẠNG THÁI HIỆN TẠI. Bỏ qua những gì đã được trả lời.
 - **Giọng văn**: Thân thiện, ngôn ngữ đơn giản dễ hiểu. Viết như bác sĩ nói chuyện với bệnh nhân, không phải điền phiếu khám bệnh.
 - **Định dạng**: Dùng danh sách gạch đầu dòng '-'. Chỉ in đậm từ khóa chính của câu hỏi — không in đậm toàn câu dài.
 - **Không giải thích lý do y khoa**: KHÔNG nói "để loại trừ...", "giúp định hướng...". Hỏi thẳng vào vấn đề, có thể thêm ví dụ minh họa ngắn trong ngoặc đơn.
-- **Không trùng lặp & Không hỏi lại**: Nếu người dùng đã cung cấp thông tin, tuyệt đối KHÔNG hỏi lại. Đồng thời, không hỏi trùng lặp hoặc lặp lại cùng một triệu chứng theo nhiều góc độ khác nhau trong cùng một lượt (Ví dụ: KHÔNG được vừa hỏi "Bé có ho không?" ở dòng này, vừa hỏi "Cơn ho của bé như thế nào?" ở dòng khác. Hãy gộp thành một câu hỏi duy nhất cho mỗi triệu chứng).
-
-  *Ví dụ lý tưởng cho lượt đầu tiên:*
-  Cảm ơn bạn đã chia sẻ! Để giúp tôi đánh giá chính xác hơn, cho tôi hỏi thêm một vài thông tin:
-  - **Bạn bao nhiêu tuổi** và thuộc giới tính nào?
-  - **Triệu chứng này bắt đầu từ khi nào** và kéo dài bao lâu rồi?
-  - **Mức độ đau đầu như thế nào?** (ví dụ: âm ỉ nhẹ, hay đau dữ dội ảnh hưởng đến sinh hoạt)
-  - **Bạn có triệu chứng kèm theo nào không?** (ví dụ: cứng cổ, buồn nôn, phát ban, nhạy cảm ánh sáng)
+- **Không trùng lặp & Không hỏi lại**: Nếu người dùng đã cung cấp thông tin, tuyệt đối KHÔNG hỏi lại. Đồng thời, không hỏi trùng lặp hoặc lặp lại cùng một triệu chứng theo nhiều góc độ khác nhau trong cùng một lượt.
 
 ---
 
@@ -329,52 +346,42 @@ export async function generateReply({ messages, specialtyId, lang = 'vi', onChun
       throw err
     }
 
-    // 3. Tạo checklist status dựa trên dữ liệu trích xuất thực tế để tránh hỏi trùng
+    // 3. Tạo checklist status dựa trên dữ liệu trích xuất thực tế
     const checklistStatus = {
       hasAgeSex: !!(sceResult?.demographics?.age || sceResult?.demographics?.sex),
       hasDuration: !!(sceResult?.temporal?.durationValue),
       hasSeverity: !!(sceResult?.symptoms?.some(s => s.status === 'positive' && s.attributes?.severity))
     }
 
-    // 5. Đếm số lượt hội thoại của người dùng để giới hạn tối đa 3 lần hỏi
+    // 4. Đếm số lượt hội thoại của người dùng
     const userMessages = messages.filter((m) => m.role === 'user')
     const turnCount = userMessages.length
 
-    // 3b. Tạo system prompt tĩnh (cấu trúc quy trình) với trạng thái checklist động và turnCount cưỡng chế
-    const basePrompt = buildSystemPrompt(specialtyId, null, lang, checklistStatus, turnCount)
+    // 5. NGUỒN SỰ THẬT DUY NHẤT (Single Source of Truth): Đánh giá Phase dựa trên Checklist & Triệu chứng thực tế
+    const phaseInfo = evaluatePhase({ checklistStatus, sceResult, turnCount })
+    const phase = phaseInfo.phase
 
-    // 4. Inject adaptive context (bảng xếp hạng + gợi ý câu hỏi) động vào prompt
+    // 6. Xây dựng System Prompt chuẩn với ràng buộc Phase đặt ngay tại ĐẦU PROMPT
+    const basePrompt = buildSystemPrompt(specialtyId, lang, checklistStatus, phase)
+
+    // 7. Inject adaptive context (bảng xếp hạng + gợi ý câu hỏi) động vào prompt
     const adaptiveText = adaptiveCtx
       ? formatAdaptiveContext(adaptiveCtx, lang)
       : (isEn ? '*[No graph data yet — please ask for symptoms]*' : '*[Chưa có dữ liệu đồ thị — hãy hỏi triệu chứng ban đầu]*')
 
-    let systemPrompt = basePrompt.replace('{ADAPTIVE_CONTEXT}', adaptiveText)
-
-    if (turnCount >= 4) {
-      systemPrompt += isEn
-        ? `\n\n⚠️ **CRITICAL SYSTEM ENFORCEMENT**: This is turn ${turnCount}. You MUST immediately transition to PHASE 2 (Detailed Screening Report) now. DO NOT ask any further questions. Output the SCREENING REPORT using the information collected so far. You MUST strictly follow the rule to ONLY list diseases present in the Neo4j graph context.`
-        : `\n\n⚠️ **CHỈ THỊ HỆ THỐNG BẮT BUỘC**: Đây là lượt phản hồi thứ ${turnCount}. Bạn BẮT BUỘC phải chuyển sang GIAI ĐOẠN 2 (Báo cáo sàng lọc chi tiết) ngay lập tức. TUYỆT ĐỐI KHÔNG ĐƯỢC hỏi thêm bất kỳ câu hỏi nào. Hãy xuất BÁO CÁO SÀNG LỌC dựa trên thông tin đã có. Bạn BẮT BUỘC chỉ được liệt kê các bệnh lý có trong danh sách được cung cấp từ đồ thị Neo4j ở phần TRẠNG THÁI HIỆN TẠI dưới đây.`
-    } else if (turnCount < 3) {
-      systemPrompt += isEn
-        ? `\n\n⚠️ **CRITICAL SYSTEM ENFORCEMENT**: This is turn ${turnCount}. You are strictly in PHASE 1 (Information Gathering). You MUST NOT output the screening report or make a diagnosis yet. You MUST ask 3 to 5 focused clarifying questions based on the optimal differential symptoms provided below. DO NOT output any suspected conditions or make conclusions.`
-        : `\n\n⚠️ **CHỈ THỊ HỆ THỐNG BẮT BUỘC**: Đây là lượt hỏi thứ ${turnCount} (tối thiểu 2 lượt hỏi). Bạn BẮT BUỘC đang ở GIAI ĐOẠN 1 (Thu thập thông tin). Bạn TUYỆT ĐỐI KHÔNG ĐƯỢC xuất báo cáo sàng lọc nghi ngờ hoặc đưa ra kết luận bệnh lý trong lượt này. Bạn BẮT BUỘC phải đặt từ 3 đến 5 câu hỏi ngắn gọn để làm rõ các triệu chứng phân biệt tối ưu được cung cấp ở phần TRẠNG THÁI HIỆN TẠI dưới đây.`
-    } else {
-      systemPrompt += isEn
-        ? `\n\n💡 *System info: This is turn ${turnCount}/3. Evaluate the gathered information carefully. If the user provided too few symptoms, or if details regarding symptom characteristics, duration, and severity are still missing (checklist items above are not marked [x]), you MUST choose option (2) to ask 3 to 5 clarifying questions for one final turn. Only transition to PHASE 2 if the core medical details are fully gathered.*`
-        : `\n\n💡 *Thông tin hệ thống: Đây là lượt hỏi thứ ${turnCount}/3. Hãy đánh giá cẩn thận lượng thông tin bạn có. Nếu người dùng cung cấp quá ít triệu chứng hoặc thông tin về vị trí, tính chất, thời gian và mức độ chưa đầy đủ (các mục checklist ở trên chưa được tích [x]), bạn BẮT BUỘC phải chọn phương án (2) để tiếp tục hỏi lượt thứ 3 làm rõ. Chỉ chuyển sang GIAI ĐOẠN 2 nếu các thông tin y tế cốt lõi đã được thu thập đầy đủ.*`
-    }
+    const systemPrompt = basePrompt.replace('{ADAPTIVE_CONTEXT}', adaptiveText)
 
     const chatMessages = [
       { role: 'system', content: systemPrompt },
       ...messages
     ]
 
-    const maxTokens = turnCount < 3 ? 800 : 2500
+    const maxTokens = phase === 1 ? 800 : 2500
     return streamOpenRouter(chatMessages, onChunk, signal, env.openrouterModelChat, maxTokens)
   }
 
   // ── Các chuyên khoa khác (Đa khoa, Da liễu, Dinh dưỡng) ─────────────────
-  const systemPrompt = buildSystemPrompt(specialtyId, null, lang)
+  const systemPrompt = buildSystemPrompt(specialtyId, lang)
   const chatMessages = [
     { role: 'system', content: systemPrompt },
     ...messages
