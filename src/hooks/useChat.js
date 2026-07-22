@@ -25,21 +25,18 @@ export function useChat(account) {
   const [isResponding, setIsResponding] = useState(false)
   const abortRef = useRef(null)
 
-  // Lưu activeId vào localStorage mỗi khi thay đổi
+  // Lưu activeId vào state & localStorage (chỉ khi có id hợp lệ)
   const setActiveIdAndPersist = useCallback((id) => {
     setActiveId(id)
     if (id) {
       localStorage.setItem('medai_active_chat_id', id)
-    } else {
-      localStorage.removeItem('medai_active_chat_id')
     }
   }, [])
 
-  // Load conversations from MongoDB when logged in
+  // Load conversations từ MongoDB khi tài khoản đã xác thực
   useEffect(() => {
     if (!account) {
       setConversations([])
-      setActiveIdAndPersist(null)
       return
     }
 
@@ -56,7 +53,7 @@ export function useChat(account) {
             const savedId = localStorage.getItem('medai_active_chat_id')
             const exists = data.conversations.some((c) => c.id === savedId)
             if (savedId && exists) {
-              setActiveIdAndPersist(savedId)
+              setActiveId(savedId)
             } else {
               setActiveIdAndPersist(data.conversations[0].id)
             }
