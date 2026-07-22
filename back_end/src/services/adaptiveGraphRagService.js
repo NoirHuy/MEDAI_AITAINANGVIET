@@ -605,6 +605,7 @@ export async function computeAdaptiveContext(sceResult, excludedSymptoms = new S
              collect(DISTINCT {age: a.name, prob: ra.probability}) AS ages,
              collect(DISTINCT {sex: g.name, prob: rg.probability}) AS sexes
         RETURN d.name AS disease, d.description AS description, d.remarks AS remarks,
+               d.base_rate_boost AS baseRateBoost, d.prevalence_per_100k AS prevalencePer100k,
                matched_count, base_score, max_possible_score, matched_details, ages, sexes
       `, { symptoms: symptomsArr, symptomWeights: symptomWeights })
 
@@ -623,6 +624,39 @@ export async function computeAdaptiveContext(sceResult, excludedSymptoms = new S
         })
       }
 
+      // Tính hệ số Tỷ lệ mắc thực tế lâm sàng (Clinical Base-Rate / Prevalence Boost)
+      function getPrevalenceBoost(diseaseName, nodeBoost) {
+        if (nodeBoost !== null && nodeBoost !== undefined) {
+          return parseFloat(nodeBoost)
+        }
+        const nameL = diseaseName.toLowerCase()
+        const isCommonPrimaryCare = 
+          nameL.includes('pharyngitis') ||
+          nameL.includes('tonsillitis') ||
+          nameL.includes('influenza') ||
+          nameL.includes('common cold') ||
+          nameL.includes('bronchitis') ||
+          nameL.includes('rhinitis') ||
+          nameL.includes('gastroenteritis') ||
+          nameL.includes('dengue') ||
+          nameL.includes('gastritis') ||
+          nameL.includes('tension headache') ||
+          nameL.includes('migraine') ||
+          nameL.includes('upper respiratory')
+
+        if (isCommonPrimaryCare) return 1.5
+
+        const isRareOrSpecific = 
+          nameL.includes('mononucleosis') ||
+          nameL.includes('abscess') ||
+          nameL.includes('hypertrophy') ||
+          nameL.includes('lymphoma')
+          
+        if (isRareOrSpecific) return 0.65
+
+        return 1.0
+      }
+
       // Tính hệ số thời gian (temporalMultiplier) từ onset
       const onset = sceResult?.temporal?.onset || null
       function computeTemporalMultiplier(diseaseName, onset) {
@@ -633,9 +667,13 @@ export async function computeAdaptiveContext(sceResult, excludedSymptoms = new S
           nameL.includes('chronic') ||
           nameL.includes('persistent') ||
           nameL.includes('recurrent') ||
-          nameL.includes('long-term')
+          nameL.includes('long-term') ||
+          nameL.includes('mononucleosis')
         const isAcuteByName =
           nameL.includes('acute') ||
+          nameL.includes('pharyngitis') ||
+          nameL.includes('tonsillitis') ||
+          nameL.includes('influenza') ||
           nameL.includes('appendicitis') ||
           nameL.includes('stroke') ||
           nameL.includes('infarct') ||
@@ -645,7 +683,7 @@ export async function computeAdaptiveContext(sceResult, excludedSymptoms = new S
 
         if (onset === 'acute') {
           if (isChronicByName) return 0.6   // Giảm điểm bệnh mạn khi onset cấp
-          if (isAcuteByName)  return 1.2   // Tăng điểm bệnh cấp khi onset cấp
+          if (isAcuteByName)  return 1.25  // Tăng điểm bệnh cấp khi onset cấp
         } else if (onset === 'chronic') {
           if (isAcuteByName)  return 0.6   // Giảm điểm bệnh cấp khi onset mạn
           if (isChronicByName) return 1.2  // Tăng điểm bệnh mạn khi onset mạn
@@ -658,6 +696,7 @@ export async function computeAdaptiveContext(sceResult, excludedSymptoms = new S
         const baseScore = r.get('base_score')
         const maxPossibleScore = r.get('max_possible_score') || 100
         const penalty = (penaltyMap[name] || 0) * env.penaltyMultiplier
+        const nodeBoost = r.get('baseRateBoost')
 
         // Điều chỉnh dịch tễ học (tuổi & giới tính)
         let demographicMultiplier = 1.0
@@ -677,16 +716,23 @@ export async function computeAdaptiveContext(sceResult, excludedSymptoms = new S
         // Điều chỉnh thời gian khởi phát (temporalMultiplier)
         const temporalMultiplier = computeTemporalMultiplier(name, onset)
 
+        // Tỷ lệ mắc phổ biến trong lâm sàng (prevalenceBoost)
+        const prevalenceBoost = getPrevalenceBoost(name, nodeBoost)
+
         // Áp dụng căn bậc bốn để giảm bớt sự thống trị quá đà của hệ số dịch tễ học (Odds Ratios)
         const dampenedDemoMult = Math.pow(demographicMultiplier, 0.25)
 
         // Tính tỷ lệ bao phủ triệu chứng của bệnh (Symptom Coverage Ratio)
-        // Phạt nặng các bệnh không giải thích được toàn bộ triệu chứng đang có của bệnh nhân
         const matchedCount = r.get('matched_count').toNumber()
         const coverageRatio = matchedCount / symptomsArr.length
 
-        const score = Math.max(0, (baseScore * dampenedDemoMult * temporalMultiplier) * Math.pow(coverageRatio, 1.5) - penalty)
-        const matchRatio = score / maxPossibleScore
+        // Điểm số tổng hợp được chuẩn hóa lâm sàng
+        const rawScore = (baseScore * dampenedDemoMult * temporalMultiplier * prevalenceBoost) * Math.pow(coverageRatio, 1.2) - penalty
+        const score = Math.max(0, rawScore)
+
+        // Tỷ lệ chuẩn hóa tránh thiên vị các node bệnh có quá nhiều triệu chứng phụ trong Neo4j
+        const effectiveMaxScore = Math.min(maxPossibleScore, baseScore * 1.8)
+        const matchRatio = score / (effectiveMaxScore || 1)
         const pct = Math.min(95, Math.max(5, Math.round(matchRatio * 100)))
 
         return {
