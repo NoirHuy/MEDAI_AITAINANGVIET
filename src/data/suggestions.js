@@ -1,5 +1,7 @@
 export const SUGGESTIONS = [
   {
+    id: 'suggestion_1',
+    isDemo: true, // Thẻ Demo đặc biệt: Ép xuất Báo cáo Kết luận Phase 2 ngay lượt 1
     title: {
       vi: 'Xem ngay Báo cáo Sàng lọc Kết luận (Demo mẫu)',
       en: 'View Instant Screening Report (Demo)'
@@ -14,6 +16,8 @@ export const SUGGESTIONS = [
     },
   },
   {
+    id: 'suggestion_2',
+    isDemo: false, // Thẻ Quy trình: Đi qua luồng hỏi đáp từng bước bình thường
     title: {
       vi: 'Trải nghiệm quy trình AI hỏi bệnh thông minh',
       en: 'Experience Intelligent AI Symptom Interview'

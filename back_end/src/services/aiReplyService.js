@@ -89,21 +89,16 @@ async function streamOpenRouter(chatMessages, onChunk, signal, modelOverride = n
 }
 
 // ─── PHASE EVALUATION (SINGLE SOURCE OF TRUTH) ────────────────────────────────
-function evaluatePhase({ checklistStatus, sceResult, turnCount, messages }) {
+function evaluatePhase({ checklistStatus, sceResult, turnCount, isSuggestionDemo = false }) {
   const hasPositiveSymptoms = sceResult?.symptoms?.some(s => s.status === 'positive') ?? false
   const isChecklistComplete = checklistStatus.hasAgeSex && checklistStatus.hasDuration && checklistStatus.hasSeverity
 
-  // Kiểm tra xem người dùng có chọn Thẻ Suggestion 1 (Demo mẫu kết luận) không
-  const firstUserMsg = messages?.find(m => m.role === 'user')?.content ?? ''
-  const isSuggestion1Prompt = firstUserMsg.includes('Tôi là nam 25 tuổi, bị sốt 38.5 độ kèm đau rát họng') ||
-                              firstUserMsg.includes('I am a 25-year-old male with a 38.5°C fever')
-
   // Single Source of Truth for Phase Determination:
-  // - Suggestion 1: Force Phase 2 immediately in Turn 1 to demo conclusion report layout.
-  // - Suggestion 2 & Normal flow: Turn 1 stays in Phase 1 to ask clarifying questions.
+  // - ONLY if isSuggestionDemo is explicitly true (user clicked Suggestion 1 chip) -> Phase 2 (Instant Report).
+  // - For manually typed inputs or Suggestion 2 -> Turn 1 stays in Phase 1 to ask clarifying questions.
   // - Turn 2+: If checklist (age/sex, duration, severity) is complete and positive symptoms exist -> Phase 2 (Report).
   // - Turn 4+: Safety ceiling cap -> Phase 2 (Report).
-  const isPhase2 = isSuggestion1Prompt || (turnCount >= 2 && isChecklistComplete && hasPositiveSymptoms) || (turnCount >= 4)
+  const isPhase2 = !!isSuggestionDemo || (turnCount >= 2 && isChecklistComplete && hasPositiveSymptoms) || (turnCount >= 4)
 
   return {
     phase: isPhase2 ? 2 : 1,
@@ -353,7 +348,7 @@ function buildMockReply(userText, specialtyId, lang = 'vi') {
 }
 
 // ─── ENTRYPOINT CHÍNH ─────────────────────────────────────────────────────────
-export async function generateReply({ messages, specialtyId, lang = 'vi', onChunk, signal }) {
+export async function generateReply({ messages, specialtyId, lang = 'vi', isSuggestionDemo = false, onChunk, signal }) {
 
   const isEn = lang === 'en'
 
@@ -391,7 +386,7 @@ export async function generateReply({ messages, specialtyId, lang = 'vi', onChun
     const turnCount = userMessages.length
 
     // 5. NGUỒN SỰ THẬT DUY NHẤT (Single Source of Truth): Đánh giá Phase dựa trên Checklist & Triệu chứng thực tế
-    const phaseInfo = evaluatePhase({ checklistStatus, sceResult, turnCount, messages })
+    const phaseInfo = evaluatePhase({ checklistStatus, sceResult, turnCount, isSuggestionDemo })
     const phase = phaseInfo.phase
 
     // 6. Xây dựng System Prompt chuẩn với ràng buộc Phase đặt ngay tại ĐẦU PROMPT

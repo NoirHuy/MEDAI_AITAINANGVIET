@@ -22,7 +22,7 @@ export default function WelcomeScreen({ onPick, lang = 'vi' }) {
           const detail = typeof s.detail === 'object' ? (s.detail[lang] || s.detail.vi) : s.detail
           const prompt = typeof s.prompt === 'object' ? (s.prompt[lang] || s.prompt.vi) : s.prompt
           return (
-            <button key={title} className="suggestion-chip" onClick={() => onPick(prompt)}>
+            <button key={title} className="suggestion-chip" onClick={() => onPick(prompt, s.isDemo)}>
               <span className="suggestion-chip__title">{title}</span>
               <span className="suggestion-chip__detail">{detail}</span>
             </button>

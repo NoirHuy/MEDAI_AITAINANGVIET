@@ -17,8 +17,8 @@ router.post(
   '/',
   attachUserIfPresent,
   asyncHandler(async (req, res) => {
-    const { messages, specialtyId, lang } = req.body ?? {}
-    console.log(`[API CHAT] Incoming request specialtyId: "${specialtyId}", lang: "${lang}", messages count: ${messages?.length}`)
+    const { messages, specialtyId, lang, isSuggestionDemo } = req.body ?? {}
+    console.log(`[API CHAT] Incoming request specialtyId: "${specialtyId}", lang: "${lang}", isSuggestionDemo: ${!!isSuggestionDemo}, messages count: ${messages?.length}`)
     if (messages && messages.length > 0) {
       console.log(`[API CHAT] Last message:`, messages[messages.length - 1])
     }
@@ -30,20 +30,16 @@ router.post(
     }
 
     const controller = new AbortController()
-    // res (not req) 'close' fires when the underlying connection is
-    // terminated. req 'close' fires as soon as the request body has been
-    // fully read, which happens almost immediately for a small POST body —
-    // using that would abort generation right after it starts.
     res.on('close', () => {
       if (!res.writableEnded) controller.abort()
     })
 
     req.socket.setKeepAlive(true)
-    req.socket.setTimeout(0) // Tắt thời gian chờ socket để tránh bị ngắt kết nối giữa chừng khi streaming
+    req.socket.setTimeout(0)
 
     res.setHeader('Content-Type', 'text/plain; charset=utf-8')
     res.setHeader('Cache-Control', 'no-cache, no-transform')
-    res.setHeader('X-Accel-Buffering', 'no') // Ép Nginx/Hugging Face Proxy không buffer stream
+    res.setHeader('X-Accel-Buffering', 'no')
     res.setHeader('Connection', 'keep-alive')
 
     let full = ''
@@ -53,6 +49,7 @@ router.post(
         messages,
         specialtyId,
         lang: lang || 'vi',
+        isSuggestionDemo: !!isSuggestionDemo,
         signal: controller.signal,
         onChunk: (chunk) => res.write(chunk),
       })

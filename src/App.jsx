@@ -78,11 +78,11 @@ function App() {
     }
   }
 
-  function handleSend(text) {
+  function handleSend(text, isDemo = false) {
     const toSend = (text ?? '').trim() ? text : inputValue
     if (!toSend.trim() || chat.isResponding) return
     setInputValue('')
-    chat.sendMessage(toSend, specialtyId, lang)
+    chat.sendMessage(toSend, specialtyId, lang, isDemo)
   }
 
   function handleNewChat() {
