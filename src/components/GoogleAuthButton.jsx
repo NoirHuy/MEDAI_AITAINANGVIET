@@ -1,5 +1,5 @@
 import { useEffect, useRef } from 'react'
-import { GOOGLE_CLIENT_ID } from '../utils/googleAuthConfig'
+import { getGoogleClientId } from '../utils/googleAuthConfig'
 
 const SCRIPT_ID = 'google-identity-services'
 
@@ -22,21 +22,19 @@ function loadGsiScript(onReady) {
   document.head.appendChild(script)
 }
 
-// Renders Google's own "Sign in with Google" button via Google Identity
-// Services. On success it hands the caller a signed ID token (JWT) — the
-// backend verifies that token server-side (see
-// back_end/src/services/googleAuthService.js) rather than trusting
-// anything from the client.
 export default function GoogleAuthButton({ onCredential }) {
   const containerRef = useRef(null)
 
   useEffect(() => {
     let cancelled = false
+    const clientId = getGoogleClientId()
+
+    if (!clientId) return
 
     loadGsiScript(() => {
       if (cancelled || !containerRef.current || !window.google?.accounts?.id) return
       window.google.accounts.id.initialize({
-        client_id: GOOGLE_CLIENT_ID,
+        client_id: clientId,
         callback: (response) => onCredential(response.credential),
       })
       window.google.accounts.id.renderButton(containerRef.current, {

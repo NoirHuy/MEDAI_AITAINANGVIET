@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import {
   CloseIcon,
   GoogleIcon,
@@ -8,7 +8,7 @@ import {
   UserCircleIcon,
 } from './Icons'
 import GoogleAuthButton from './GoogleAuthButton'
-import { isGoogleAuthConfigured } from '../utils/googleAuthConfig'
+import { isGoogleAuthConfigured, setDynamicGoogleClientId, getGoogleClientId } from '../utils/googleAuthConfig'
 import { MOCK_GOOGLE_ACCOUNT } from '../data/account'
 import './SettingsModal.css'
 import './AccountMenu.css'
@@ -29,6 +29,21 @@ export default function AuthModal({
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState(null)
   const [showPassword, setShowPassword] = useState(false)
+  const [, setForceUpdate] = useState(0)
+
+  useEffect(() => {
+    if (!isGoogleAuthConfigured()) {
+      fetch('/api/auth/config')
+        .then((res) => (res.ok ? res.json() : null))
+        .then((data) => {
+          if (data?.googleClientId) {
+            setDynamicGoogleClientId(data.googleClientId)
+            setForceUpdate((n) => n + 1)
+          }
+        })
+        .catch(() => {})
+    }
+  }, [])
 
   const [name, setName] = useState('')
   const [email, setEmail] = useState('')
@@ -194,11 +209,19 @@ export default function AuthModal({
                 className="google-btn"
                 onClick={() => {
                   setError(null)
-                  setGooglePicker(true)
+                  if (isGoogleAuthConfigured() && window.google?.accounts?.id) {
+                    window.google.accounts.id.initialize({
+                      client_id: getGoogleClientId(),
+                      callback: (res) => handleGoogleCredential(res.credential),
+                    })
+                    window.google.accounts.id.prompt()
+                  } else {
+                    setGooglePicker(true)
+                  }
                 }}
               >
                 <GoogleIcon />
-                <span>Tiếp tục với Google (demo)</span>
+                <span>Tiếp tục với Google</span>
               </button>
             )}
 

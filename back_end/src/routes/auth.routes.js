@@ -28,6 +28,15 @@ function setSessionCookie(res, userId) {
   res.cookie(AUTH_COOKIE_NAME, signSessionToken(userId), COOKIE_OPTIONS)
 }
 
+router.get(
+  '/config',
+  asyncHandler(async (_req, res) => {
+    res.json({
+      googleClientId: env.googleClientId || null,
+    })
+  }),
+)
+
 router.post(
   '/signup',
   asyncHandler(async (req, res) => {
