@@ -163,9 +163,10 @@ router.post(
     }
 
     const conversation = await ConversationModel.findOneAndUpdate(
-      { id, userId },
+      { id },
       {
         $set: {
+          userId,
           title,
           specialtyId,
           messages,
