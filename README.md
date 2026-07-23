@@ -88,6 +88,9 @@ Khi người dùng phủ nhận triệu chứng (ví dụ: *"tôi không bị ho
 * **Stripe SDK (`stripe.paymentIntents` & `stripe.paymentMethods`)**: Xử lý xác thực thẻ và trừ tiền trực tiếp trên hạ tầng đạt chuẩn PCI-DSS cấp độ 1 của Stripe.
 * **PayOS VietQR**: Hỗ trợ tạo mã VietQR chuyển khoản ngân hàng tự động.
 
+![Bảng điều khiển giao dịch thanh toán Stripe Dashboard của MedAI](./docs/images/stripe_dashboard.png)
+*Hình 1: Bảng điều khiển giao dịch thanh toán trực tuyến thực tế trên Stripe Dashboard của MedAI.*
+
 ---
 
 ## 🚀 Hướng Dẫn Khởi Chạy Bằng Docker (Docker Deployment)
