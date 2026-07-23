@@ -1,113 +1,126 @@
 ---
-title: MedChat AI
+title: MedAI - Knowledge Graph-Grounded Clinical Differential Diagnosis System
 emoji: 🩺
 colorFrom: blue
 colorTo: indigo
 sdk: docker
 app_port: 7860
 tags:
-  - health
-  - medical
+  - medical-ai
+  - clinical-nlp
   - knowledge-graph
   - neo4j
-  - bayesian
+  - bayesian-inference
   - differential-diagnosis
-  - vietnamese
+  - umls-cui
+  - stripe-sdk
 license: mit
-short_description: Hệ thống trợ lý chẩn đoán phân biệt tích hợp Knowledge Graph & Cổng thanh toán Stripe
+short_description: Hệ thống Trợ lý Chẩn đoán Phân biệt Lâm sàng Tích hợp Đồ thị Tri thức & AI Gateway
 ---
 
-# 🩺 MedAI — Hệ Thống Trợ Lý Tư Vấn Y Tế & Chẩn Đoán Phân Biệt AI
-
-**MedAI** là hệ thống trợ lý tư vấn y tế và chẩn đoán phân biệt chuyên nghiệp thế hệ mới. Khác biệt hoàn toàn với các chatbot y tế thông thường dễ bị ảo tưởng (hallucination) dữ liệu, MedAI kết hợp **Đồ thị tri thức y khoa lâm sàng (Knowledge Graph - SymCAT/Synthea)**, **Mạng xác suất Bayesian**, **Chuẩn hóa thực thể y tế quốc tế NIH UMLS API** và **Cổng AI Gateway 9Router / OpenRouter** để đưa ra các tư vấn sàng lọc bệnh lý có dẫn chứng y học chứng cứ, cá nhân hóa theo dịch tễ học và an toàn cho người dùng.
+# 🩺 MedAI: Clinical Knowledge Graph-Grounded Differential Diagnosis System
+### *Hệ Thống Trợ Lý Chẩn Đoán Phân Biệt Lâm Sàng Tích Hợp Đồ Thị Tri Thức Y Khoa, Mạng Bayesian & Cổng Thanh Toán Stripe*
 
 ---
 
-## 🔗 Liên Kết Hệ Thống (System Direct Links)
+## 📌 Tổng Quan Dự Án & Đặt Vấn Đề (Executive Summary)
 
-Bảng tổng hợp tất cả các liên kết truy cập chính thức của hệ thống MedAI ở cả hai môi trường **Trực tuyến (Production Server)** và **Máy cá nhân (Local Dev)**:
+Trong lĩnh vực y tế số, các mô hình ngôn ngữ lớn (LLM) thông thường dễ gặp phải hiện tượng **ảo tưởng dữ liệu (Hallucination)** và thiếu tính căn cứ y học chứng cứ (Evidence-Based Medicine). **MedAI** được nghiên cứu và phát triển nhằm giải quyết triệt để thách thức này bằng cách kết hợp **Đồ thị tri thức y khoa lâm sàng (Clinical Knowledge Graph - SymCAT/Synthea)**, **Thuật toán suy luận xác suất Bayesian**, **Hệ thống chuẩn hóa thực thể y tế NIH UMLS CUI** và **Cổng điều phối đa mô hình AI (9Router AI Gateway)**.
 
-| Dịch Vụ / Trang Chức Năng | Đường Dẫn Trực Tuyến (Production VPS) | Đường Dẫn Máy Cá Nhân (Local Dev) | Mật Khẩu & Ghi Chú Đăng Nhập |
+Hệ thống cung cấp giải pháp sàng lọc chẩn đoán phân biệt (Differential Diagnosis) chính xác, cá nhân hóa theo xác suất dịch tễ học thực tế, hỗ trợ đa ngôn ngữ (Việt - Anh) và tích hợp hạ tầng thanh toán thương mại điện tử quốc tế chuẩn PCI-DSS (Stripe SDK & PayOS).
+
+---
+
+## 🔗 Bản Đồ Liên Kết & Thông Tin Truy Cập Hệ Thống (Deployment Topology & Credentials)
+
+Bảng tổng hợp toàn bộ các phân hệ dịch vụ, điểm cuối API và thông tin xác thực quản trị của hệ thống MedAI trên môi trường **Máy chủ VPS Trực tuyến (Production)** và **Môi trường Phát triển (Local Dev)**:
+
+| Phân Hệ Dịch Vụ / Chức Năng | Máy Chủ Trực Tuyến (VPS Production) | Môi Trường Local (Local Dev) | Thông Tin Xác Thực / Ghi Chú Kỹ Thuật |
 |---|---|---|---|
-| 🌐 **Ứng Dụng Web Chat (Khách Hàng)** | [https://103.166.183.89.nip.io](https://103.166.183.89.nip.io)<br>*(hoặc [Cổng 8080](http://103.166.183.89.nip.io:8080))* | [http://localhost:8080](http://localhost:8080) | Giao diện tư vấn y tế AI cho người dùng cuối |
-| 📊 **Trang Quản Trị Hệ Thống (Admin)** | [https://103.166.183.89.nip.io/admin](https://103.166.183.89.nip.io/admin) | [http://localhost:8080/admin](http://localhost:8080/admin) | Dashboard theo dõi người dùng, doanh thu & System Logs |
-| 🔀 **Bảng Điều Khiển 9Router AI Gateway** | [http://103.166.183.89:20128](http://103.166.183.89:20128) | [http://localhost:20128](http://localhost:20128) | Quản lý API Key & Mô hình LLM<br>🔑 Mật khẩu Dashboard: `113113` |
-| ⚡ **Máy Chủ API Backend (REST Service)** | [http://103.166.183.89:4000](http://103.166.183.89:4000) | [http://localhost:4000](http://localhost:4000) | Cổng xử lý logic, CSDL MongoDB & Stripe Payment |
-| 🌐 **Đồ Thị Tri Thức Neo4j Cloud** | [Neo4j Workspace Cloud](https://workspace.neo4j.io/) | `neo4j+s://01ebae5f.databases.neo4j.io` | CSDL Đồ thị tri thức lâm sàng SymCAT<br>👤 User: `neo4j`<br>🔑 Password: `1owqwBTQblzpNLGHg1VQFvF4dEH3yxn36lxro7C7ll8` |
+| 🌐 **Cổng Giao Diện Web Chat (Client UI)** | [https://103.166.183.89.nip.io](https://103.166.183.89.nip.io)<br>*(HTTP Port 8080: `http://103.166.183.89.nip.io:8080`)* | [http://localhost:8080](http://localhost:8080) | Giao diện React 19 SPA, hỗ trợ đa ngôn ngữ (VI/EN) & Responsive Glassmorphism |
+| 📊 **Trang Quản Trị Hệ Thống (Admin Dashboard)** | [https://103.166.183.89.nip.io/admin](https://103.166.183.89.nip.io/admin) | [http://localhost:8080/admin](http://localhost:8080/admin) | Giám sát vận hành, doanh thu, thống kê token AI & System Logs thời gian thực |
+| 🔀 **Bảng Điều Khiển 9Router AI Gateway** | [http://103.166.183.89:20128](http://103.166.183.89:20128) | [http://localhost:20128](http://localhost:20128) | Quản lý Load Balancing & Failover giữa các LLM<br>🔑 **Password**: `113113` |
+| ⚡ **Máy Chủ API Backend (RESTful Service)** | [http://103.166.183.89:4000](http://103.166.183.89:4000) | [http://localhost:4000](http://localhost:4000) | Node.js Express, JWT Auth, CSDL MongoDB & Cổng Stripe Payment API |
+| 🌐 **Cơ Sở Dữ Liệu Đồ Thị Neo4j Cloud** | [Neo4j Workspace Cloud](https://workspace.neo4j.io/) | `neo4j+s://01ebae5f.databases.neo4j.io` | Lưu trữ Đồ thị tri thức SymCAT (474 triệu chứng, 801 bệnh lý)<br>👤 **User**: `neo4j`<br>🔑 **Password**: `1owqwBTQblzpNLGHg1VQFvF4dEH3yxn36lxro7C7ll8` |
 
 ---
 
-## 🌟 Hướng Dẫn Sử Dụng Chi Tiết Cho Khách Hàng (User Guide)
+## 🏛️ Đổi Mới Công Nghệ & Kiến Trúc Cốt Lõi (Key Architectural Innovations)
 
-### 1. 🩺 Tư Vấn Sức Khỏe & Sàng Lọc Triệu Chứng AI
-1. Truy cập vào **[Ứng Dụng Web MedAI](https://103.166.183.89.nip.io)**.
-2. **Chọn Chuyên Khoa Y Tế**: Chọn chuyên khoa phù hợp ở thanh menu (Nhi khoa, Tim mạch, Nội khoa, Tiêu hóa, Thần kinh...).
-3. **Mô Tả Triệu Chứng Tự Nhiên**: Nhập biểu hiện sức khỏe bằng ngôn ngữ bình dân (ví dụ: *"khát nước liên tục, sốt nhẹ về chiều, mệt mỏi"*).
-4. **Trả Lời Câu Hỏi Phân Biệt AI**: Hệ thống tự động truy vấn Đồ thị tri thức Neo4j và đưa ra từ **3 - 5 câu hỏi sàng lọc phân biệt** tập trung nhất để khoanh vùng bệnh.
-5. **Nhận Kết Quả Báo Cáo Chẩn Đoán**: MedAI tổng hợp bảng phân tích tỷ lệ % xác suất nghi ngờ bệnh lý, đưa ra khuyến cáo chuyên khoa và các bước xử trí y tế an toàn.
+```
+[Khách hàng nhập mô tả tự nhiên] 
+       │
+       ▼
+[NLM NIH UMLS CUI API] ──► (Ánh xạ Thực thể Y tế) ──► [Neo4j SymCAT Knowledge Graph]
+                                                                  │
+[Phản hồi & Câu hỏi Entropy] ◄── [Bayesian Point Penalty Engine] ◄┘
+       │
+       ▼
+[Stripe Gateway / 9Router LLM] ──► [Admin Operations Analytics & Safety Audit Logs]
+```
+
+### 1. 🧬 Đồ Thị Tri Thức Y Khoa Lâm Sàng (Clinical Knowledge Graph - SymCAT)
+Hệ thống vận hành trên CSDL đồ thị **Neo4j AuraDB** được cấu trúc hóa từ dữ liệu dịch tễ lâm sàng SymCAT & Synthea:
+* **474 Nút Triệu chứng (Symptom Nodes)**: Định danh các biểu hiện lâm sàng tiêu chuẩn.
+* **801 Nút Bệnh lý (Disease Nodes)**: Danh mục các bệnh lý chuyên khoa và đa khoa.
+* **>20.000 Quan hệ liên kết (`HAS_SYMPTOM`)**: Lưu trữ giá trị **xác suất dịch tễ $P(\text{Triệu chứng} \mid \text{Bệnh lý})$** thu thập từ bệnh án thực tế.
+* **Thuộc tính nhân khẩu học (`AFFECTS_AGE`, `AFFECTS_SEX`)**: Trọng số phân bố theo độ tuổi và giới tính.
+
+### 2. 🔤 Ánh Xạ Thực Thể Đa Tầng (Multi-stage Medical Entity Extraction)
+Chuyển đổi các mô tả triệu chứng bằng tiếng Việt tự nhiên sang các mã CUI (Concept Unique Identifier) chuẩn hóa của Thư viện Y học Quốc gia Hoa Kỳ (NIH UMLS API):
+$$\text{Mô tả tự nhiên (Tiếng Việt)} \xrightarrow{\text{LLM Extraction}} \text{Medical Term (English)} \xrightarrow{\text{NIH UMLS API}} \text{UMLS CUI Code} \xrightarrow{\text{Graph Link}} \text{SymCAT Node}$$
+
+### 3. 🧮 Thuật Toán Bayesian Scoring & Trừ Điểm Triệu Chứng Phủ Định (Point Penalty)
+Xử lý chính xác các triệu chứng bị người bệnh phủ định (ví dụ: *"tôi không sốt", "không ho"*). Thuật toán áp dụng cơ chế **Bayesian Point Penalty** để giảm điểm trọng số và hạ thứ hạng bệnh nghi ngờ ngay lập tức, tránh chẩn đoán sai lệch.
+
+### 4. ❓ Đặt Câu Hỏi Thu Hẹp Diện Chẩn Đoán Dựa Trên Entropy (Information Gain)
+Thay vì đặt câu hỏi tràn lan, hệ thống tính toán **Độ lệch chuẩn Entropy** của tập triệu chứng chưa khám phá giữa Top các bệnh nghi ngờ hàng đầu. Hệ thống sẽ tự động chọn **3 đến 5 triệu chứng có giá trị phân biệt cao nhất** để đưa ra câu hỏi sàng lọc tiếp theo.
+
+### 5. 💳 Cổng Thanh Toán Quốc Tế Stripe SDK Real-time & Quyền Lợi Gói Thuê Bao
+* **Tích hợp SDK Stripe PCI-DSS Level 1**: Quản lý thẻ thanh toán quốc tế (Visa, MasterCard, JCB, AMEX), hỗ trợ tạo `PaymentMethod` và thực thi `PaymentIntent` trừ tiền thực tế.
+* **Quản lý Thẻ & Quy tắc Thanh toán Thực tế**:
+  - Hỗ trợ xem thông tin thẻ đã lưu và chủ động xóa thẻ an toàn.
+  - Bắt buộc thêm thẻ trước khi nâng cấp gói Pro.
+  - Hiển thị Modal xác nhận thanh toán **99.000đ/tháng** trước khi thực hiện giao dịch trừ tiền.
+  - Khi đang ở gói Pro, hệ thống khóa nút hạ cấp thủ công về Free, chỉ cho phép quản lý công tắc *Gia hạn tự động*.
 
 ---
 
-### 2. 💳 Quản Lý Tài Khoản, Thẻ Thanh Toán & Gói Thuê Bao Pro
-1. **Gói Thuê Bao Linh Hoạt**:
-   * **Gói Miễn Phí (Free)**: 50.000 token AI/tháng, truy cập 4 chuyên khoa cơ bản.
-   * **Gói Pro Chuyên Gia (99.000đ/tháng)**: 2.000.000 token AI/tháng, mở khóa toàn bộ chuyên khoa mới, ưu tiên tốc độ phản hồi AI.
-2. **Quản Lý Thẻ Thanh Toán Quốc Tế (Visa / MasterCard / JCB / AMEX)**:
-   * Vào **Cài đặt** $\rightarrow$ chọn tab **Thanh toán**.
-   * Nhập thông tin thẻ thanh toán quốc tế của bạn. Hệ thống tích hợp trực tiếp **Cổng thanh toán bảo mật Stripe SDK SDK real-time** để xác thực thẻ.
-   * **Tính năng Xóa thẻ**: Cho phép người dùng chủ động xóa thẻ thanh toán khỏi tài khoản bất kỳ lúc nào chỉ với 1 click.
-3. **Nâng Cấp Gói Pro Chuẩn Quy Tắc Thanh Toán Thực Tế**:
-   * Khi chọn **Chuyển sang Pro**, nếu chưa có thẻ, hệ thống sẽ nhắc nhở người dùng thêm thẻ thanh toán trước.
-   * Khi đã có thẻ, hệ thống mở **Modal Xác nhận thanh toán & Trừ tiền (99.000đ)**. Khi bạn bấm xác nhận, tiền sẽ được trừ trực tiếp qua thẻ và tự động nâng cấp gói Pro 30 ngày.
+## 📈 Kiểm Chứng Vận Hành & Giao Dịch Thực Tế (Operational & Payment Analytics)
 
----
-
-### 3. 📊 Trang Quản Trị Hệ Thống (Admin Dashboard)
-* **Dành cho Quản trị viên (Admin)**: Truy cập đường dẫn **[/admin](https://103.166.183.89.nip.io/admin)**.
-* **Tổng Quan Chỉ Số**: Thống kê số lượng cuộc trò chuyện, doanh thu đăng ký Pro, số lượng người dùng mới, và tổng số token AI tiêu thụ.
-* **System Logs**: Xem trực tiếp nhật ký hoạt động thời gian thực của máy chủ backend.
-
----
-
-### 4. 🌐 Chuyển Đổi Ngôn Ngữ Linh Hoạt (Tiếng Việt / English)
-* Người dùng có thể chuyển đổi toàn bộ giao diện ứng dụng giữa **Tiếng Việt** và **Tiếng Anh** chỉ bằng 1 thao tác bấm nút `VI / EN` trên thanh công cụ.
-
----
-
-## 🔬 Kiến Trúc Công Nghệ Nổi Bật (Technical Architecture)
-
-### 1. 🧬 Đồ Thị Tri Thức Lâm Sàng Neo4j (SymCAT & Synthea)
-* **474 Nút Triệu chứng (Symptom nodes)**: Mô tả đầy đủ các biểu hiện lâm sàng.
-* **801 Nút Bệnh lý (Disease nodes)**: Danh mục các bệnh lý phổ biến và chuyên khoa.
-* **>20.000 Quan hệ liên kết (`HAS_SYMPTOM`)**: Chứa thuộc tính **xác suất dịch tễ (`probability`)** thực tế thu thập từ lịch sử bệnh án lâm sàng.
-
-### 2. 🧮 Thuật Toán Bayesian Scoring & Point Penalty
-Khi người dùng phủ nhận triệu chứng (ví dụ: *"tôi không bị ho"*, *"không khó thở"*), đồ thị tri thức sẽ tự động áp dụng cơ chế **Bayesian Point Penalty** để trừ điểm và loại trừ ngay lập tức các bệnh lý không phù hợp.
-
-### 3. 💳 Tích Hợp Cổng Thanh Toán Bảo Mật Stripe & PayOS
-* **Stripe SDK (`stripe.paymentIntents` & `stripe.paymentMethods`)**: Xử lý xác thực thẻ và trừ tiền trực tiếp trên hạ tầng đạt chuẩn PCI-DSS cấp độ 1 của Stripe.
-* **PayOS VietQR**: Hỗ trợ tạo mã VietQR chuyển khoản ngân hàng tự động.
+Hệ thống được kiểm thử thực tế và ghi nhận đầy đủ các giao dịch thanh toán trực tuyến trên **Stripe Dashboard** và **Admin Analytics Dashboard**:
 
 ![Bảng điều khiển giao dịch thanh toán Stripe Dashboard của MedAI](./docs/images/stripe_dashboard.png)
-*Hình 1: Bảng điều khiển giao dịch thanh toán trực tuyến thực tế trên Stripe Dashboard của MedAI.*
+*Hình 1: Bảng điều khiển giao dịch thanh toán trực tuyến thực tế trên Stripe Dashboard của hệ thống MedAI ($3.76 Gross Volume).*
 
 ---
 
-## 🚀 Hướng Dẫn Khởi Chạy Bằng Docker (Docker Deployment)
+## 🛠️ Công Nghệ Phát Triển (Technology Stack)
 
-Hệ thống được đóng gói hoàn chỉnh bằng **Docker Compose**, hỗ trợ khởi chạy chỉ với 1 câu lệnh duy nhất trên cả Windows, Linux và VPS:
+* **Frontend**: React 19, Vite, Vanilla CSS Design System, Responsive Glassmorphic UI.
+* **Backend**: Node.js, Express REST API, Mongoose ODM, JWT Authentication.
+* **Databases**: 
+  - **MongoDB**: Lưu trữ tài khoản người dùng, lịch sử phiên chat, nhật ký hệ thống (System Logs) và lịch sử giao dịch thanh toán (`payments`).
+  - **Neo4j AuraDB**: Cơ sở dữ liệu Đồ thị Tri thức Y khoa Lâm sàng SymCAT.
+* **AI & Integration**: 9Router Multi-LLM Gateway, OpenRouter API (`deepseek/deepseek-v4-flash`), NIH NLM UMLS REST API, Stripe Node SDK.
+
+---
+
+## 📦 Hướng Dẫn Triển Khai Hệ Thống Bằng Docker (Enterprise Docker Deployment)
+
+Toàn bộ hệ thống MedAI đã được đóng gói container hóa hoàn chỉnh qua **Docker Compose**:
 
 ```bash
-# 1. Khởi chạy toàn bộ 4 dịch vụ (Frontend, Backend, MongoDB, 9Router):
+# 1. Khởi chạy toàn bộ 4 phân hệ dịch vụ (Frontend, Backend, MongoDB, 9Router):
 docker compose up -d
 
-# 2. Kiểm tra trạng thái hoạt động của các dịch vụ:
+# 2. Kiểm tra trạng thái hoạt động của các container:
 docker compose ps
 
-# 3. Xem nhật ký log của hệ thống:
-docker compose logs -f
+# 3. Theo dõi log vận hành của hệ thống:
+docker compose logs -f backend
 ```
 
 ---
 
-*MedAI — Trực quan hóa tri thức y học, nâng tầm trải nghiệm chẩn đoán lâm sàng.*
+*MedAI — Systems Engineering & Evidence-Based Clinical Artificial Intelligence.*
