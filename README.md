@@ -27,13 +27,13 @@ short_description: Hệ thống trợ lý chẩn đoán phân biệt tích hợp
 
 Bảng tổng hợp tất cả các liên kết truy cập chính thức của hệ thống MedAI ở cả hai môi trường **Trực tuyến (Production Server)** và **Máy cá nhân (Local Dev)**:
 
-| Dịch Vụ / Trang Chức Năng | Đường Dẫn Trực Tuyến (Production VPS) | Đường Dẫn Máy Cá Nhân (Local Dev) | M Describe / Ghi Chú |
+| Dịch Vụ / Trang Chức Năng | Đường Dẫn Trực Tuyến (Production VPS) | Đường Dẫn Máy Cá Nhân (Local Dev) | Mật Khẩu & Ghi Chú Đăng Nhập |
 |---|---|---|---|
 | 🌐 **Ứng Dụng Web Chat (Khách Hàng)** | [https://103.166.183.89.nip.io](https://103.166.183.89.nip.io)<br>*(hoặc [Cổng 8080](http://103.166.183.89.nip.io:8080))* | [http://localhost:8080](http://localhost:8080) | Giao diện tư vấn y tế AI cho người dùng cuối |
 | 📊 **Trang Quản Trị Hệ Thống (Admin)** | [https://103.166.183.89.nip.io/admin](https://103.166.183.89.nip.io/admin) | [http://localhost:8080/admin](http://localhost:8080/admin) | Dashboard theo dõi người dùng, doanh thu & System Logs |
-| 🔀 **Bảng Điều Khiển 9Router AI Gateway** | [http://103.166.183.89:20128](http://103.166.183.89:20128) | [http://localhost:20128](http://localhost:20128) | Quản lý API Key & Điều phối mô hình LLM AI |
+| 🔀 **Bảng Điều Khiển 9Router AI Gateway** | [http://103.166.183.89:20128](http://103.166.183.89:20128) | [http://localhost:20128](http://localhost:20128) | Quản lý API Key & Mô hình LLM<br>🔑 Mật khẩu Dashboard: `113113` |
 | ⚡ **Máy Chủ API Backend (REST Service)** | [http://103.166.183.89:4000](http://103.166.183.89:4000) | [http://localhost:4000](http://localhost:4000) | Cổng xử lý logic, CSDL MongoDB & Stripe Payment |
-| 🌐 **Đồ Thị Tri Thức Neo4j Cloud** | [Neo4j Workspace Cloud](https://workspace.neo4j.io/) | `neo4j+s://01ebae5f.databases.neo4j.io` | CSDL Đồ thị tri thức lâm sàng SymCAT (User: `neo4j`) |
+| 🌐 **Đồ Thị Tri Thức Neo4j Cloud** | [Neo4j Workspace Cloud](https://workspace.neo4j.io/) | `neo4j+s://01ebae5f.databases.neo4j.io` | CSDL Đồ thị tri thức lâm sàng SymCAT<br>👤 User: `neo4j`<br>🔑 Password: `1owqwBTQblzpNLGHg1VQFvF4dEH3yxn36lxro7C7ll8` |
 
 ---
 
