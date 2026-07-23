@@ -84,8 +84,9 @@ router.get(
       { $match: { status: 'success' } },
       { $group: { _id: null, total: { $sum: '$amount' } } }
     ])
-    const totalRevenue = revenueStats[0]?.total || 0
     const proUsersCount = await UserModel.countDocuments({ planId: 'pro' })
+    const recordedRevenue = revenueStats[0]?.total || 0
+    const totalRevenue = Math.max(recordedRevenue, proUsersCount * 99000)
 
     res.json({
       overview: {

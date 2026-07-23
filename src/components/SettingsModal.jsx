@@ -401,11 +401,11 @@ export default function SettingsModal({
                         ))}
                       </ul>
                       <button
-                        className={`btn ${isCurrent ? 'btn--outline' : 'btn--primary'}`}
-                        disabled={isCurrent}
+                        className={`btn ${isCurrent ? 'btn--outline' : (p.id === 'free' && account.planId === 'pro' ? 'btn--outline' : 'btn--primary')}`}
+                        disabled={isCurrent || (p.id === 'free' && account.planId === 'pro')}
                         onClick={() => handleSelectPlanClick(p.id)}
                       >
-                        {isCurrent ? 'Gói hiện tại' : `Chuyển sang ${p.name}`}
+                        {isCurrent ? 'Gói hiện tại' : (p.id === 'free' && account.planId === 'pro' ? 'Gói cơ bản' : `Chuyển sang ${p.name}`)}
                       </button>
                     </div>
                   )

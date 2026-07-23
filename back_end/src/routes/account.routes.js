@@ -5,6 +5,7 @@ import { HttpError } from '../utils/httpError.js'
 import { requireAuth } from '../middleware/auth.js'
 import { getPlan, isValidPlanId } from '../config/plans.js'
 import { findUserById, updateUser, toPublicUser } from '../db/usersRepo.js'
+import { PaymentModel } from '../db/payment.model.js'
 
 const router = Router()
 const stripeKey = process.env.STRIPE_SECRET_KEY || ''
@@ -30,6 +31,10 @@ router.patch(
 
     const user = await findUserById(req.userId)
     if (!user) throw new HttpError(404, 'Không tìm thấy tài khoản.')
+
+    if (planId === 'free' && user.planId === 'pro') {
+      throw new HttpError(400, 'Tài khoản đang trong thời hạn gói Pro. Bạn có thể tắt "Gia hạn tự động" trong mục Thanh toán để hệ thống tự chuyển về Miễn phí khi hết hạn.')
+    }
 
     const patch = { planId }
     if (planId === 'pro') {
@@ -80,6 +85,19 @@ router.patch(
           }
         }
       }
+
+      // GHI NHẬN GIAO DỊCH VÀO PAYMENT MODEL ĐỂ ADMIN DASHBOARD CẬP NHẬT DOANH THU THẬT
+      await PaymentModel.create({
+        id: `pay_${Date.now()}_${Math.random().toString(36).slice(2, 7)}`,
+        userId: req.userId,
+        planId: 'pro',
+        amount: 99000,
+        status: 'success',
+        type: 'initial',
+        paymentGateway: 'stripe',
+        createdAt: new Date(),
+        completedAt: new Date(),
+      })
 
       const now = new Date()
       const expiresAt = new Date(now.getTime() + 30 * 24 * 60 * 60 * 1000)
