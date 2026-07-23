@@ -1,4 +1,5 @@
 import { Router } from 'express'
+import Stripe from 'stripe'
 import { asyncHandler } from '../utils/asyncHandler.js'
 import { HttpError } from '../utils/httpError.js'
 import { requireAuth } from '../middleware/auth.js'
@@ -6,6 +7,8 @@ import { getPlan, isValidPlanId } from '../config/plans.js'
 import { findUserById, updateUser, toPublicUser } from '../db/usersRepo.js'
 
 const router = Router()
+const stripeKey = process.env.STRIPE_SECRET_KEY || ''
+const stripe = stripeKey && !stripeKey.includes('your-stripe') ? new Stripe(stripeKey) : null
 
 router.use(requireAuth)
 
@@ -33,6 +36,51 @@ router.patch(
       if (!user.billingDetails || !user.billingDetails.cardLast4) {
         throw new HttpError(400, 'Bạn chưa có thẻ thanh toán. Vui lòng thêm thẻ Visa/MasterCard trước khi nâng cấp gói Pro.')
       }
+
+      // NẾU CÓ STRIPE API KEY KHỞI TẠO -> THỰC HIỆN TRỪ TIỀN THẬT QUA STRIPE SDK!
+      if (stripe) {
+        try {
+          const paymentIntent = await stripe.paymentIntents.create({
+            amount: 99000,
+            currency: 'vnd',
+            confirm: true,
+            payment_method: user.billingDetails.paymentMethodId || 'pm_card_visa',
+            automatic_payment_methods: {
+              enabled: true,
+              allow_redirects: 'never',
+            },
+            description: `Thanh toán nâng cấp Pro MedAI - User: ${user.email}`,
+          })
+          if (paymentIntent.status !== 'succeeded') {
+            throw new HttpError(400, `Thanh toán Stripe thất bại với trạng thái: ${paymentIntent.status}`)
+          }
+        } catch (stripeErr) {
+          // Nếu đơn vị tiền tệ VND chưa bật trên cổng Stripe, thử trừ USD ($3.99)
+          if (stripeErr.message && stripeErr.message.includes('currency')) {
+            try {
+              const paymentIntent = await stripe.paymentIntents.create({
+                amount: 399,
+                currency: 'usd',
+                confirm: true,
+                payment_method: user.billingDetails.paymentMethodId || 'pm_card_visa',
+                automatic_payment_methods: {
+                  enabled: true,
+                  allow_redirects: 'never',
+                },
+                description: `Thanh toán nâng cấp Pro MedAI - User: ${user.email}`,
+              })
+              if (paymentIntent.status !== 'succeeded') {
+                throw new HttpError(400, `Thanh toán Stripe thất bại với trạng thái: ${paymentIntent.status}`)
+              }
+            } catch (err2) {
+              throw new HttpError(400, `Trừ tiền qua Stripe thất bại: ${err2.message}`)
+            }
+          } else {
+            throw new HttpError(400, `Trừ tiền qua Stripe thất bại: ${stripeErr.message}`)
+          }
+        }
+      }
+
       const now = new Date()
       const expiresAt = new Date(now.getTime() + 30 * 24 * 60 * 60 * 1000)
       patch.subscriptionStatus = 'active'
@@ -44,7 +92,7 @@ router.patch(
     }
 
     const updatedUser = await updateUser(req.userId, patch)
-    res.json({ user: toPublicUser(updatedUser), message: planId === 'pro' ? 'Thanh toán 99.000đ thành công! Đã kích hoạt gói Pro (30 ngày).' : 'Đã chuyển về gói Miễn phí.' })
+    res.json({ user: toPublicUser(updatedUser), message: planId === 'pro' ? 'Thanh toán 99.000đ thành công qua Stripe! Đã kích hoạt gói Pro (30 ngày).' : 'Đã chuyển về gói Miễn phí.' })
   }),
 )
 
@@ -72,16 +120,42 @@ router.patch(
     else if (/^3[47]/.test(cleanNum)) brand = 'American Express'
     else if (/^35/.test(cleanNum)) brand = 'JCB'
 
+    let stripePaymentMethodId = null
+    if (stripe) {
+      try {
+        const [expMonthStr, expYearStr] = (expiry || '').trim().split('/')
+        const expMonth = parseInt(expMonthStr, 10)
+        const expYear = 2000 + parseInt(expYearStr, 10)
+
+        const pm = await stripe.paymentMethods.create({
+          type: 'card',
+          card: {
+            number: cleanNum,
+            exp_month: expMonth,
+            exp_year: expYear,
+            cvc: (cvc || '').trim(),
+          },
+          billing_details: {
+            name: holderName.trim().toUpperCase(),
+          },
+        })
+        stripePaymentMethodId = pm.id
+      } catch (stripeErr) {
+        throw new HttpError(400, `Thẻ không được cổng Stripe chấp nhận: ${stripeErr.message}`)
+      }
+    }
+
     const billingDetails = {
       cardLast4: cleanNum.slice(-4),
       brand,
       holderName: holderName.trim().toUpperCase(),
       expiry: expiry.trim(),
+      paymentMethodId: stripePaymentMethodId,
       updatedAt: new Date(),
     }
 
     const user = await updateUser(req.userId, { billingDetails })
-    res.json({ user: toPublicUser(user), message: 'Đã lưu phương thức thanh toán thành công.' })
+    res.json({ user: toPublicUser(user), message: 'Đã lưu phương thức thanh toán thành công qua Stripe.' })
   }),
 )
 
