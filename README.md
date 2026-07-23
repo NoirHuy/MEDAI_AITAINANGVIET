@@ -38,13 +38,14 @@ Bảng thông tin chi tiết các phân hệ dịch vụ và dữ liệu xác th
 
 ---
 
-## 🚀 2. HẠ TẦNG TRIỂN KHAI MÁY CHỦ VPS (PRODUCTION VPS DEPLOYMENT)
+## 🚀 2. HẠ TẦNG TRIỂN KHAI MÁY CHỦ VPS & CADDY AUTO-SSL (PRODUCTION DEPLOYMENT)
 
-Hệ thống được thiết kế và vận hành trên môi trường **Cloud VPS (IP: `103.166.183.89`)** theo tiêu chuẩn dự án doanh nghiệp:
+Hệ thống được thiết kế và vận hành trên môi trường **Cloud VPS (IP: `103.166.183.89`)** theo tiêu chuẩn hạ tầng doanh nghiệp:
 
-* **Đóng Gói Container Khối (Docker Compose Architecture)**: Toàn bộ 4 dịch vụ cốt lõi (`frontend`, `backend`, `mongodb`, `ninerouter`) được container hóa cô lập, sẵn sàng khởi chạy đồng bộ.
-* **Cổng Truy Cập Trực Tiếp (Port 8080 Routing)**: Cấu hình ánh xạ cổng trực tiếp `http://103.166.183.89.nip.io:8080` cho ứng dụng client và `http://103.166.183.89.nip.io:8080/admin` cho trang Admin.
-* **Độ Ổn Định Cao**: Định hình cơ sở dữ liệu MongoDB 7.0 và Neo4j AuraDB đảm bảo tối ưu hóa tài nguyên phần cứng, hoạt động 24/7 không đứt gãy.
+* **Tự Động Cấp & Gia Hạn SSL Qua Caddy Container (Caddy Auto-HTTPS)**: Tích hợp Caddy Server Container làm Reverse Proxy cao cấp, tự động đăng ký, xác thực ACME và gia hạn chứng chỉ mã hóa an toàn **HTTPS SSL (Let's Encrypt / ZeroSSL)** cho domain `103.166.183.89.nip.io` hoàn toàn tự động 100%.
+* **Đóng Gói Container Khối (Docker Compose Architecture)**: Các dịch vụ cốt lõi (Caddy Reverse Proxy, Frontend, Backend, MongoDB 7.0 và 9Router AI Gateway) được container hóa cô lập, quản lý và sẵn sàng khởi chạy đồng bộ với 1 lệnh duy nhất.
+* **Tối Ưu Hóa Tuyến Đường Truy Cập (Port 8080 Routing)**: Ánh xạ linh hoạt cổng trực tiếp `http://103.166.183.89.nip.io:8080` cho ứng dụng Client và `http://103.166.183.89.nip.io:8080/admin` cho trang Admin.
+* **Độ Ổn Định & Khả Năng Mở Rộng**: Định hình cơ sở dữ liệu MongoDB 7.0 và Neo4j AuraDB Cloud đảm bảo tối ưu hóa phần cứng, hoạt động liên tục 24/7 không đứt gãy.
 
 ---
 
