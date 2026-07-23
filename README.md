@@ -88,7 +88,28 @@ Trang quản trị hệ thống tại đường dẫn **[/admin](https://103.166
 
 ---
 
-## 🛠️ 6. HƯỚNG DẪN KHỞI CHẠY BẰNG DOCKER (DOCKER EXECUTION GUIDE)
+## 🔮 6. ĐỊNH HƯỚNG PHÁT TRIỂN TƯƠNG LAI (FUTURE DEVELOPMENT ROADMAP)
+
+Hệ thống MedAI định hướng mở rộng các mô hình trí tuệ nhân tạo thế hệ tiếp theo nhằm tối ưu hóa tính cá nhân hóa và khả năng ghi nhớ ngữ cảnh dài hạn:
+
+### 1. 🧠 Cơ Chế Ghi Nhớ Ngữ Cảnh Người Dùng Dài Hạn (Long-term User Memory & Dynamic Profiling)
+* **Tóm Tắt Hội Thoại Tự Động (Dialogue Summarization Engine)**: Tự động chạy tiến trình ngầm phân tích các phiên chat để cô đọng nội dung tư vấn thành các thẻ tri thức ngắn gọn.
+* **Trích Xuất Hồ Sơ Sức Khỏe Cá Nhân (Patient Profile Extraction)**: Tự động nhận diện và bóc tách các thuộc tính y tế quan trọng của người bệnh bao gồm:
+  - **Tiền sử bệnh lý nền**: *Tiểu đường Type 2, Cao huyết áp, Hen suyễn...*
+  - **Dị ứng & Phản ứng thuốc**: *Dị ứng Penicillin, Aspirin...*
+  - **Yếu tố nguy cơ & Thói quen sinh hoạt**: *Hút thuốc, Tiền sử gia đình mắc bệnh tim mạch...*
+* **Cập Nhật Động**: Dữ liệu hồ sơ người dùng được mã hóa và lưu trữ an toàn trong `user_memory`, liên tục được tích lũy và cập nhật qua các lượt trò chuyện theo thời gian.
+
+### 2. 📚 Kiến Trúc Hybrid GraphRAG (Retrieval-Augmented Generation + Knowledge Graph)
+* **Tích Hợp Cơ Sở Dữ Liệu Vector (Vector Database)**: Kết hợp Vector Embeddings (ChromaDB / Qdrant) để truy vấn ngữ nghĩa sâu từ sách y khoa và phác đồ điều trị chính thống.
+* **Truy Xuất Tri Thức Đa Tầng (Hybrid Retrieval)**: Khi người bệnh đặt câu hỏi, hệ thống thực hiện đồng thời 2 luồng truy xuất:
+  1. **Graph Retrieval**: Trích xuất quan hệ xác suất Bệnh lý - Triệu chứng từ Đồ thị Neo4j.
+  2. **Vector RAG Retrieval**: Truy xuất hồ sơ sức khỏe cá nhân của người dùng và tài liệu y khoa liên quan.
+* **Tư Vấn Cá Nhân Hóa Đột Phá**: Đưa toàn bộ ngữ cảnh tiền sử bệnh và tri thức y học vào prompt của LLM, giúp MedAI đóng vai trò như một **Bác sĩ gia đình AI riêng biệt** hiểu rõ lịch sử sức khỏe dài hạn của từng bệnh nhân.
+
+---
+
+## 🛠️ 7. HƯỚNG DẪN KHỞI CHẠY BẰNG DOCKER (DOCKER EXECUTION GUIDE)
 
 ```bash
 # 1. Khởi chạy toàn bộ hạ tầng 4 container (Frontend, Backend, MongoDB, 9Router):
