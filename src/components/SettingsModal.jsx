@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { CloseIcon, UserCircleIcon, GaugeIcon, CreditCardIcon, CheckIcon, HelpCircleIcon, SparklesIcon, LockIcon } from './Icons'
+import { CloseIcon, UserCircleIcon, GaugeIcon, CreditCardIcon, CheckIcon, HelpCircleIcon, SparklesIcon, LockIcon, TrashIcon } from './Icons'
 import { PLANS, getPlan } from '../data/account'
 import './SettingsModal.css'
 
@@ -19,6 +19,7 @@ export default function SettingsModal({
   onUpdateName,
   onChangePassword,
   onUpdateCard,
+  onDeleteCard,
   onToggleAutoRenew,
   onSetPlan,
   onSignOut,
@@ -43,7 +44,69 @@ export default function SettingsModal({
   const [cardCvc, setCardCvc] = useState('')
   const [cardStatus, setCardStatus] = useState(null)
   const [cardLoading, setCardLoading] = useState(false)
+  const [deleteCardLoading, setDeleteCardLoading] = useState(false)
   const [editingCard, setEditingCard] = useState(!account?.billingDetails)
+
+  // State cho Nâng Cấp Gói & Thanh Toán
+  const [confirmPaymentModal, setConfirmPaymentModal] = useState(false)
+  const [planLoading, setPlanLoading] = useState(false)
+
+  // Xử lý Xóa Thẻ Thanh Toán
+  async function handleDeleteCardClick() {
+    const cardLast4 = account?.billingDetails?.cardLast4 || ''
+    if (!window.confirm(`Bạn có chắc chắn muốn xóa thẻ thanh toán (•••• ${cardLast4}) khỏi tài khoản?`)) return
+    try {
+      setDeleteCardLoading(true)
+      await onDeleteCard()
+      setEditingCard(true)
+      setCardNumber('')
+      setCardHolder('')
+      setCardExpiry('')
+      setCardCvc('')
+      showToast?.('Đã xóa thẻ thanh toán thành công!')
+    } catch (err) {
+      showToast?.(err.message || 'Không thể xóa thẻ.')
+    } finally {
+      setDeleteCardLoading(false)
+    }
+  }
+
+  // Xử lý bấm Chuyển Gói chuẩn Quy Tắc Thanh Toán
+  function handleSelectPlanClick(targetPlanId) {
+    if (targetPlanId === account.planId) return
+    if (targetPlanId === 'pro') {
+      // Yêu cầu bắt buộc phải có thẻ thanh toán mới được nâng cấp
+      if (!account.billingDetails || !account.billingDetails.cardLast4) {
+        showToast?.('Vui lòng thêm thẻ thanh toán (Visa/MasterCard/JCB) trước khi nâng cấp gói Pro.')
+        onChangeTab('payment')
+        return
+      }
+      // Nếu đã có thẻ -> Mở Modal Xác Nhận Thanh Toán & Trừ Tiền
+      setConfirmPaymentModal(true)
+    } else {
+      if (window.confirm('Bạn có chắc chắn muốn chuyển về gói Miễn phí?')) {
+        processPlanChange('free')
+      }
+    }
+  }
+
+  // Tiến hành gọi API đổi gói
+  async function processPlanChange(planId) {
+    try {
+      setPlanLoading(true)
+      await onSetPlan(planId)
+      setConfirmPaymentModal(false)
+      if (planId === 'pro') {
+        showToast?.('Thanh toán 99.000đ thành công! Đã kích hoạt gói Pro (30 ngày).')
+      } else {
+        showToast?.('Đã chuyển về gói Miễn phí.')
+      }
+    } catch (err) {
+      showToast?.(err.message || 'Không thể nâng cấp gói.')
+    } finally {
+      setPlanLoading(false)
+    }
+  }
 
   useEffect(() => {
     setNameDraft(account?.name || '')
@@ -340,7 +403,7 @@ export default function SettingsModal({
                       <button
                         className={`btn ${isCurrent ? 'btn--outline' : 'btn--primary'}`}
                         disabled={isCurrent}
-                        onClick={() => onSetPlan(p.id)}
+                        onClick={() => handleSelectPlanClick(p.id)}
                       >
                         {isCurrent ? 'Gói hiện tại' : `Chuyển sang ${p.name}`}
                       </button>
@@ -428,13 +491,21 @@ export default function SettingsModal({
                       <span>Chủ thẻ: <strong>{account.billingDetails.holderName}</strong></span>
                       <span>Hết hạn: <strong>{account.billingDetails.expiry}</strong></span>
                     </div>
-                    <button
-                      className="btn btn--outline btn--sm"
-                      style={{ marginTop: '10px' }}
-                      onClick={() => setEditingCard(true)}
-                    >
-                      Thay đổi thẻ thanh toán
-                    </button>
+                    <div className="card-actions-group" style={{ marginTop: '12px', display: 'flex', gap: '10px' }}>
+                      <button
+                        className="btn btn--outline btn--sm"
+                        onClick={() => setEditingCard(true)}
+                      >
+                        Thay đổi thẻ
+                      </button>
+                      <button
+                        className="btn btn--danger-outline btn--sm"
+                        disabled={deleteCardLoading}
+                        onClick={handleDeleteCardClick}
+                      >
+                        <TrashIcon /> {deleteCardLoading ? 'Đang xóa...' : 'Xóa thẻ thanh toán'}
+                      </button>
+                    </div>
                   </div>
                 ) : (
                   <form onSubmit={handleSaveCardSubmit} className="credit-card-form">
@@ -566,6 +637,46 @@ export default function SettingsModal({
           )}
         </div>
       </div>
+
+      {/* MODAL XÁC NHẬN THANH TOÁN 99.000đ NÂNG CẤP PRO */}
+      {confirmPaymentModal && (
+        <div className="modal-backdrop modal-backdrop--nested" onClick={() => setConfirmPaymentModal(false)}>
+          <div className="confirm-payment-modal" onClick={(e) => e.stopPropagation()}>
+            <div className="confirm-payment-header">
+              <SparklesIcon />
+              <h3>Xác nhận thanh toán nâng cấp Pro</h3>
+            </div>
+            <p className="confirm-payment-desc">
+              Số tiền <strong>99.000đ / tháng</strong> sẽ được trừ trực tiếp vào thẻ thanh toán của bạn để kích hoạt 30 ngày sử dụng gói Pro:
+            </p>
+            <div className="confirm-card-box">
+              <div className="card-chip-brand">
+                <span className="card-brand-badge">{account.billingDetails?.brand || 'Visa'}</span>
+                <span className="card-last4">•••• •••• •••• {account.billingDetails?.cardLast4}</span>
+              </div>
+              <div className="card-details-row">
+                <span>Chủ thẻ: <strong>{account.billingDetails?.holderName}</strong></span>
+                <span>Hết hạn: <strong>{account.billingDetails?.expiry}</strong></span>
+              </div>
+            </div>
+            <div className="confirm-modal-actions">
+              <button
+                className="btn btn--primary"
+                disabled={planLoading}
+                onClick={() => processPlanChange('pro')}
+              >
+                {planLoading ? 'Đang xử lý...' : 'Xác nhận thanh toán 99.000đ'}
+              </button>
+              <button
+                className="btn btn--outline"
+                onClick={() => setConfirmPaymentModal(false)}
+              >
+                Hủy
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   )
 }

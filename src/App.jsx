@@ -21,6 +21,7 @@ function App() {
     updateName,
     changePassword,
     updateCard,
+    deleteCard,
     toggleAutoRenew,
     setPlan,
     signOut,
@@ -212,6 +213,7 @@ function App() {
           onUpdateName={handleUpdateName}
           onChangePassword={changePassword}
           onUpdateCard={updateCard}
+          onDeleteCard={deleteCard}
           onToggleAutoRenew={toggleAutoRenew}
           onSetPlan={handleSetPlan}
           onSignOut={handleSignOut}

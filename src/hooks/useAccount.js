@@ -85,6 +85,14 @@ export function useAccount() {
     return user
   }, [])
 
+  const deleteCard = useCallback(async () => {
+    const { user } = await apiRequest('/api/account/card', {
+      method: 'DELETE',
+    })
+    setAccount(user)
+    return user
+  }, [])
+
   const toggleAutoRenew = useCallback(async (autoRenew) => {
     const { user } = await apiRequest('/api/account/autorenew', {
       method: 'PATCH',
@@ -118,6 +126,7 @@ export function useAccount() {
     updateName,
     changePassword,
     updateCard,
+    deleteCard,
     toggleAutoRenew,
     setPlan,
     signOut,
