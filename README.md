@@ -30,8 +30,8 @@ Bảng thông tin chi tiết các phân hệ dịch vụ và dữ liệu xác th
 
 | Phân Hệ Dịch Vụ | Đường Dẫn Trực Tuyến (Production VPS) | Đường Dẫn Máy Cá Nhân (Local Dev) | Thông Tin Xác Thực & Ghi Chú Kỹ Thuật |
 |---|---|---|---|
-| 🌐 **Ứng Dụng Web Client (Khách Hàng)** | [https://103.166.183.89.nip.io](https://103.166.183.89.nip.io)<br>*(HTTP Port 8080: `http://103.166.183.89.nip.io:8080`)* | [http://localhost:8080](http://localhost:8080) | Giao diện React 19 SPA, Responsive Glassmorphism, Đa ngôn ngữ (VI/EN) |
-| 📊 **Trang Quản Trị Hệ Thống (Admin Dashboard)** | [https://103.166.183.89.nip.io/admin](https://103.166.183.89.nip.io/admin) | [http://localhost:8080/admin](http://localhost:8080/admin) | Giám sát vận hành, theo dõi doanh thu, thống kê token & System Logs thời gian thực |
+| 🌐 **Ứng Dụng Web Client (Khách Hàng)** | [http://103.166.183.89.nip.io:8080/](http://103.166.183.89.nip.io:8080/) | [http://localhost:8080](http://localhost:8080) | Giao diện React 19 SPA, Responsive Glassmorphism, Đa ngôn ngữ (VI/EN) |
+| 📊 **Trang Quản Trị Hệ Thống (Admin Dashboard)** | [http://103.166.183.89.nip.io:8080/admin](http://103.166.183.89.nip.io:8080/admin) | [http://localhost:8080/admin](http://localhost:8080/admin) | Giám sát vận hành, theo dõi doanh thu, thống kê token & System Logs thời gian thực |
 | 🔀 **Bảng Điều Khiển 9Router AI Gateway** | [http://103.166.183.89:20128](http://103.166.183.89:20128) | [http://localhost:20128](http://localhost:20128) | Quản trị API Key, Load Balancing & Failover mô hình AI<br>🔑 **Mật khẩu Dashboard**: `113113` |
 | ⚡ **Máy Chủ API Backend (REST Service)** | [http://103.166.183.89:4000](http://103.166.183.89:4000) | [http://localhost:4000](http://localhost:4000) | Node.js Express Server, JWT Auth, CSDL MongoDB & Stripe Payment SDK |
 | 🌐 **Cơ Sở Dữ Liệu Đồ Thị Neo4j Cloud** | [Neo4j Workspace Cloud](https://workspace.neo4j.io/) | `neo4j+s://01ebae5f.databases.neo4j.io` | CSDL Đồ thị tri thức y khoa SymCAT (474 triệu chứng, 801 bệnh lý)<br>👤 **User**: `neo4j`<br>🔑 **Password**: `1owqwBTQblzpNLGHg1VQFvF4dEH3yxn36lxro7C7ll8` |
@@ -43,7 +43,7 @@ Bảng thông tin chi tiết các phân hệ dịch vụ và dữ liệu xác th
 Hệ thống được thiết kế và vận hành trên môi trường **Cloud VPS (IP: `103.166.183.89`)** theo tiêu chuẩn dự án doanh nghiệp:
 
 * **Đóng Gói Container Khối (Docker Compose Architecture)**: Toàn bộ 4 dịch vụ cốt lõi (`frontend`, `backend`, `mongodb`, `ninerouter`) được container hóa cô lập, sẵn sàng khởi chạy đồng bộ.
-* **Cơ Chế Reverse Proxy & SSL (`nip.io` Wildcard DNS)**: Tích hợp domain tự động `103.166.183.89.nip.io` đi kèm HTTPS SSL mã hóa end-to-end cho ứng dụng client và trang admin.
+* **Cổng Truy Cập Trực Tiếp (Port 8080 Routing)**: Cấu hình ánh xạ cổng trực tiếp `http://103.166.183.89.nip.io:8080` cho ứng dụng client và `http://103.166.183.89.nip.io:8080/admin` cho trang Admin.
 * **Độ Ổn Định Cao**: Định hình cơ sở dữ liệu MongoDB 7.0 và Neo4j AuraDB đảm bảo tối ưu hóa tài nguyên phần cứng, hoạt động 24/7 không đứt gãy.
 
 ---
@@ -79,7 +79,7 @@ Hệ thống tích hợp giải pháp thanh toán thương mại điện tử tr
 
 ## 📊 5. TRANG QUẢN TRỊ AN TOÀN & VẬN HÀNH DỰ ÁN (ADMIN DASHBOARD)
 
-Trang quản trị hệ thống tại đường dẫn **[/admin](https://103.166.183.89.nip.io/admin)** cung cấp cho đội ngũ vận hành và nhà quản lý cái nhìn toàn diện:
+Trang quản trị hệ thống tại đường dẫn **[http://103.166.183.89.nip.io:8080/admin](http://103.166.183.89.nip.io:8080/admin)** cung cấp cho đội ngũ vận hành và nhà quản lý cái nhìn toàn diện:
 
 * **Thống Kê Doanh Thu Real-time**: Tổng hợp chính xác tổng doanh thu từ các giao dịch thanh toán gói Pro thực tế qua Stripe và biểu đồ phân bổ người dùng trả phí.
 * **Giám Sát Cuộc Trò Chuyện & Mức Độ Khẩn Cấp**: Thống kê số lượt tư vấn y tế (Hôm nay / Tuần / Tháng), phân loại mức độ khẩn cấp (`Emergency`, `Warning`, `Normal`) và danh mục Triệu chứng phổ biến.
