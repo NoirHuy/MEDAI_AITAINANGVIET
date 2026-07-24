@@ -48,7 +48,11 @@ export default function AccountMenu({
       {open && (
         <div className="account-menu__popover" role="menu">
           <div className="account-menu__header">
-            <span className="account-avatar account-avatar--lg">{initial}</span>
+            {account?.picture || account?.avatar ? (
+              <img src={account.picture || account.avatar} alt={account.name} className="account-avatar-img account-avatar-img--lg" />
+            ) : (
+              <span className="account-avatar account-avatar--lg">{initial}</span>
+            )}
             <span className="account-menu__header-text">
               <span className="account-menu__name">{account.name}</span>
               <span className="account-menu__email">{account.email}</span>
@@ -136,7 +140,11 @@ export default function AccountMenu({
         className={`account-menu__trigger ${collapsed ? 'account-menu__trigger--collapsed' : ''}`}
         onClick={() => setOpen((o) => !o)}
       >
-        <span className="account-avatar">{initial}</span>
+        {account?.picture || account?.avatar ? (
+          <img src={account.picture || account.avatar} alt={account.name} className="account-avatar-img" />
+        ) : (
+          <span className="account-avatar">{initial}</span>
+        )}
         {!collapsed && (
           <span className="account-menu__trigger-text">
             <span className="account-menu__name">{account.name}</span>

@@ -10,9 +10,29 @@ import {
   SpinnerIcon,
   PulseIcon,
   CloseIcon,
-  RefreshIcon
+  RefreshIcon,
+  ChevronLeftIcon,
+  ChevronRightIcon,
+  FileSpreadsheetIcon,
 } from './Icons'
 import './DashboardView.css'
+
+function exportToExcelCSV(filename, headers, rows) {
+  const BOM = '\uFEFF'
+  const csvContent = [
+    headers.map((h) => `"${String(h).replace(/"/g, '""')}"`).join(','),
+    ...rows.map((row) => row.map((val) => `"${String(val ?? '').replace(/"/g, '""')}"`).join(',')),
+  ].join('\n')
+
+  const blob = new Blob([BOM + csvContent], { type: 'text/csv;charset=utf-8;' })
+  const url = URL.createObjectURL(blob)
+  const link = document.createElement('a')
+  link.setAttribute('href', url)
+  link.setAttribute('download', `${filename}.csv`)
+  document.body.appendChild(link)
+  link.click()
+  document.body.removeChild(link)
+}
 
 export default function DashboardView({ account, onBack, onSignOut, lang, initialTab }) {
   const [activeTab, setActiveTab] = useState(initialTab || 'overview')
@@ -174,15 +194,33 @@ export default function DashboardView({ account, onBack, onSignOut, lang, initia
     }
   }
 
-  // Xuất file báo cáo kiểm toán hội thoại (JSON format)
+  // Xuất file báo cáo kiểm toán hội thoại (Excel/CSV format)
   const handleExportAudit = (conv) => {
-    const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(conv, null, 2))
-    const downloadAnchor = document.createElement('a')
-    downloadAnchor.setAttribute("href", dataStr)
-    downloadAnchor.setAttribute("download", `MedChat_Audit_Session_${conv.id}.json`)
-    document.body.appendChild(downloadAnchor)
-    downloadAnchor.click()
-    downloadAnchor.remove()
+    const headers = [
+      'ID Phiên',
+      'Tiêu Đề',
+      'Ngôn Ngữ',
+      'Loại Người Dùng',
+      'Mức Độ Nguy Cơ',
+      'Thời Gian Phản Hồi (ms)',
+      'Gắn Cờ Review',
+      'Lý Do Gắn Cờ',
+      'Thời Gian Khởi Tạo',
+    ]
+    const rows = [
+      [
+        conv.id,
+        conv.title,
+        conv.lang?.toUpperCase() || 'VI',
+        conv.isGuest ? 'Guest (Vãng lai)' : 'Thành viên',
+        conv.urgency?.toUpperCase() || 'NORMAL',
+        conv.responseTimeMs || 'N/A',
+        conv.flagged ? 'Có' : 'Không',
+        conv.flaggedReason || '',
+        new Date(conv.createdAt).toLocaleString('vi-VN'),
+      ],
+    ]
+    exportToExcelCSV(`Bao_Cao_Kiem_Toan_${conv.id.slice(0, 8)}`, headers, rows)
   }
 
   // Quản lý người dùng
@@ -549,9 +587,13 @@ export default function DashboardView({ account, onBack, onSignOut, lang, initia
               {/* Pagination */}
               {totalConvPages > 1 && (
                 <div className="pagination-bar mt-4">
-                  <button disabled={convPage === 1} onClick={() => setConvPage(p => p - 1)}>← Trước</button>
+                  <button disabled={convPage === 1} onClick={() => setConvPage((p) => p - 1)}>
+                    <ChevronLeftIcon /> <span>Trước</span>
+                  </button>
                   <span>Trang {convPage} / {totalConvPages}</span>
-                  <button disabled={convPage === totalConvPages} onClick={() => setConvPage(p => p + 1)}>Sau →</button>
+                  <button disabled={convPage === totalConvPages} onClick={() => setConvPage((p) => p + 1)}>
+                    <span>Sau</span> <ChevronRightIcon />
+                  </button>
                 </div>
               )}
             </div>
@@ -716,9 +758,13 @@ export default function DashboardView({ account, onBack, onSignOut, lang, initia
               {/* Pagination */}
               {totalUserPages > 1 && (
                 <div className="pagination-bar mt-4">
-                  <button disabled={userPage === 1} onClick={() => setUserPage(p => p - 1)}>← Trước</button>
+                  <button disabled={userPage === 1} onClick={() => setUserPage((p) => p - 1)}>
+                    <ChevronLeftIcon /> <span>Trước</span>
+                  </button>
                   <span>Trang {userPage} / {totalUserPages}</span>
-                  <button disabled={userPage === totalUserPages} onClick={() => setUserPage(p => p + 1)}>Sau →</button>
+                  <button disabled={userPage === totalUserPages} onClick={() => setUserPage((p) => p + 1)}>
+                    <span>Sau</span> <ChevronRightIcon />
+                  </button>
                 </div>
               )}
             </div>
@@ -916,9 +962,13 @@ export default function DashboardView({ account, onBack, onSignOut, lang, initia
               {/* Pagination */}
               {totalPayPages > 1 && (
                 <div className="pagination-bar mt-4">
-                  <button disabled={payPage === 1} onClick={() => setPayPage(p => p - 1)}>← Trước</button>
+                  <button disabled={payPage === 1} onClick={() => setPayPage((p) => p - 1)}>
+                    <ChevronLeftIcon /> <span>Trước</span>
+                  </button>
                   <span>Trang {payPage} / {totalPayPages}</span>
-                  <button disabled={payPage === totalPayPages} onClick={() => setPayPage(p => p + 1)}>Sau →</button>
+                  <button disabled={payPage === totalPayPages} onClick={() => setPayPage((p) => p + 1)}>
+                    <span>Sau</span> <ChevronRightIcon />
+                  </button>
                 </div>
               )}
             </div>
@@ -928,15 +978,37 @@ export default function DashboardView({ account, onBack, onSignOut, lang, initia
               <h3>Xuất báo cáo tài chính</h3>
               <p className="chart-subtitle">Tải toàn bộ lịch sử hóa đơn để phục vụ báo cáo kế toán và đối soát.</p>
               <div className="flex-buttons mt-4">
-                <button className="btn-report-dl blue" onClick={() => {
-                  const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(payments, null, 2))
-                  const downloadAnchor = document.createElement('a')
-                  downloadAnchor.setAttribute("href", dataStr)
-                  downloadAnchor.setAttribute("download", `MedChat_Financial_Transactions_Report.json`)
-                  document.body.appendChild(downloadAnchor)
-                  downloadAnchor.click()
-                  downloadAnchor.remove()
-                }}>Xuất báo cáo giao dịch (JSON)</button>
+                <button
+                  className="btn-report-dl blue"
+                  style={{ display: 'inline-flex', alignItems: 'center', gap: '8px' }}
+                  onClick={() => {
+                    const headers = [
+                      'Mã Hóa Đơn',
+                      'Khách Hàng (Tên)',
+                      'Email',
+                      'Gói Cước',
+                      'Cổng Thanh Toán',
+                      'Loại Giao Dịch',
+                      'Số Tiền (VNĐ)',
+                      'Thời Gian Giao Dịch',
+                      'Trạng Thái',
+                    ]
+                    const rows = payments.map((p) => [
+                      p.id,
+                      p.user?.name || 'Người dùng',
+                      p.user?.email || 'N/A',
+                      p.planId === 'pro' ? 'Gói Pro Y Tế' : p.planId,
+                      p.paymentGateway === 'stripe' ? 'Stripe (Visa/MasterCard)' : 'Ví MoMo',
+                      p.type === 'recurring' ? 'Gia hạn tự động' : 'Nâng cấp lần đầu',
+                      p.amount || 0,
+                      new Date(p.createdAt).toLocaleString('vi-VN'),
+                      p.status === 'success' ? 'Thành công' : (p.status === 'failed' ? 'Thất bại' : 'Chờ xử lý'),
+                    ])
+                    exportToExcelCSV(`Bao_Cao_Giao_Dich_Tai_Chinh_MedAI`, headers, rows)
+                  }}
+                >
+                  <FileSpreadsheetIcon /> Xuất báo cáo giao dịch Excel (.xlsx / .csv)
+                </button>
               </div>
             </div>
           </div>

@@ -80,6 +80,21 @@
   z-index: 60;
 }
 
+.account-avatar-img {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  object-fit: cover;
+  flex-shrink: 0;
+  border: 1.5px solid var(--bg-accent);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.account-avatar-img--lg {
+  width: 44px;
+  height: 44px;
+}
+
 .account-menu__header {
   display: flex;
   align-items: center;

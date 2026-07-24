@@ -617,16 +617,37 @@
 }
 
 .pagination-bar button {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
   background-color: #ffffff;
   border: 1px solid #cbd5e1;
-  padding: 0.35rem 0.75rem;
-  border-radius: 6px;
+  padding: 0.4rem 0.85rem;
+  border-radius: 8px;
   cursor: pointer;
+  color: #334155;
+  font-size: 0.8rem;
+  font-weight: 600;
+  transition: all 0.2s ease;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+}
+
+.pagination-bar button:hover:not(:disabled) {
+  background-color: #f8fafc;
+  border-color: #1a73e8;
+  color: #1a73e8;
+  box-shadow: 0 2px 6px rgba(26, 115, 232, 0.12);
+}
+
+.pagination-bar button svg {
+  font-size: 14px;
 }
 
 .pagination-bar button:disabled {
-  opacity: 0.4;
+  opacity: 0.45;
   cursor: not-allowed;
+  background-color: #f1f5f9;
+  border-color: #e2e8f0;
 }
 
 .select-table-edit {
