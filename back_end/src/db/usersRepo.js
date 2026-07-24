@@ -13,7 +13,7 @@ export async function findUserById(id) {
   return await UserModel.findOne({ id }).lean()
 }
 
-export async function createUser({ name, email, passwordHash, provider, planId }) {
+export async function createUser({ name, email, passwordHash, provider, planId, picture }) {
   const user = new UserModel({
     id: randomUUID(),
     name,
@@ -21,6 +21,7 @@ export async function createUser({ name, email, passwordHash, provider, planId }
     passwordHash: passwordHash ?? null,
     provider,
     planId,
+    picture: picture ?? null,
     tokensUsed: 0,
   })
   await user.save()

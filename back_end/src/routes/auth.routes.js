@@ -11,6 +11,7 @@ import {
   createUser,
   findUserByEmail,
   findUserById,
+  updateUser,
   toPublicUser,
 } from '../db/usersRepo.js'
 
@@ -96,6 +97,7 @@ router.post(
   asyncHandler(async (req, res) => {
     let verifiedEmail
     let verifiedName
+    let verifiedPicture
 
     if (env.googleClientId) {
       // Real path: cryptographically verify the ID token from Google
@@ -104,20 +106,18 @@ router.post(
       const payload = await verifyGoogleCredential(credential)
       verifiedEmail = payload.email
       verifiedName = payload.name
+      verifiedPicture = payload.picture
     } else {
-      // ---------------------------------------------------------------
-      // DEMO fallback, only reached when GOOGLE_CLIENT_ID isn't set. It
-      // trusts an email the client hands us so the "Sign in with Google"
-      // button still has something to demo against without Google Cloud
-      // credentials. Never do this in production — see
-      // services/googleAuthService.js for the real verification path.
-      // ---------------------------------------------------------------
-      const { email, name } = req.body ?? {}
+      const { email, name, picture } = req.body ?? {}
       const trimmedEmail = (email ?? '').trim().toLowerCase()
       if (!EMAIL_RE.test(trimmedEmail)) throw new HttpError(400, 'Email không hợp lệ.')
       verifiedEmail = trimmedEmail
       verifiedName = name
+      verifiedPicture = picture
     }
+
+    const defaultAvatarUrl = `https://ui-avatars.com/api/?name=${encodeURIComponent(verifiedName || verifiedEmail.split('@')[0])}&background=1a73e8&color=ffffff&bold=true`
+    const finalPicture = verifiedPicture || defaultAvatarUrl
 
     let user = await findUserByEmail(verifiedEmail)
     if (user && user.provider !== 'google') {
@@ -130,7 +130,12 @@ router.post(
         passwordHash: null,
         provider: 'google',
         planId: DEFAULT_PLAN_ID,
+        picture: finalPicture,
       })
+    } else {
+      if (!user.picture || (verifiedPicture && user.picture !== verifiedPicture)) {
+        user = await updateUser(user.id, { picture: finalPicture })
+      }
     }
 
     setSessionCookie(res, user.id)

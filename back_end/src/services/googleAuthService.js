@@ -38,5 +38,6 @@ export async function verifyGoogleCredential(credential) {
   return {
     email: payload.email,
     name: payload.name || payload.email.split('@')[0],
+    picture: payload.picture || null,
   }
 }
