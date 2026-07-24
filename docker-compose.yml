@@ -34,7 +34,7 @@ services:
     restart: unless-stopped
 
   mongodb:
-    image: mongo:7.0
+    image: mongo:8.0
     container_name: medchat-mongodb
     ports:
       - '27018:27017'
