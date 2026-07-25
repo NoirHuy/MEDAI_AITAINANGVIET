@@ -53,7 +53,23 @@ services:
       - ninerouter_data:/app/data
     restart: unless-stopped
 
+  neo4j:
+    image: neo4j:5.18-community
+    container_name: medchat-neo4j
+    environment:
+      - NEO4J_AUTH=neo4j/MatKhauNeo4j2026!
+      - NEO4J_PLUGINS=["apoc"]
+      - NEO4J_dbms_security_procedures_unrestricted=apoc.*
+    ports:
+      - '127.0.0.1:7474:7474'
+      - '7687:7687'
+    volumes:
+      - neo4j_data:/data
+    restart: unless-stopped
+
 volumes:
   backend_data:
   mongodb_data:
   ninerouter_data:
+  neo4j_data:
+
