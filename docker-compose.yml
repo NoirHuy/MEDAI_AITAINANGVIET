@@ -9,6 +9,7 @@ services:
       # frontend is reached at this origin, not the local dev ports.
       CLIENT_ORIGIN: http://localhost:8080
       MONGODB_URI: ${MONGODB_URI:-mongodb://mongodb:27017/medchat}
+      NEO4J_URI: bolt://neo4j:7687
     volumes:
       - backend_data:/app/data
     restart: unless-stopped
