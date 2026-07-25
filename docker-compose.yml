@@ -36,6 +36,10 @@ services:
   mongodb:
     image: mongo:8.0
     container_name: medchat-mongodb
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: admin
+      MONGO_INITDB_ROOT_PASSWORD: MatKhauCuaHuy2026
+    command: mongod --auth
     ports:
       - '27018:27017'
     volumes:
