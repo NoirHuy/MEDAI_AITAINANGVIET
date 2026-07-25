@@ -1,3 +1,8 @@
 {$DOMAIN} {
-	reverse_proxy frontend:7860
+	handle /api/* {
+		reverse_proxy backend:4000
+	}
+	handle {
+		reverse_proxy frontend:7860
+	}
 }
