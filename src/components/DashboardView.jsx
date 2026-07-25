@@ -816,7 +816,9 @@ export default function DashboardView({ account, onBack, onSignOut, lang, initia
                         <div className="chart-bar-fill" style={{ height: `${heightPercent}%` }} title={`Doanh thu: $${c.totalCost.toFixed(3)}`} />
                       </div>
                       <span className="col-label-date">{c._id.slice(-5)}</span>
-                      <span className="col-label-cost">${c.totalCost.toFixed(2)}</span>
+                      <span className="col-label-cost">
+                        {c.totalCost > 0 && c.totalCost < 0.01 ? `$${c.totalCost.toFixed(4)}` : `$${c.totalCost.toFixed(2)}`}
+                      </span>
                     </div>
                   )
                 })}
