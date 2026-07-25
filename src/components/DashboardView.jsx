@@ -801,38 +801,63 @@ export default function DashboardView({ account, onBack, onSignOut, lang, initia
               </div>
             </div>
 
-            {/* Line chart mock for cost */}
+            {/* Modern Redesigned Cost & Tokens Chart */}
             <div className="card-box mt-6">
-              <h3>Thống kê chi phí API LLM &amp; Tokens tích lũy</h3>
-              <p className="chart-subtitle">Ghi nhận mức độ tiêu thụ của mô hình AI theo thời gian</p>
-              
-              <div className="costs-chart-custom mt-4">
-                {opsLogs.costs.map((c, idx) => {
-                  const maxTokens = Math.max(...opsLogs.costs.map(x => x.totalTokens || 1)) || 10000
-                  const heightPercent = Math.max(12, Math.round(((c.totalTokens || 0) / maxTokens) * 100))
-                  const tokenFormatted = (c.totalTokens || 0) >= 1000 
-                    ? `${((c.totalTokens || 0) / 1000).toFixed(1)}k tokens` 
-                    : `${c.totalTokens || 0} tokens`
-                  return (
-                    <div className="cost-chart-col" key={idx}>
-                      <div className="chart-bar-wrapper">
-                        <div 
-                          className="chart-bar-fill" 
-                          style={{ height: `${heightPercent}%` }} 
-                          title={`Tổng tiêu thụ: ${(c.totalTokens || 0).toLocaleString('vi-VN')} tokens ($${(c.totalCost || 0).toFixed(4)})`} 
-                        />
+              {(() => {
+                const totalTokensPeriod = opsLogs.costs.reduce((acc, x) => acc + (x.totalTokens || 0), 0)
+                const totalCostPeriod = opsLogs.costs.reduce((acc, x) => acc + (x.totalCost || 0), 0)
+                return (
+                  <>
+                    <div className="ops-chart-header">
+                      <div>
+                        <h3>Thống kê chi phí API LLM &amp; Tokens tích lũy</h3>
+                        <p className="chart-subtitle">Ghi nhận mức độ tiêu thụ của mô hình AI theo thời gian</p>
                       </div>
-                      <span className="col-label-date">{c._id.slice(-5)}</span>
-                      <span className="col-label-cost" style={{ fontSize: '11px', fontWeight: 'bold' }}>
-                        {tokenFormatted}
-                      </span>
-                      <span className="col-label-subcost" style={{ fontSize: '10.5px', color: 'var(--text-muted)' }}>
-                        {c.totalCost > 0 && c.totalCost < 0.01 ? `$${c.totalCost.toFixed(4)}` : `$${c.totalCost.toFixed(2)}`}
-                      </span>
+                      <div className="ops-summary-badges">
+                        <div className="ops-badge ops-badge--tokens">
+                          <span className="ops-badge-label">Tổng Tokens</span>
+                          <span className="ops-badge-val">⚡ {totalTokensPeriod.toLocaleString('vi-VN')}</span>
+                        </div>
+                        <div className="ops-badge ops-badge--cost">
+                          <span className="ops-badge-label">Ước tính chi phí</span>
+                          <span className="ops-badge-val">💵 ${totalCostPeriod < 0.01 ? totalCostPeriod.toFixed(4) : totalCostPeriod.toFixed(2)}</span>
+                        </div>
+                      </div>
                     </div>
-                  )
-                })}
-              </div>
+
+                    <div className="modern-cost-chart-container mt-4">
+                      {opsLogs.costs.map((c, idx) => {
+                        const maxTokens = Math.max(...opsLogs.costs.map(x => x.totalTokens || 1)) || 10000
+                        const heightPercent = Math.max(15, Math.round(((c.totalTokens || 0) / maxTokens) * 100))
+                        const tokenFormatted = (c.totalTokens || 0) >= 1000 
+                          ? `${((c.totalTokens || 0) / 1000).toFixed(1)}k` 
+                          : `${c.totalTokens || 0}`
+                        
+                        return (
+                          <div className="modern-chart-col" key={idx}>
+                            <div className="modern-bar-top-badge">
+                              <span className="token-pill">{tokenFormatted}</span>
+                            </div>
+                            <div className="modern-bar-track">
+                              <div 
+                                className="modern-bar-fill" 
+                                style={{ height: `${heightPercent}%` }} 
+                                title={`Ngày ${c._id}: ${(c.totalTokens || 0).toLocaleString('vi-VN')} tokens | $${(c.totalCost || 0).toFixed(4)}`} 
+                              />
+                            </div>
+                            <div className="modern-bar-labels">
+                              <span className="bar-date-label">{c._id.slice(-5).replace('-', '/')}</span>
+                              <span className="bar-cost-badge">
+                                {c.totalCost > 0 && c.totalCost < 0.01 ? `$${c.totalCost.toFixed(4)}` : `$${c.totalCost.toFixed(2)}`}
+                              </span>
+                            </div>
+                          </div>
+                        )
+                      })}
+                    </div>
+                  </>
+                )
+              })()}
             </div>
 
             {/* Errors logs list */}

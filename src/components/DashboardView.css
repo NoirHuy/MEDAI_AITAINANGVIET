@@ -1041,3 +1041,140 @@
   font-weight: 600;
 }
 
+/* ─── Modern Redesigned Cost & Tokens Chart Styles ─────────────────────────── */
+.ops-chart-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  gap: 1.5rem;
+  margin-bottom: 1.25rem;
+  flex-wrap: wrap;
+}
+
+.ops-summary-badges {
+  display: flex;
+  gap: 0.75rem;
+}
+
+.ops-badge {
+  display: flex;
+  flex-direction: column;
+  background-color: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  padding: 0.5rem 0.85rem;
+  min-width: 120px;
+}
+
+.ops-badge--tokens {
+  background: color-mix(in srgb, #1a73e8 6%, #ffffff);
+  border-color: color-mix(in srgb, #1a73e8 20%, #e2e8f0);
+}
+
+.ops-badge--cost {
+  background: color-mix(in srgb, #10b981 6%, #ffffff);
+  border-color: color-mix(in srgb, #10b981 20%, #e2e8f0);
+}
+
+.ops-badge-label {
+  font-size: 0.7rem;
+  font-weight: 600;
+  color: #64748b;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+}
+
+.ops-badge-val {
+  font-size: 1.05rem;
+  font-weight: 750;
+  color: #0f172a;
+  margin-top: 0.15rem;
+}
+
+.modern-cost-chart-container {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-around;
+  gap: 1rem;
+  height: 200px;
+  padding: 1.25rem 0.5rem 0.5rem;
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 14px;
+}
+
+.modern-chart-col {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.4rem;
+  height: 100%;
+  flex-grow: 1;
+  max-width: 64px;
+}
+
+.modern-bar-top-badge {
+  min-height: 22px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.token-pill {
+  background-color: #ffffff;
+  border: 1px solid #cbd5e1;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+  color: #1a73e8;
+  font-size: 0.75rem;
+  font-weight: 700;
+  padding: 0.15rem 0.45rem;
+  border-radius: 20px;
+  white-space: nowrap;
+}
+
+.modern-bar-track {
+  width: 34px;
+  flex-grow: 1;
+  background-color: #e2e8f0;
+  border-radius: 10px;
+  display: flex;
+  align-items: flex-end;
+  overflow: hidden;
+  padding: 2px;
+}
+
+.modern-bar-fill {
+  width: 100%;
+  background: linear-gradient(180deg, #1a73e8 0%, #4285f4 100%);
+  border-radius: 8px;
+  transition: height 0.6s cubic-bezier(0.34, 1.56, 0.64, 1);
+  box-shadow: 0 2px 6px rgba(26, 115, 232, 0.25);
+}
+
+.modern-chart-col:hover .modern-bar-fill {
+  background: linear-gradient(180deg, #1557b0 0%, #1a73e8 100%);
+  box-shadow: 0 4px 10px rgba(26, 115, 232, 0.4);
+}
+
+.modern-bar-labels {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.15rem;
+}
+
+.bar-date-label {
+  font-size: 0.75rem;
+  font-weight: 650;
+  color: #334155;
+}
+
+.bar-cost-badge {
+  font-size: 0.68rem;
+  font-weight: 600;
+  color: #059669;
+  background-color: #d1fae5;
+  padding: 0.05rem 0.35rem;
+  border-radius: 4px;
+}
+
