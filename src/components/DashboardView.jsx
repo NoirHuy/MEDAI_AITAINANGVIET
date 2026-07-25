@@ -808,15 +808,25 @@ export default function DashboardView({ account, onBack, onSignOut, lang, initia
               
               <div className="costs-chart-custom mt-4">
                 {opsLogs.costs.map((c, idx) => {
-                  const maxCost = Math.max(...opsLogs.costs.map(x => x.totalCost)) || 0.5
-                  const heightPercent = Math.max(10, Math.round((c.totalCost / maxCost) * 100))
+                  const maxTokens = Math.max(...opsLogs.costs.map(x => x.totalTokens || 1)) || 10000
+                  const heightPercent = Math.max(12, Math.round(((c.totalTokens || 0) / maxTokens) * 100))
+                  const tokenFormatted = (c.totalTokens || 0) >= 1000 
+                    ? `${((c.totalTokens || 0) / 1000).toFixed(1)}k tokens` 
+                    : `${c.totalTokens || 0} tokens`
                   return (
                     <div className="cost-chart-col" key={idx}>
                       <div className="chart-bar-wrapper">
-                        <div className="chart-bar-fill" style={{ height: `${heightPercent}%` }} title={`Doanh thu: $${c.totalCost.toFixed(3)}`} />
+                        <div 
+                          className="chart-bar-fill" 
+                          style={{ height: `${heightPercent}%` }} 
+                          title={`Tổng tiêu thụ: ${(c.totalTokens || 0).toLocaleString('vi-VN')} tokens ($${(c.totalCost || 0).toFixed(4)})`} 
+                        />
                       </div>
                       <span className="col-label-date">{c._id.slice(-5)}</span>
-                      <span className="col-label-cost">
+                      <span className="col-label-cost" style={{ fontSize: '11px', fontWeight: 'bold' }}>
+                        {tokenFormatted}
+                      </span>
+                      <span className="col-label-subcost" style={{ fontSize: '10.5px', color: 'var(--text-muted)' }}>
                         {c.totalCost > 0 && c.totalCost < 0.01 ? `$${c.totalCost.toFixed(4)}` : `$${c.totalCost.toFixed(2)}`}
                       </span>
                     </div>
