@@ -39,13 +39,19 @@ router.get(
     const activeUsersList = await ConversationModel.distinct('userId', { createdAt: { $gte: startOfMonth } })
     const activeUsers = Math.max(activeUsersList.length, 1)
 
-    // C. Thời gian phản hồi trung bình (Từ log hiệu năng)
+    // C. Thời gian phản hồi trung bình (Từ log hiệu năng thực tế trong MongoDB)
     const avgResponseTimeAggregate = await SystemLogModel.aggregate([
       { $match: { type: 'perf', createdAt: { $gte: startOfMonth } } },
-      { $group: { _id: null, avgTime: { $mergeObjects: { avg: { $avg: '$meta.durationMs' } } } } }
+      { $group: { _id: null, avgTime: { $avg: '$meta.durationMs' } } }
     ])
-    // Fallback if no logs
-    const avgResponseTimeMs = Math.round(avgResponseTimeAggregate[0]?.avgTime?.avg || 1850)
+    let avgResponseTimeMs = Math.round(avgResponseTimeAggregate[0]?.avgTime || 0)
+    if (!avgResponseTimeMs) {
+      const convAvg = await ConversationModel.aggregate([
+        { $match: { responseTimeMs: { $gt: 0 } } },
+        { $group: { _id: null, avgTime: { $avg: '$responseTimeMs' } } }
+      ])
+      avgResponseTimeMs = Math.round(convAvg[0]?.avgTime || 0)
+    }
 
     // D. Tỷ lệ cuộc gọi khẩn cấp (Emergency rate) & Phân bố nguy cơ thực tế từ CSDL
     const emergencyChats = await ConversationModel.countDocuments({ urgency: 'emergency' })
