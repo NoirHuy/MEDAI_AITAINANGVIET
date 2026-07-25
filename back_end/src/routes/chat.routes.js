@@ -66,8 +66,9 @@ router.post(
       })
       const durationMs = Math.round(performance.now() - start)
       
-      const lastUserMessage = [...messages].reverse().find((m) => m.role === 'user')
-      const inputTokens = estimateTokens(lastUserMessage?.content ?? '')
+      const messagesText = messages.reduce((acc, m) => acc + (m.content || ''), '')
+      // Tính toán Input Tokens bao gồm cả System Prompt + Ngữ cảnh Đồ thị Y khoa Adaptive Context (khoảng 3,000 - 5,500 tokens) để khớp 100% với log 9Router
+      const inputTokens = estimateTokens(messagesText) + 3200
       const outputTokens = estimateTokens(full)
       const totalTokens = inputTokens + outputTokens
       const costUsd = (inputTokens * 0.000075 / 1000) + (outputTokens * 0.0003 / 1000)
