@@ -3,7 +3,7 @@ import { UserMemoryModel } from '../../db/user_memory.model.js'
 import { logMemoryAudit } from '../../db/memory_audit.model.js'
 import { getUserMemorySettings } from '../../db/user_memory_settings.model.js'
 import { encryptText, decryptText } from '../../utils/memoryCrypto.js'
-import { validateMedicalCandidates } from './medicalValidator.js'
+import { partitionMedicalCandidates } from './medicalValidator.js'
 
 /**
  * Runs an asynchronous background AI memory extraction pass after chat completion.
@@ -88,8 +88,32 @@ Trả về định dạng JSON thuần duy nhất dạng mảng:
     const parsedCandidates = JSON.parse(jsonMatch[0])
     if (!Array.isArray(parsedCandidates) || parsedCandidates.length === 0) return
 
-    // Medical Validation & Confidence Filter
-    const validCandidates = validateMedicalCandidates(parsedCandidates)
+    // Partition into Valid (high confidence confirmed) vs Ignored (low confidence)
+    const { valid: validCandidates, ignored: ignoredCandidates } = partitionMedicalCandidates(parsedCandidates)
+
+    // Save low-confidence ignored candidates with 30-day TTL for debug tracking
+    for (const ignoredItem of ignoredCandidates) {
+      try {
+        await UserMemoryModel.create({
+          userId,
+          category: ignoredItem.category || 'lifestyle',
+          memoryType: ignoredItem.memoryType || 'observation',
+          content: encryptText(ignoredItem.content, 1),
+          keyVersion: 1,
+          status: 'ignored',
+          subject: ignoredItem.subject || 'self',
+          importance: 'low',
+          medicalStatus: ignoredItem.medicalStatus || 'hypothetical',
+          confidence: ignoredItem.confidence,
+          source: 'conversation',
+          isLocked: false,
+          conversationId,
+          extractedAt: new Date(),
+          ignoredExpiresAt: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000), // 30 days TTL
+        })
+      } catch (err) {}
+    }
+
     if (validCandidates.length === 0) return
 
     // Fetch current active user memories for semantic deduplication & conflict resolution

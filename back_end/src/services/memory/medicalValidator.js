@@ -1,33 +1,41 @@
 import { env } from '../../config/env.js'
 
 /**
- * Validates candidate extracted memory items before saving or deduplication.
+ * Partitions candidate extracted memory items into valid (high confidence confirmed)
+ * and ignored (low confidence or non-confirmed) items for debug tracking.
  * @param {Array} candidateItems 
- * @returns {Array} Array of valid candidate items that passed medical validation and confidence threshold.
+ * @returns {{ valid: Array, ignored: Array }}
  */
-export function validateMedicalCandidates(candidateItems = []) {
+export function partitionMedicalCandidates(candidateItems = []) {
   const minConfidence = env.memoryMinConfidence || 0.70
 
-  return candidateItems.filter(item => {
-    if (!item || !item.content || typeof item.content !== 'string') return false
-    
-    // Medical status filter: MUST be confirmed medical facts, not hypothetical questions
+  const valid = []
+  const ignored = []
+
+  for (const item of candidateItems) {
+    if (!item || !item.content || typeof item.content !== 'string') continue
     const status = (item.medicalStatus || 'confirmed').toLowerCase()
-    if (status !== 'confirmed') {
-      return false
-    }
-
-    // Confidence score filter
     const conf = Number(item.confidence) || 0
-    if (conf < minConfidence) {
-      return false
-    }
 
-    return true
-  }).map(item => ({
-    ...item,
-    confidence: Number(item.confidence) || 0.9,
-    subject: ['self', 'family', 'other'].includes(item.subject) ? item.subject : 'self',
-    medicalStatus: 'confirmed',
-  }))
+    if (status === 'confirmed' && conf >= minConfidence) {
+      valid.push({
+        ...item,
+        confidence: conf,
+        subject: ['self', 'family', 'other'].includes(item.subject) ? item.subject : 'self',
+        medicalStatus: 'confirmed',
+      })
+    } else if (conf >= 0.3) {
+      ignored.push({
+        ...item,
+        confidence: conf,
+        subject: ['self', 'family', 'other'].includes(item.subject) ? item.subject : 'self',
+      })
+    }
+  }
+
+  return { valid, ignored }
+}
+
+export function validateMedicalCandidates(candidateItems = []) {
+  return partitionMedicalCandidates(candidateItems).valid
 }
