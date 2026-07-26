@@ -20,9 +20,9 @@ export const env = {
   googleClientId: process.env.GOOGLE_CLIENT_ID ? process.env.GOOGLE_CLIENT_ID.trim() : null,
   // Mark the session cookie Secure once this is actually served over HTTPS.
   cookieSecure: process.env.COOKIE_SECURE === 'true',
-  neo4jUri: (process.env.NEO4J_URI || 'neo4j+s://01ebae5f.databases.neo4j.io').trim(),
+  neo4jUri: (process.env.NEO4J_URI || 'bolt://103.56.160.46:7687').trim(),
   neo4jUsername: (process.env.NEO4J_USERNAME || 'neo4j').trim(),
-  neo4jPassword: (process.env.NEO4J_PASSWORD || '').trim(),
+  neo4jPassword: (process.env.NEO4J_PASSWORD || 'MatKhauNeo4j2026!').trim(),
   neo4jDatabase: (process.env.NEO4J_DATABASE || 'neo4j').trim(),
   mongodbUri: (process.env.MONGODB_URI || 'mongodb://localhost:27018/medchat').trim(),
   umlsApiKey: process.env.UMLS_API_KEY ? process.env.UMLS_API_KEY.trim() : null,
