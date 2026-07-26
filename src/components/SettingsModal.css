@@ -650,7 +650,7 @@
 }
 
 /* ─── STYLES FOR TRÍ NHỚ THÔNG MINH CÁ NHÂN TAB ─── */
-.memory-header-row {
+.memory-tab-header {
   display: flex;
   justify-content: space-between;
   align-items: flex-start;
@@ -658,156 +658,198 @@
   margin-bottom: 16px;
 }
 
-.memory-toggle-row {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
+.memory-category-toggles {
+  margin-top: 16px;
+  padding-top: 14px;
+  border-top: 1px dashed var(--border-subtle);
 }
 
-.memory-form-grid {
+.memory-toggles-title {
+  display: block;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin-bottom: 10px;
+}
+
+.memory-toggles-grid {
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 10px;
-  margin-top: 8px;
 }
 
-.memory-form-grid input {
-  grid-column: span 2;
-}
-
-.memory-form-grid button {
-  grid-column: span 2;
-}
-
-.memory-select, .memory-input {
-  background: var(--bg-surface);
-  border: 1px solid var(--border-subtle);
-  border-radius: var(--radius-sm);
-  padding: 8px 12px;
+.memory-checkbox-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
   font-size: 13px;
   color: var(--text-primary);
+  cursor: pointer;
 }
 
-.memory-item-list {
+.memory-checkbox-item input[type='checkbox'] {
+  accent-color: var(--bg-accent);
+  width: 16px;
+  height: 16px;
+}
+
+.memory-form-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+
+.memory-select-input {
+  border: 1px solid var(--border-subtle);
+  background: var(--bg-surface);
+  border-radius: var(--radius-sm);
+  padding: 9px 12px;
+  font-size: 13.5px;
+  color: var(--text-primary);
+  outline: none;
+}
+
+.memory-select-input:focus {
+  border-color: var(--bg-accent);
+}
+
+.memory-form-actions {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 10px;
+}
+
+.memory-list-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 14px;
+}
+
+.empty-memory-state {
+  text-align: center;
+  padding: 24px 16px;
+  color: var(--text-muted);
+}
+
+.empty-title {
+  font-size: 14px;
+  font-weight: 600;
+  margin: 0 0 4px;
+  color: var(--text-secondary);
+}
+
+.empty-desc {
+  font-size: 12.5px;
+  margin: 0;
+}
+
+.memory-cards-container {
   display: flex;
   flex-direction: column;
   gap: 10px;
 }
 
-.memory-card-item {
-  background: var(--bg-surface-hover);
+.memory-item-card {
+  background: var(--bg-surface);
   border: 1px solid var(--border-subtle);
   border-radius: var(--radius-md);
   padding: 12px 14px;
   transition: all 0.2s ease;
 }
 
-.memory-card-item.is-locked {
+.memory-item-card--locked {
   border-left: 3px solid #f59e0b;
 }
 
-.memory-card-header {
+.memory-item-top {
   display: flex;
   align-items: center;
-  gap: 8px;
+  justify-content: space-between;
+  margin-bottom: 8px;
+}
+
+.memory-tags-group {
+  display: flex;
+  align-items: center;
+  gap: 6px;
   flex-wrap: wrap;
-  margin-bottom: 6px;
+}
+
+.memory-subject-tag {
   font-size: 11px;
-}
-
-.memory-cat-badge {
   padding: 2px 8px;
-  border-radius: 12px;
-  font-weight: 600;
-  background: rgba(16, 185, 129, 0.15);
-  color: #10b981;
-}
-
-.memory-cat--allergy {
-  background: rgba(239, 68, 68, 0.15);
-  color: #ef4444;
-}
-
-.memory-cat--chronic_condition {
-  background: rgba(245, 158, 11, 0.15);
-  color: #f59e0b;
-}
-
-.memory-cat--medication {
-  background: rgba(59, 130, 246, 0.15);
-  color: #3b82f6;
-}
-
-.memory-subject-badge {
-  padding: 2px 8px;
-  border-radius: 12px;
-  background: var(--bg-surface);
+  border-radius: 10px;
+  background: var(--bg-surface-hover);
   color: var(--text-secondary);
 }
 
-.memory-locked-badge {
+.memory-locked-tag {
+  font-size: 11px;
   color: #f59e0b;
   font-weight: 600;
 }
 
-.memory-source-tag {
-  margin-left: auto;
+.memory-source-meta {
+  font-size: 11px;
   color: var(--text-muted);
 }
 
-.memory-content-text {
-  margin: 0;
-  font-size: 13.5px;
+.memory-item-content {
+  margin: 0 0 10px;
+  font-size: 14px;
   color: var(--text-primary);
   line-height: 1.4;
 }
 
-.memory-card-footer {
+.memory-item-bottom {
   display: flex;
-  justify-content: space-between;
   align-items: center;
-  margin-top: 8px;
-  padding-top: 6px;
+  justify-content: space-between;
+  padding-top: 8px;
   border-top: 1px dashed var(--border-subtle);
+}
+
+.memory-item-date {
   font-size: 11px;
   color: var(--text-muted);
 }
 
-.memory-actions-row {
+.memory-item-actions {
   display: flex;
   gap: 6px;
 }
 
-.btn-icon-sm {
+.btn-icon-action {
   background: transparent;
-  border: none;
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-sm);
+  padding: 4px 8px;
+  color: var(--text-secondary);
+  font-size: 14px;
   cursor: pointer;
-  padding: 4px;
-  border-radius: 4px;
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  font-size: 14px;
+  transition: all 0.2s ease;
 }
 
-.btn-icon-sm:hover {
-  background: var(--bg-surface);
+.btn-icon-action:hover {
+  background: var(--bg-surface-hover);
+  color: var(--text-primary);
 }
 
-.medical-disclaimer-box {
-  display: flex;
-  align-items: flex-start;
-  gap: 10px;
+.btn-icon-action--active {
+  color: #f59e0b;
+  border-color: rgba(245, 158, 11, 0.4);
   background: rgba(245, 158, 11, 0.08);
-  border: 1px solid rgba(245, 158, 11, 0.25);
-  border-radius: var(--radius-md);
-  padding: 10px 14px;
-  font-size: 12px;
-  color: var(--text-secondary);
-  line-height: 1.4;
 }
 
-.medical-disclaimer-box p {
-  margin: 0;
+.btn-icon-action--danger:hover {
+  color: #ef4444;
+  border-color: rgba(239, 68, 68, 0.4);
+  background: rgba(239, 68, 68, 0.08);
 }
 

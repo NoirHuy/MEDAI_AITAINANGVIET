@@ -481,8 +481,8 @@ export default function SettingsModal({
 
           {/* TAB 2: TRÍ NHỚ THÔNG MINH CÁ NHÂN */}
           {activeTab === 'memory' && (
-            <section className="memory-tab-section">
-              <div className="memory-header-row">
+            <section>
+              <div className="memory-tab-header">
                 <div>
                   <h2>Trí nhớ thông minh cá nhân</h2>
                   <p className="settings-modal__hint">
@@ -498,176 +498,201 @@ export default function SettingsModal({
                 </button>
               </div>
 
-              {/* TÙY CHỈNH TỰ ĐỘNG GHI NHỚ */}
-              <div className="settings-section-box mb-4">
-                <div className="memory-toggle-row">
-                  <div>
+              {/* TÙY CHỈNH TỰ ĐỘNG GHI NHỚ (SỬ DỤNG STYLE ĐỒNG BỘ AUTO-RENEW) */}
+              <div className="settings-section-box">
+                <h3 className="settings-subheading">
+                  <BrainIcon /> Cấu hình Tự động Ghi nhớ
+                </h3>
+
+                <div className="auto-renew-row">
+                  <div className="auto-renew-text">
                     <strong>Bật tính năng Trí nhớ thông minh</strong>
-                    <p className="text-muted text-xs">Cho phép AI tham khảo và trích xuất tiền sử y tế của bạn.</p>
+                    <p className="auto-renew-hint">
+                      {memorySettings.memoryEnabled !== false
+                        ? 'Đang BẬT. Cho phép AI tham khảo và tự động trích xuất tiền sử y tế của bạn.'
+                        : 'Đang TẮT. AI sẽ không tham khảo hoặc trích xuất dữ liệu trí nhớ cá nhân.'}
+                    </p>
                   </div>
-                  <label className="switch">
+                  <label className="toggle-switch">
                     <input
                       type="checkbox"
                       checked={memorySettings.memoryEnabled !== false}
                       onChange={(e) => handleToggleMemorySetting('memoryEnabled', e.target.checked)}
                     />
-                    <span className="slider round" />
+                    <span className="toggle-slider" />
                   </label>
                 </div>
 
                 {memorySettings.memoryEnabled !== false && (
-                  <div className="memory-sub-toggles mt-3 pt-3 border-t">
-                    <span className="text-xs font-semibold text-muted uppercase tracking-wider block mb-2">Tự động ghi nhớ theo danh mục:</span>
-                    <div className="grid grid-cols-2 gap-2 text-sm">
-                      <label className="flex items-center gap-2 cursor-pointer">
+                  <div className="memory-category-toggles">
+                    <span className="memory-toggles-title">Ghi nhớ theo từng danh mục:</span>
+                    <div className="memory-toggles-grid">
+                      <label className="memory-checkbox-item">
                         <input
                           type="checkbox"
                           checked={memorySettings.autoRememberAllergies !== false}
                           onChange={(e) => handleToggleMemorySetting('autoRememberAllergies', e.target.checked)}
                         />
-                        <span>Dị ứng thuốc & thức ăn</span>
+                        <span>🚨 Dị ứng thuốc & thức ăn</span>
                       </label>
-                      <label className="flex items-center gap-2 cursor-pointer">
+                      <label className="memory-checkbox-item">
                         <input
                           type="checkbox"
                           checked={memorySettings.autoRememberChronic !== false}
                           onChange={(e) => handleToggleMemorySetting('autoRememberChronic', e.target.checked)}
                         />
-                        <span>Bệnh nền mãn tính</span>
+                        <span>🏥 Bệnh nền mãn tính</span>
                       </label>
-                      <label className="flex items-center gap-2 cursor-pointer">
+                      <label className="memory-checkbox-item">
                         <input
                           type="checkbox"
                           checked={memorySettings.autoRememberMedications !== false}
                           onChange={(e) => handleToggleMemorySetting('autoRememberMedications', e.target.checked)}
                         />
-                        <span>Thuốc đang sử dụng</span>
+                        <span>💊 Thuốc đang sử dụng</span>
                       </label>
-                      <label className="flex items-center gap-2 cursor-pointer">
+                      <label className="memory-checkbox-item">
                         <input
                           type="checkbox"
                           checked={memorySettings.autoRememberEpisodes !== false}
                           onChange={(e) => handleToggleMemorySetting('autoRememberEpisodes', e.target.checked)}
                         />
-                        <span>Đợt bệnh ngắn hạn (90 ngày)</span>
+                        <span>📋 Đợt bệnh ngắn hạn (90 ngày)</span>
                       </label>
                     </div>
                   </div>
                 )}
               </div>
 
+              <div className="settings-divider" />
+
               {/* FORM THÊM TRÍ NHỚ THỦ CÔNG */}
-              <form onSubmit={handleAddMemorySubmit} className="memory-add-form settings-section-box mb-4">
-                <h3 className="settings-subheading text-sm mb-2">➕ Thêm tiền sử y tế thủ công</h3>
-                <div className="memory-form-grid">
-                  <select
-                    className="memory-select"
-                    value={newMemoryCategory}
-                    onChange={(e) => setNewMemoryCategory(e.target.value)}
-                  >
-                    <option value="allergy">🚨 Dị ứng (Allergy)</option>
-                    <option value="chronic_condition">🏥 Bệnh nền (Chronic)</option>
-                    <option value="medication">💊 Thuốc đang dùng (Medication)</option>
-                    <option value="blood_type">🩸 Nhóm máu (Blood Type)</option>
-                    <option value="pregnancy">👶 Thai kỳ (Pregnancy)</option>
-                    <option value="past_episode">📋 Đợt bệnh trước (Past Episode)</option>
-                    <option value="lifestyle">🏃 Lối sống (Lifestyle)</option>
-                    <option value="display_preference">⚙️ Hiển thị (Preference)</option>
-                  </select>
+              <div className="settings-section-box">
+                <h3 className="settings-subheading">
+                  ➕ Thêm tiền sử y tế thủ công
+                </h3>
 
-                  <select
-                    className="memory-select"
-                    value={newMemorySubject}
-                    onChange={(e) => setNewMemorySubject(e.target.value)}
-                  >
-                    <option value="self">👤 Bản thân tôi</option>
-                    <option value="family">👨‍👩‍👧 Tiền sử gia đình</option>
-                  </select>
+                <form onSubmit={handleAddMemorySubmit} className="memory-add-form-box">
+                  <div className="memory-form-row">
+                    <label className="settings-field">
+                      <span>Danh mục</span>
+                      <select
+                        className="memory-select-input"
+                        value={newMemoryCategory}
+                        onChange={(e) => setNewMemoryCategory(e.target.value)}
+                      >
+                        <option value="allergy">🚨 Dị ứng (Allergy)</option>
+                        <option value="chronic_condition">🏥 Bệnh nền (Chronic)</option>
+                        <option value="medication">💊 Thuốc đang dùng (Medication)</option>
+                        <option value="blood_type">🩸 Nhóm máu (Blood Type)</option>
+                        <option value="pregnancy">👶 Thai kỳ (Pregnancy)</option>
+                        <option value="past_episode">📋 Đợt bệnh trước (Past Episode)</option>
+                        <option value="lifestyle">🏃 Lối sống (Lifestyle)</option>
+                        <option value="display_preference">⚙️ Hiển thị (Preference)</option>
+                      </select>
+                    </label>
 
-                  <input
-                    type="text"
-                    className="memory-input"
-                    placeholder="Nhập thông tin y tế (ví dụ: Dị ứng Penicillin nặng)..."
-                    value={newMemoryContent}
-                    onChange={(e) => setNewMemoryContent(e.target.value)}
-                  />
+                    <label className="settings-field">
+                      <span>Chủ thể</span>
+                      <select
+                        className="memory-select-input"
+                        value={newMemorySubject}
+                        onChange={(e) => setNewMemorySubject(e.target.value)}
+                      >
+                        <option value="self">👤 Bản thân tôi</option>
+                        <option value="family">👨‍👩‍👧 Tiền sử gia đình</option>
+                      </select>
+                    </label>
+                  </div>
 
-                  <button type="submit" className="btn btn--primary btn--sm" disabled={!newMemoryContent.trim()}>
-                    Thêm vào hồ sơ
-                  </button>
-                </div>
-              </form>
+                  <label className="settings-field">
+                    <span>Nội dung tiền sử y tế</span>
+                    <input
+                      type="text"
+                      placeholder="Nhập thông tin (ví dụ: Dị ứng Penicillin nặng, Đái tháo đường Tuýp 2...)"
+                      value={newMemoryContent}
+                      onChange={(e) => setNewMemoryContent(e.target.value)}
+                      required
+                    />
+                  </label>
+
+                  <div className="memory-form-actions">
+                    <button type="submit" className="btn btn--primary btn--sm" disabled={!newMemoryContent.trim()}>
+                      Thêm vào hồ sơ
+                    </button>
+                  </div>
+                </form>
+              </div>
+
+              <div className="settings-divider" />
 
               {/* DANH SÁCH MỤC TRÍ NHỚ ĐÃ LƯU */}
               <div className="settings-section-box">
-                <div className="flex justify-between items-center mb-3">
-                  <h3 className="settings-subheading text-sm font-bold">
-                    🧠 Hồ sơ Trí nhớ cá nhân hiện tại ({memories.length} mục)
+                <div className="memory-list-header">
+                  <h3 className="settings-subheading" style={{ margin: 0 }}>
+                    <BrainIcon /> Hồ sơ Trí nhớ cá nhân ({memories.length} mục)
                   </h3>
                   {memories.length > 0 && (
                     <button
-                      className="btn btn--danger-outline btn--xs"
+                      className="btn btn--danger-outline btn--sm"
                       onClick={handleClearAllMemoriesClick}
                     >
-                      Xóa toàn bộ
+                      <TrashIcon /> Xóa toàn bộ
                     </button>
                   )}
                 </div>
 
                 {memoryLoading ? (
-                  <p className="text-center text-muted py-4">Đang tải hồ sơ trí nhớ đã mã hóa...</p>
+                  <p className="settings-modal__hint text-center" style={{ padding: '16px 0' }}>Đang tải dữ liệu trí nhớ mã hóa...</p>
                 ) : memories.length === 0 ? (
-                  <div className="empty-memory-state text-center py-6 text-muted">
-                    <p className="mb-1">Chưa có thông tin trí nhớ y tế nào được lưu.</p>
-                    <p className="text-xs">Khi bạn trò chuyện với MedChatAI hoặc nhập ở trên, các thông tin quan trọng sẽ được lưu tự động tại đây.</p>
+                  <div className="empty-memory-state">
+                    <p className="empty-title">Chưa có thông tin trí nhớ y tế nào được lưu.</p>
+                    <p className="empty-desc">Khi bạn trò chuyện với MedChatAI hoặc nhập ở trên, các thông tin y tế quan trọng sẽ tự động xuất hiện tại đây.</p>
                   </div>
                 ) : (
-                  <div className="memory-item-list">
+                  <div className="memory-cards-container">
                     {memories.map((mem) => (
-                      <div className={`memory-card-item ${mem.isLocked ? 'is-locked' : ''}`} key={mem.id}>
-                        <div className="memory-card-header">
-                          <span className={`memory-cat-badge memory-cat--${mem.category}`}>
-                            {mem.category === 'allergy' && '🚨 Dị ứng'}
-                            {mem.category === 'chronic_condition' && '🏥 Bệnh nền'}
-                            {mem.category === 'medication' && '💊 Thuốc dùng'}
-                            {mem.category === 'blood_type' && '🩸 Nhóm máu'}
-                            {mem.category === 'pregnancy' && '👶 Thai kỳ'}
-                            {mem.category === 'past_episode' && '📋 Đợt bệnh'}
-                            {mem.category === 'lifestyle' && '🏃 Lối sống'}
-                            {mem.category === 'display_preference' && '⚙️ Hiển thị'}
-                          </span>
-                          <span className={`memory-subject-badge subject--${mem.subject}`}>
-                            {mem.subject === 'family' ? '👨‍👩‍👧 Gia đình' : '👤 Bản thân'}
-                          </span>
-                          {mem.isLocked && (
-                            <span className="memory-locked-badge" title="Đã khóa: AI không được tự ý sửa mục này">
-                              🔒 Đã khóa
+                      <div className={`memory-item-card ${mem.isLocked ? 'memory-item-card--locked' : ''}`} key={mem.id}>
+                        <div className="memory-item-top">
+                          <div className="memory-tags-group">
+                            <span className={`status-pill status-pill--${mem.category === 'allergy' ? 'free' : 'active'}`}>
+                              {mem.category === 'allergy' && '🚨 Dị ứng'}
+                              {mem.category === 'chronic_condition' && '🏥 Bệnh nền'}
+                              {mem.category === 'medication' && '💊 Thuốc dùng'}
+                              {mem.category === 'blood_type' && '🩸 Nhóm máu'}
+                              {mem.category === 'pregnancy' && '👶 Thai kỳ'}
+                              {mem.category === 'past_episode' && '📋 Đợt bệnh'}
+                              {mem.category === 'lifestyle' && '🏃 Lối sống'}
+                              {mem.category === 'display_preference' && '⚙️ Hiển thị'}
                             </span>
-                          )}
-                          <span className="memory-source-tag">
+                            <span className="memory-subject-tag">
+                              {mem.subject === 'family' ? '👨‍👩‍👧 Gia đình' : '👤 Bản thân'}
+                            </span>
+                            {mem.isLocked && (
+                              <span className="memory-locked-tag">🔒 Khóa thủ công</span>
+                            )}
+                          </div>
+                          <span className="memory-source-meta">
                             {mem.source === 'manual' ? 'Thủ công' : 'AI Trích xuất'} (v{mem.version || 1})
                           </span>
                         </div>
 
-                        <div className="memory-card-body">
-                          <p className="memory-content-text">{mem.content}</p>
-                        </div>
+                        <p className="memory-item-content">{mem.content}</p>
 
-                        <div className="memory-card-footer">
-                          <span className="memory-date-text">
+                        <div className="memory-item-bottom">
+                          <span className="memory-item-date">
                             Cập nhật: {new Date(mem.updatedAt || mem.createdAt).toLocaleDateString('vi-VN')}
                           </span>
-
-                          <div className="memory-actions-row">
+                          <div className="memory-item-actions">
                             <button
-                              className={`btn-icon-sm ${mem.isLocked ? 'text-amber-500' : 'text-gray-400'}`}
+                              className={`btn-icon-action ${mem.isLocked ? 'btn-icon-action--active' : ''}`}
                               onClick={() => handleToggleLockSingleMemory(mem.id, mem.isLocked)}
-                              title={mem.isLocked ? 'Mở khóa ký ức' : 'Khóa ký ức (Ngăn AI sửa đổi)'}
+                              title={mem.isLocked ? 'Mở khóa (Cho phép AI cập nhật)' : 'Khóa (Khống chế không cho AI ghi đè)'}
                             >
                               <LockIcon />
                             </button>
                             <button
-                              className="btn-icon-sm text-red-500"
+                              className="btn-icon-action btn-icon-action--danger"
                               onClick={() => handleDeleteSingleMemory(mem.id)}
                               title="Xóa mục trí nhớ này"
                             >
@@ -681,9 +706,9 @@ export default function SettingsModal({
                 )}
               </div>
 
-              {/* HỘP CẢNH BÁO PHÁP LÝ CỐ ĐỊNH */}
-              <div className="medical-disclaimer-box mt-4">
-                <span className="disclaimer-icon">⚠️</span>
+              {/* HỘP CẢNH BÁO PHÁP LÝ DÙNG STYLE ĐỒNG BỘ SETTINGS-INFO-BADGE */}
+              <div className="settings-info-badge" style={{ marginTop: '16px', background: 'rgba(245, 158, 11, 0.08)', borderColor: 'rgba(245, 158, 11, 0.25)' }}>
+                <span>⚠️</span>
                 <p>
                   <strong>Khuyến cáo pháp lý Y tế:</strong> Thông tin trong Trí nhớ cá nhân được sử dụng nhằm mục đích cá nhân hóa các gợi ý tham khảo y tế, không phải là Hồ sơ bệnh án y tế chính thức và không thay thế chẩn đoán lâm sàng của bác sĩ chuyên khoa.
                 </p>
