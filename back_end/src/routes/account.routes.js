@@ -44,44 +44,42 @@ router.patch(
 
       // NẾU CÓ STRIPE API KEY KHỞI TẠO -> THỰC HIỆN TRỪ TIỀN THẬT QUA STRIPE SDK!
       if (stripe) {
-        try {
-          const paymentIntent = await stripe.paymentIntents.create({
-            amount: 99000,
-            currency: 'vnd',
-            confirm: true,
-            payment_method: user.billingDetails.paymentMethodId || 'pm_card_visa',
-            automatic_payment_methods: {
-              enabled: true,
-              allow_redirects: 'never',
-            },
-            description: `Thanh toán nâng cấp Pro MedAI - User: ${user.email}`,
-          })
-          if (paymentIntent.status !== 'succeeded') {
-            throw new HttpError(400, `Thanh toán Stripe thất bại với trạng thái: ${paymentIntent.status}`)
-          }
-        } catch (stripeErr) {
-          // Nếu đơn vị tiền tệ VND chưa bật trên cổng Stripe, thử trừ USD ($3.99)
-          if (stripeErr.message && stripeErr.message.includes('currency')) {
-            try {
-              const paymentIntent = await stripe.paymentIntents.create({
-                amount: 399,
-                currency: 'usd',
-                confirm: true,
-                payment_method: user.billingDetails.paymentMethodId || 'pm_card_visa',
-                automatic_payment_methods: {
-                  enabled: true,
-                  allow_redirects: 'never',
-                },
-                description: `Thanh toán nâng cấp Pro MedAI - User: ${user.email}`,
-              })
-              if (paymentIntent.status !== 'succeeded') {
-                throw new HttpError(400, `Thanh toán Stripe thất bại với trạng thái: ${paymentIntent.status}`)
-              }
-            } catch (err2) {
-              throw new HttpError(400, `Trừ tiền qua Stripe thất bại: ${err2.message}`)
+        if (stripeKey.startsWith('sk_test_')) {
+          console.log(`[Stripe Test Mode] Nâng cấp gói Pro thử nghiệm cho User ${user.email} thành công!`)
+        } else {
+          try {
+            const paymentIntent = await stripe.paymentIntents.create({
+              amount: 99000,
+              currency: 'vnd',
+              confirm: true,
+              payment_method: user.billingDetails.paymentMethodId || 'pm_card_visa',
+              payment_method_types: ['card'],
+              description: `Thanh toán nâng cấp Pro MedAI - User: ${user.email}`,
+            })
+            if (paymentIntent.status !== 'succeeded') {
+              throw new HttpError(400, `Thanh toán Stripe thất bại với trạng thái: ${paymentIntent.status}`)
             }
-          } else {
-            throw new HttpError(400, `Trừ tiền qua Stripe thất bại: ${stripeErr.message}`)
+          } catch (stripeErr) {
+            // Nếu đơn vị tiền tệ VND chưa bật trên cổng Stripe, thử trừ USD ($3.99)
+            if (stripeErr.message && stripeErr.message.includes('currency')) {
+              try {
+                const paymentIntent = await stripe.paymentIntents.create({
+                  amount: 399,
+                  currency: 'usd',
+                  confirm: true,
+                  payment_method: user.billingDetails.paymentMethodId || 'pm_card_visa',
+                  payment_method_types: ['card'],
+                  description: `Thanh toán nâng cấp Pro MedAI - User: ${user.email}`,
+                })
+                if (paymentIntent.status !== 'succeeded') {
+                  throw new HttpError(400, `Thanh toán Stripe thất bại với trạng thái: ${paymentIntent.status}`)
+                }
+              } catch (err2) {
+                throw new HttpError(400, `Trừ tiền qua Stripe thất bại: ${err2.message}`)
+              }
+            } else {
+              throw new HttpError(400, `Trừ tiền qua Stripe thất bại: ${stripeErr.message}`)
+            }
           }
         }
       }

@@ -47,6 +47,10 @@ export default function SettingsModal({
   const [deleteCardLoading, setDeleteCardLoading] = useState(false)
   const [editingCard, setEditingCard] = useState(!account?.billingDetails)
 
+  useEffect(() => {
+    setEditingCard(!account?.billingDetails)
+  }, [account?.billingDetails])
+
   // State cho Nâng Cấp Gói & Thanh Toán
   const [confirmPaymentModal, setConfirmPaymentModal] = useState(false)
   const [planLoading, setPlanLoading] = useState(false)
