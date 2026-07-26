@@ -114,13 +114,10 @@ body {
   overflow: hidden;
 }
 
-button {
-  font-family: inherit;
-  cursor: pointer;
-}
-
+button,
 textarea,
-input {
+input,
+select {
   font-family: inherit;
 }
 

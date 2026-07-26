@@ -19,6 +19,7 @@
   box-shadow: var(--shadow-md);
   display: flex;
   overflow: hidden;
+  font-family: var(--font-sans);
 }
 
 .settings-modal__close {
