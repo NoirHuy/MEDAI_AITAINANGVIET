@@ -4,6 +4,7 @@ import { logMemoryAudit } from '../../db/memory_audit.model.js'
 import { getUserMemorySettings } from '../../db/user_memory_settings.model.js'
 import { encryptText, decryptText } from '../../utils/memoryCrypto.js'
 import { partitionMedicalCandidates } from './medicalValidator.js'
+import { callLLM } from '../llm/llmClient.js'
 
 /**
  * Runs an asynchronous background AI memory extraction pass after chat completion.
@@ -30,7 +31,10 @@ export async function runMemoryExtractionPass({ userId, conversationId, messages
     }
 
     const apiKey = env.llmApiKey
-    if (!apiKey) return
+    if (!apiKey) {
+      console.warn('[MemoryExtractor] No LLM API Key configured. Skipping background extraction.')
+      return
+    }
 
     // Prepare text for LLM extraction pass
     const conversationText = messages
@@ -65,22 +69,14 @@ Trả về định dạng JSON thuần duy nhất dạng mảng:
 ]
 `
 
-    const response = await fetch(`${env.llmBaseUrl}/chat/completions`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${apiKey}`,
-      },
-      body: JSON.stringify({
-        model: env.openrouterModelNer || 'gemini/gemini-3.1-flash-lite-preview',
-        messages: [{ role: 'user', content: extractionPrompt }],
-        temperature: 0.1,
-      }),
+    const rawOutput = await callLLM({
+      messages: [{ role: 'user', content: extractionPrompt }],
+      model: env.openrouterModelNer || env.openrouterModelChat,
+      stream: false,
+      maxTokens: 1000
     })
 
-    if (!response.ok) return
-    const data = await response.json()
-    const rawOutput = data.choices?.[0]?.message?.content || ''
+    if (!rawOutput) return
 
     const jsonMatch = rawOutput.match(/\[[\s\S]*\]/)
     if (!jsonMatch) return

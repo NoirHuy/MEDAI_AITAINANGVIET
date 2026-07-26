@@ -12,7 +12,12 @@ export const env = {
     return this.ninerouterApi || this.openrouterApiKey
   },
   get llmBaseUrl() {
-    return this.ninerouterUrl || this.openrouterBaseUrl
+    const url = this.ninerouterUrl || this.openrouterBaseUrl
+    // If ninerouter is set to docker container host 'http://ninerouter:20128' but running on local machine, use 127.0.0.1:20128 or openrouter fallback
+    if (url.includes('http://ninerouter')) {
+      return this.openrouterApiKey ? this.openrouterBaseUrl : 'http://127.0.0.1:20128/v1'
+    }
+    return url
   },
   openrouterModel: (process.env.OPENROUTER_MODEL || 'deepseek/deepseek-v4-flash').trim(),
   openrouterModelNer: (process.env.OPENROUTER_MODEL_NER || 'google/gemini-2.5-flash-lite').trim(),
