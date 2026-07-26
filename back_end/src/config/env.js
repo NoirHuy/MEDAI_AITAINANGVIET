@@ -36,4 +36,8 @@ export const env = {
   wAssociated: Number(process.env.W_ASSOCIATED) || 1.0,
   penaltyMultiplier: Number(process.env.PENALTY_MULTIPLIER) || 0.8,
   confidenceThreshold: Number(process.env.CONFIDENCE_THRESHOLD) || 0.7,
+  memoryEncryptionKey: (process.env.MEMORY_ENCRYPTION_KEY || process.env.JWT_SECRET || 'default_medai_memory_secret_key_32bytes').trim(),
+  memoryMaxPerUser: Number(process.env.MEMORY_MAX_PER_USER) || 500,
+  memoryMinConfidence: Number(process.env.MEMORY_MIN_CONFIDENCE) || 0.70,
+  memoryTokenBudget: Number(process.env.MEMORY_TOKEN_BUDGET) || 500,
 }

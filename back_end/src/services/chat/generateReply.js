@@ -29,13 +29,31 @@ function buildMockReply(userText, specialtyId, lang = 'vi') {
     `*Hướng dẫn: Mở \`medchat/back_end/.env\` và điền vào \`OPENROUTER_API_KEY=...\`*`
 }
 
-export async function generateReply({ messages, specialtyId, lang = 'vi', isSuggestionDemo = false, onChunk, signal }) {
+import { getActiveMemoryContext } from '../memory/memoryRetrieval.js'
+
+export async function generateReply({ messages, specialtyId, lang = 'vi', isSuggestionDemo = false, userId = null, sessionMemoryPaused = false, onChunk, signal }) {
   const isEn = lang === 'en'
 
   // No API Key: return demo mock streaming reply
   if (!env.llmApiKey) {
     const lastUser = [...messages].reverse().find(m => m.role === 'user')
-    return streamText(buildMockReply(lastUser?.content ?? '', specialtyId, lang), onChunk, signal)
+    const fullReplyText = await streamText(buildMockReply(lastUser?.content ?? '', specialtyId, lang), onChunk, signal)
+    return { fullReplyText, memoriesUsed: [] }
+  }
+
+  // Active Memory Retrieval for authenticated user
+  const lastUserText = [...messages].reverse().find(m => m.role === 'user')?.content || ''
+  let memoryPromptBlock = ''
+  let memoriesUsed = []
+
+  if (userId && !sessionMemoryPaused) {
+    try {
+      const memRes = await getActiveMemoryContext(userId, lastUserText)
+      memoryPromptBlock = memRes.promptBlock
+      memoriesUsed = memRes.memoriesUsed
+    } catch (e) {
+      console.error('[GenerateReply] Memory retrieval error:', e)
+    }
   }
 
   // TRUE ADAPTIVE GRAPHRAG for Pediatrics specialty
@@ -67,11 +85,15 @@ export async function generateReply({ messages, specialtyId, lang = 'vi', isSugg
       ? formatAdaptiveContext(adaptiveCtx, lang)
       : (isEn ? '*[No graph data yet — please ask for symptoms]*' : '*[Chưa có dữ liệu đồ thị — hãy hỏi triệu chứng ban đầu]*')
 
-    const systemPrompt = renderSystemPrompt(specialtyId, lang, {
+    let systemPrompt = renderSystemPrompt(specialtyId, lang, {
       checklistStatus,
       phase,
       ADAPTIVE_CONTEXT: adaptiveText
     })
+
+    if (memoryPromptBlock) {
+      systemPrompt += `\n\n${memoryPromptBlock}`
+    }
 
     const chatMessages = [
       { role: 'system', content: systemPrompt },
@@ -79,7 +101,7 @@ export async function generateReply({ messages, specialtyId, lang = 'vi', isSugg
     ]
 
     const maxTokens = phase === 1 ? 800 : 2500
-    return callLLM({
+    const fullReplyText = await callLLM({
       messages: chatMessages,
       model: env.openrouterModelChat,
       stream: true,
@@ -87,15 +109,21 @@ export async function generateReply({ messages, specialtyId, lang = 'vi', isSugg
       onChunk,
       signal
     })
+
+    return { fullReplyText, memoriesUsed }
   }
 
   // Other specialties (General, Dermatology, Nutrition)
-  const systemPrompt = renderSystemPrompt(specialtyId, lang, {})
+  let systemPrompt = renderSystemPrompt(specialtyId, lang, {})
+  if (memoryPromptBlock) {
+    systemPrompt += `\n\n${memoryPromptBlock}`
+  }
+
   const chatMessages = [
     { role: 'system', content: systemPrompt },
     ...messages
   ]
-  return callLLM({
+  const fullReplyText = await callLLM({
     messages: chatMessages,
     model: null,
     stream: true,
@@ -103,6 +131,8 @@ export async function generateReply({ messages, specialtyId, lang = 'vi', isSugg
     onChunk,
     signal
   })
+
+  return { fullReplyText, memoriesUsed }
 }
 
 export function estimateTokens(text) {

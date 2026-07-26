@@ -8,6 +8,7 @@ import accountRoutes from './routes/account.routes.js'
 import chatRoutes from './routes/chat.routes.js'
 import paymentRoutes from './routes/payment.routes.js'
 import adminRoutes from './routes/admin.routes.js'
+import memoriesRoutes from './routes/memories.routes.js'
 import { startBillingScheduler } from './services/billingScheduler.js'
 import { notFoundHandler, errorHandler } from './middleware/errorHandler.js'
 
@@ -27,6 +28,7 @@ app.use('/api/account', accountRoutes)
 app.use('/api/chat', chatRoutes)
 app.use('/api/payments', paymentRoutes)
 app.use('/api/admin', adminRoutes)
+app.use('/api/memories', memoriesRoutes)
 
 import path from 'path'
 import { fileURLToPath } from 'url'

@@ -21,6 +21,8 @@ router.post(
   })
 )
 
+import { runMemoryExtractionPass } from '../services/memory/memoryExtractor.js'
+
 // Chat works for guests too (no requireAuth) — only logged-in users get
 // their token usage tracked, matching the frontend's "no login wall for
 // chatting" UX.
@@ -28,7 +30,7 @@ router.post(
   '/',
   attachUserIfPresent,
   asyncHandler(async (req, res) => {
-    const { messages, specialtyId, lang, isSuggestionDemo } = req.body ?? {}
+    const { messages, specialtyId, lang, isSuggestionDemo, sessionMemoryPaused, conversationId } = req.body ?? {}
     console.log(`[API CHAT] Incoming request specialtyId: "${specialtyId}", lang: "${lang}", isSuggestionDemo: ${!!isSuggestionDemo}, messages count: ${messages?.length}`)
     if (messages && messages.length > 0) {
       console.log(`[API CHAT] Last message:`, messages[messages.length - 1])
@@ -54,16 +56,27 @@ router.post(
     res.setHeader('Connection', 'keep-alive')
 
     let full = ''
+    let memoriesUsed = []
     const start = performance.now()
     try {
-      full = await generateReply({
+      const replyRes = await generateReply({
         messages,
         specialtyId,
         lang: lang || 'vi',
         isSuggestionDemo: !!isSuggestionDemo,
+        userId: req.userId || null,
+        sessionMemoryPaused: !!sessionMemoryPaused,
         signal: controller.signal,
         onChunk: (chunk) => res.write(chunk),
       })
+
+      full = replyRes.fullReplyText || ''
+      memoriesUsed = replyRes.memoriesUsed || []
+
+      if (memoriesUsed.length > 0) {
+        res.write(`\n__MEMORIES_USED__:${JSON.stringify(memoriesUsed)}\n`)
+      }
+
       const durationMs = Math.round(performance.now() - start)
       
       const messagesText = messages.reduce((acc, m) => acc + (m.content || ''), '')
@@ -115,6 +128,21 @@ router.post(
       const lastUserMessage = [...messages].reverse().find((m) => m.role === 'user')
       const tokens = estimateTokens(lastUserMessage?.content ?? '') + estimateTokens(full)
       await incrementUsage(req.userId, tokens)
+
+      // Asynchronous Background Memory Extraction Pass (isolated in try/catch so chat response is NEVER blocked)
+      if (!sessionMemoryPaused && full) {
+        setImmediate(async () => {
+          try {
+            await runMemoryExtractionPass({
+              userId: req.userId,
+              conversationId: conversationId || randomUUID(),
+              messages: [...messages, { role: 'assistant', content: full }],
+            })
+          } catch (passErr) {
+            console.error('[Background Memory Extraction] Error (isolated):', passErr)
+          }
+        })
+      }
     }
 
     res.end()

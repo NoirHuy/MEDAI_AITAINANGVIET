@@ -240,6 +240,20 @@
   margin: 4px 0 0;
 }
 
+.memory-referenced-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: rgba(16, 185, 129, 0.08);
+  border: 1px solid rgba(16, 185, 129, 0.25);
+  border-radius: 12px;
+  padding: 4px 10px;
+  font-size: 11.5px;
+  font-weight: 500;
+  color: #10b981;
+  margin-top: 8px;
+}
+
 /* ─── Symptom Checklist Box ─────────────────────────────────── */
 .symptom-checklist-box {
   background: var(--bg-sidebar);

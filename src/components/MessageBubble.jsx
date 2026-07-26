@@ -11,14 +11,27 @@ export default function MessageBubble({ role, content, streaming, lang = 'vi', o
   const checklistMatch = !isUser && content ? content.match(/\[SymptomChecklist:\s*(.*?)\]/) : null
   const hasChecklist = !!checklistMatch
 
+  // Kiểm tra và trích xuất thông tin Trí nhớ được tham khảo
+  const memoryMatch = !isUser && content ? content.match(/__MEMORIES_USED__:(.*)/) : null
+  let memoriesUsed = []
+  if (memoryMatch) {
+    try {
+      memoriesUsed = JSON.parse(memoryMatch[1].trim())
+    } catch (e) {}
+  }
+
   const [checkedIds, setCheckedIds] = useState([])
   const [submitted, setSubmitted] = useState(false)
 
   let cleanContent = content
+  if (memoryMatch) {
+    cleanContent = cleanContent.replace(/__MEMORIES_USED__:(.*)/g, '').trim()
+  }
+
   let checklistItems = []
 
   if (hasChecklist) {
-    cleanContent = content.replace(/\[SymptomChecklist:\s*(.*?)\]/g, '').trim()
+    cleanContent = cleanContent.replace(/\[SymptomChecklist:\s*(.*?)\]/g, '').trim()
     checklistItems = checklistMatch[1].split(',').map(item => {
       const parts = item.split('=')
       return {
@@ -41,6 +54,12 @@ export default function MessageBubble({ role, content, streaming, lang = 'vi', o
         >
           {cleanContent ? renderMessageContent(cleanContent) : streaming ? <TypingDots /> : null}
           {streaming && content && <span className="message-cursor" />}
+
+          {memoriesUsed && memoriesUsed.length > 0 && !streaming && (
+            <div className="memory-referenced-badge">
+              🧠 Đã tham khảo hồ sơ trí nhớ cá nhân của bạn ({memoriesUsed.length} mục)
+            </div>
+          )}
 
           {hasChecklist && !streaming && (
             <div className="symptom-checklist-box">
