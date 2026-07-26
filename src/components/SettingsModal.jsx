@@ -421,6 +421,64 @@ export default function SettingsModal({
 
               <div className="settings-divider" />
 
+              {/* MỤC ĐỔI MẬT KHẨU */}
+              <div className="settings-section-box">
+                <h3 className="settings-subheading">
+                  <LockIcon /> Đổi mật khẩu
+                </h3>
+
+                {isGoogleAccount ? (
+                  <div className="settings-info-badge">
+                    <span>🔒</span>
+                    <p>Tài khoản của bạn đăng nhập bằng <strong>Google OAuth</strong> nên không sử dụng mật khẩu riêng.</p>
+                  </div>
+                ) : (
+                  <form onSubmit={handleChangePasswordSubmit} className="change-password-form">
+                    {passwordStatus && (
+                      <div className={`settings-alert settings-alert--${passwordStatus.type}`}>
+                        {passwordStatus.text}
+                      </div>
+                    )}
+                    <label className="settings-field">
+                      <span>Mật khẩu hiện tại</span>
+                      <input
+                        type="password"
+                        placeholder="Nhập mật khẩu hiện tại..."
+                        value={oldPassword}
+                        onChange={(e) => setOldPassword(e.target.value)}
+                      />
+                    </label>
+                    <label className="settings-field">
+                      <span>Mật khẩu mới</span>
+                      <input
+                        type="password"
+                        placeholder="Tối thiểu 6 ký tự..."
+                        value={newPassword}
+                        onChange={(e) => setNewPassword(e.target.value)}
+                        required
+                      />
+                    </label>
+                    <label className="settings-field">
+                      <span>Xác nhận mật khẩu mới</span>
+                      <input
+                        type="password"
+                        placeholder="Nhập lại mật khẩu mới..."
+                        value={confirmPassword}
+                        onChange={(e) => setConfirmPassword(e.target.value)}
+                        required
+                      />
+                    </label>
+                    <div style={{ marginTop: '14px' }}>
+                      <button type="submit" className="btn btn--primary" disabled={passwordLoading}>
+                        {passwordLoading ? 'Đang cập nhật...' : 'Cập nhật mật khẩu'}
+                      </button>
+                    </div>
+                  </form>
+                )}
+              </div>
+            </section>
+          )}
+
           {/* TAB 2: TRÍ NHỚ THÔNG MINH CÁ NHÂN */}
           {activeTab === 'memory' && (
             <section className="memory-tab-section">
@@ -633,67 +691,7 @@ export default function SettingsModal({
             </section>
           )}
 
-              <div className="settings-divider" />
-
-              {/* MỤC ĐỔI MẬT KHẨU */}
-              <div className="settings-section-box">
-                <h3 className="settings-subheading">
-                  <LockIcon /> Đổi mật khẩu
-                </h3>
-
-                {isGoogleAccount ? (
-                  <div className="settings-info-badge">
-                    <span>🔒</span>
-                    <p>Tài khoản của bạn đăng nhập bằng <strong>Google OAuth</strong> nên không sử dụng mật khẩu riêng.</p>
-                  </div>
-                ) : (
-                  <form onSubmit={handleChangePasswordSubmit} className="change-password-form">
-                    {passwordStatus && (
-                      <div className={`settings-alert settings-alert--${passwordStatus.type}`}>
-                        {passwordStatus.text}
-                      </div>
-                    )}
-                    <label className="settings-field">
-                      <span>Mật khẩu hiện tại</span>
-                      <input
-                        type="password"
-                        placeholder="Nhập mật khẩu hiện tại..."
-                        value={oldPassword}
-                        onChange={(e) => setOldPassword(e.target.value)}
-                      />
-                    </label>
-                    <label className="settings-field">
-                      <span>Mật khẩu mới</span>
-                      <input
-                        type="password"
-                        placeholder="Tối thiểu 6 ký tự..."
-                        value={newPassword}
-                        onChange={(e) => setNewPassword(e.target.value)}
-                        required
-                      />
-                    </label>
-                    <label className="settings-field">
-                      <span>Xác nhận mật khẩu mới</span>
-                      <input
-                        type="password"
-                        placeholder="Nhập lại mật khẩu mới..."
-                        value={confirmPassword}
-                        onChange={(e) => setConfirmPassword(e.target.value)}
-                        required
-                      />
-                    </label>
-                    <div style={{ marginTop: '14px' }}>
-                      <button type="submit" className="btn btn--primary" disabled={passwordLoading}>
-                        {passwordLoading ? 'Đang cập nhật...' : 'Cập nhật mật khẩu'}
-                      </button>
-                    </div>
-                  </form>
-                )}
-              </div>
-            </section>
-          )}
-
-          {/* TAB 2: MỨC SỬ DỤNG */}
+          {/* TAB 3: MỨC SỬ DỤNG */}
           {activeTab === 'usage' && (
             <section>
               <h2>Mức sử dụng &amp; Token</h2>
