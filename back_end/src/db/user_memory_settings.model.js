@@ -31,6 +31,7 @@ const UserMemorySettingsSchema = new mongoose.Schema(
   },
   {
     timestamps: true,
+    collection: 'user_memory_settings',
   }
 )
 

@@ -119,6 +119,7 @@ const UserMemorySchema = new mongoose.Schema(
   },
   {
     timestamps: true,
+    collection: 'user_memories',
   }
 )
 
