@@ -4,30 +4,22 @@ export const env = {
   port: Number(process.env.PORT) || 4000,
   clientOrigin: (process.env.CLIENT_ORIGIN || 'http://localhost:5173').trim(),
   jwtSecret: (process.env.JWT_SECRET || 'dev-only-insecure-secret-change-me').trim(),
-  openrouterApiKey: process.env.OPENROUTER_API_KEY ? process.env.OPENROUTER_API_KEY.trim() : null,
-  openrouterBaseUrl: (process.env.OPENROUTER_BASE_URL || 'https://openrouter.ai/api/v1').trim(),
-  ninerouterApi: process.env.NINEROUTER_API ? process.env.NINEROUTER_API.trim() : null,
-  ninerouterUrl: process.env.NINEROUTER_URL ? process.env.NINEROUTER_URL.trim() : null,
+  ninerouterApi: (process.env.NINEROUTER_API || '').trim(),
+  ninerouterUrl: (process.env.NINEROUTER_URL || 'http://ninerouter:20128/v1').trim(),
   get llmApiKey() {
-    if (this.ninerouterApi && this.ninerouterUrl) {
-      return this.ninerouterApi
-    }
-    return this.openrouterApiKey
+    return this.ninerouterApi
   },
   get llmBaseUrl() {
-    if (this.ninerouterApi && this.ninerouterUrl) {
-      let url = this.ninerouterUrl
-      // When running on local host machine outside container, translate docker hostname 'ninerouter' to 127.0.0.1
-      if (url.includes('http://ninerouter')) {
-        url = url.replace('http://ninerouter', 'http://127.0.0.1')
-      }
-      return url
+    let url = this.ninerouterUrl
+    // Translate 'http://ninerouter' container host to 'http://127.0.0.1' when running on local machine
+    if (url.includes('http://ninerouter') && process.platform === 'win32') {
+      url = url.replace('http://ninerouter', 'http://127.0.0.1')
     }
-    return this.openrouterBaseUrl
+    return url
   },
-  openrouterModel: (process.env.OPENROUTER_MODEL || 'deepseek/deepseek-v4-flash').trim(),
-  openrouterModelNer: (process.env.OPENROUTER_MODEL_NER || 'google/gemini-2.5-flash-lite').trim(),
-  openrouterModelChat: (process.env.OPENROUTER_MODEL_CHAT || 'google/gemini-3-flash-preview').trim(),
+  openrouterModel: (process.env.OPENROUTER_MODEL || 'gemini/gemini-3.1-flash-lite-preview').trim(),
+  openrouterModelNer: (process.env.OPENROUTER_MODEL_NER || 'gemini/gemini-3.1-flash-lite-preview').trim(),
+  openrouterModelChat: (process.env.OPENROUTER_MODEL_CHAT || 'gemini/gemini-3.1-flash-lite-preview').trim(),
   googleClientId: process.env.GOOGLE_CLIENT_ID ? process.env.GOOGLE_CLIENT_ID.trim() : null,
   // Mark the session cookie Secure once this is actually served over HTTPS.
   cookieSecure: process.env.COOKIE_SECURE === 'true',
