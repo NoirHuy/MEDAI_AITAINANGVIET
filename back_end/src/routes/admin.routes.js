@@ -246,9 +246,27 @@ router.get(
       { _id: '2026-07-21', totalCost: 0.28, totalTokens: 289000 }
     ]
 
+    // C. Tính toán Tỷ lệ Uptime thời gian thực của Server (dựa trên process.uptime và tỷ lệ lỗi)
+    const uptimeSec = process.uptime()
+    const totalLogs = await SystemLogModel.countDocuments()
+    const errorLogsCount = await SystemLogModel.countDocuments({ type: 'error' })
+    let uptimePercent = 99.99
+    if (totalLogs > 0) {
+      uptimePercent = Math.max(95.0, Number((100 - (errorLogsCount / Math.max(totalLogs, 1)) * 100).toFixed(2)))
+    }
+    const days = Math.floor(uptimeSec / 86400)
+    const hours = Math.floor((uptimeSec % 86400) / 3600)
+    const minutes = Math.floor((uptimeSec % 3600) / 60)
+    
+    let uptimeTimeTag = `${minutes}m`
+    if (days > 0) uptimeTimeTag = `${days}d ${hours}h`
+    else if (hours > 0) uptimeTimeTag = `${hours}h ${minutes}m`
+
+    const dynamicUptimeStr = `${uptimePercent}% (${uptimeTimeTag})`
+
     res.json({
       ops: {
-        uptime: '99.98%',
+        uptime: dynamicUptimeStr,
         errors,
         costs: finalizedCosts
       }
