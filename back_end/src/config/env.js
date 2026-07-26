@@ -9,15 +9,21 @@ export const env = {
   ninerouterApi: process.env.NINEROUTER_API ? process.env.NINEROUTER_API.trim() : null,
   ninerouterUrl: process.env.NINEROUTER_URL ? process.env.NINEROUTER_URL.trim() : null,
   get llmApiKey() {
-    return this.ninerouterApi || this.openrouterApiKey
+    if (this.ninerouterApi && this.ninerouterUrl) {
+      return this.ninerouterApi
+    }
+    return this.openrouterApiKey
   },
   get llmBaseUrl() {
-    const url = this.ninerouterUrl || this.openrouterBaseUrl
-    // If ninerouter is set to docker container host 'http://ninerouter:20128' but running on local machine, use 127.0.0.1:20128 or openrouter fallback
-    if (url.includes('http://ninerouter')) {
-      return this.openrouterApiKey ? this.openrouterBaseUrl : 'http://127.0.0.1:20128/v1'
+    if (this.ninerouterApi && this.ninerouterUrl) {
+      let url = this.ninerouterUrl
+      // When running on local host machine outside container, translate docker hostname 'ninerouter' to 127.0.0.1
+      if (url.includes('http://ninerouter')) {
+        url = url.replace('http://ninerouter', 'http://127.0.0.1')
+      }
+      return url
     }
-    return url
+    return this.openrouterBaseUrl
   },
   openrouterModel: (process.env.OPENROUTER_MODEL || 'deepseek/deepseek-v4-flash').trim(),
   openrouterModelNer: (process.env.OPENROUTER_MODEL_NER || 'google/gemini-2.5-flash-lite').trim(),
