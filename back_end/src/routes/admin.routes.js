@@ -96,10 +96,7 @@ router.get(
       if (sorted.length > 0) {
         topSymptoms = sorted.map(([name, count]) => ({ _id: name, count }))
       } else {
-        topSymptoms = [
-          { _id: 'Đau bụng', count: Math.max(chatToday, 1) },
-          { _id: 'Sốt nhẹ', count: Math.max(Math.round(chatToday * 0.7), 1) }
-        ]
+        topSymptoms = []
       }
     } else {
       topSymptoms = topSymptoms.map(s => ({ _id: s._id, count: s.count }))
@@ -237,14 +234,17 @@ router.get(
       { $limit: 15 }
     ])
 
-    // Mock cost data nếu trống
-    const finalizedCosts = costStats.length > 0 ? costStats : [
-      { _id: '2026-07-17', totalCost: 0.12, totalTokens: 125000 },
-      { _id: '2026-07-18', totalCost: 0.18, totalTokens: 184000 },
-      { _id: '2026-07-19', totalCost: 0.25, totalTokens: 258000 },
-      { _id: '2026-07-20', totalCost: 0.32, totalTokens: 310000 },
-      { _id: '2026-07-21', totalCost: 0.28, totalTokens: 289000 }
-    ]
+    // Mock dynamic cost data nếu trống (tính 5 ngày gần nhất với mảng 0 thực tế)
+    let finalizedCosts = costStats
+    if (!finalizedCosts || finalizedCosts.length === 0) {
+      const days = []
+      for (let i = 4; i >= 0; i--) {
+        const d = new Date(now.getTime() - i * 24 * 60 * 60 * 1000)
+        const dateStr = d.toISOString().split('T')[0]
+        days.push({ _id: dateStr, totalCost: 0, totalTokens: 0 })
+      }
+      finalizedCosts = days
+    }
 
     // C. Tính toán Tỷ lệ Uptime thời gian thực của Server (dựa trên process.uptime và tỷ lệ lỗi)
     const uptimeSec = process.uptime()

@@ -410,19 +410,23 @@ export default function DashboardView({ account, onBack, onSignOut, lang, initia
                 <h3>Triệu chứng y tế hỏi nhiều nhất (Top Symptoms)</h3>
                 <p className="chart-subtitle">Tần suất xuất hiện triệu chứng được bot trích xuất từ hội thoại</p>
                 <div className="symptoms-bar-chart mt-4">
-                  {overviewStats.topSymptoms.map((symp, i) => {
-                    const maxVal = Math.max(...overviewStats.topSymptoms.map(s => s.count)) || 1
-                    const percent = Math.round((symp.count / maxVal) * 100)
-                    return (
-                      <div className="symptom-bar-row" key={i}>
-                        <span className="symptom-name">{symp._id}</span>
-                        <div className="bar-wrapper">
-                          <div className="bar-fill" style={{ width: `${percent}%` }} />
+                  {overviewStats.topSymptoms.length === 0 ? (
+                    <p className="text-center-muted py-4" style={{ textAlign: 'center', color: 'var(--text-muted)', fontSize: '13px', padding: '16px 0' }}>Chưa ghi nhận dữ liệu triệu chứng từ các phiên chat.</p>
+                  ) : (
+                    overviewStats.topSymptoms.map((symp, i) => {
+                      const maxVal = Math.max(...overviewStats.topSymptoms.map(s => s.count)) || 1
+                      const percent = Math.round((symp.count / maxVal) * 100)
+                      return (
+                        <div className="symptom-bar-row" key={i}>
+                          <span className="symptom-name">{symp._id}</span>
+                          <div className="bar-wrapper">
+                            <div className="bar-fill" style={{ width: `${percent}%` }} />
+                          </div>
+                          <span className="symptom-val">{symp.count} lượt</span>
                         </div>
-                        <span className="symptom-val">{symp.count} lượt</span>
-                      </div>
-                    )
-                  })}
+                      )
+                    })
+                  )}
                 </div>
               </div>
 
