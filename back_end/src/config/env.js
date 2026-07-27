@@ -23,7 +23,7 @@ export const env = {
   // Direct OpenRouter API (for embeddings — separate from 9Router proxy)
   openrouterApiKey: (process.env.OPENROUTER_API || '').trim(),
   openrouterEmbeddingModel: (process.env.OPENROUTER_EMBEDDING_MODEL || 'perplexity/pplx-embed-v1-4b').trim(),
-  embeddingSimilarityThreshold: Number(process.env.EMBEDDING_SIMILARITY_THRESHOLD) || 0.82,
+  embeddingSimilarityThreshold: Number(process.env.EMBEDDING_SIMILARITY_THRESHOLD) || 0.35,
   googleClientId: process.env.GOOGLE_CLIENT_ID ? process.env.GOOGLE_CLIENT_ID.trim() : null,
   // Mark the session cookie Secure once this is actually served over HTTPS.
   cookieSecure: process.env.COOKIE_SECURE === 'true',
