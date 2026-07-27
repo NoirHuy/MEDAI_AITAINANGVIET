@@ -1,6 +1,6 @@
 export const SPECIALTIES = [
   {
-    id: 'pediatrics',
+    id: 'health_consultation',
     name: { vi: 'Tư vấn sức khỏe', en: 'Health Consultation' },
     tagline: { vi: 'Chẩn đoán sàng lọc ban đầu', en: 'Initial diagnostic screening' },
   },

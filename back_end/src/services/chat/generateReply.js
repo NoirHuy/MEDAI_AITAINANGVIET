@@ -56,8 +56,8 @@ export async function generateReply({ messages, specialtyId, lang = 'vi', isSugg
     }
   }
 
-  // TRUE ADAPTIVE GRAPHRAG for Pediatrics specialty
-  if (specialtyId === 'pediatrics') {
+  // TRUE ADAPTIVE GRAPHRAG for Health Consultation specialty
+  if (specialtyId === 'health_consultation' || specialtyId === 'pediatrics') {
     let adaptiveCtx = null
     let sceResult = null
     try {
