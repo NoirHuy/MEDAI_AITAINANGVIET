@@ -20,6 +20,10 @@ export const env = {
   openrouterModel: (process.env.OPENROUTER_MODEL || 'gemini/gemini-3.1-flash-lite-preview').trim(),
   openrouterModelNer: (process.env.OPENROUTER_MODEL_NER || 'gemini/gemini-3.1-flash-lite-preview').trim(),
   openrouterModelChat: (process.env.OPENROUTER_MODEL_CHAT || 'gemini/gemini-3.1-flash-lite-preview').trim(),
+  // Direct OpenRouter API (for embeddings — separate from 9Router proxy)
+  openrouterApiKey: (process.env.OPENROUTER_API || '').trim(),
+  openrouterEmbeddingModel: (process.env.OPENROUTER_EMBEDDING_MODEL || 'perplexity/pplx-embed-v1-4b').trim(),
+  embeddingSimilarityThreshold: Number(process.env.EMBEDDING_SIMILARITY_THRESHOLD) || 0.82,
   googleClientId: process.env.GOOGLE_CLIENT_ID ? process.env.GOOGLE_CLIENT_ID.trim() : null,
   // Mark the session cookie Secure once this is actually served over HTTPS.
   cookieSecure: process.env.COOKIE_SECURE === 'true',

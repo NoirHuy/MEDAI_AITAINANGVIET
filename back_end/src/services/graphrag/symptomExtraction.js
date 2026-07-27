@@ -2,6 +2,7 @@ import { env } from '../../config/env.js'
 import { auditLog } from '../../utils/auditLog.js'
 import { callLLMWithFailover } from '../llm/llmClient.js'
 import { searchUMLS } from './umlsClient.js'
+import { vectorSearchSymptom, isVectorIndexReady } from './symptomVectorIndex.js'
 
 export function tryRepairJson(jsonStr) {
   try {
@@ -250,6 +251,54 @@ export async function matchSymptomsToGraph(extractedSymptoms, symptomsList) {
   return { finalSymptoms, unmatchedTerms }
 }
 
+// ─── VECTOR SEARCH (replaces LLM fallback for known medical terms) ────────────
+export async function vectorMatchUnmatched(unmatchedTerms, finalSymptoms) {
+  if (!unmatchedTerms || unmatchedTerms.length === 0) return { resolved: [], stillUnmatched: [] }
+  if (!isVectorIndexReady()) return { resolved: [], stillUnmatched: unmatchedTerms }
+
+  const stillUnmatched = []
+  const resolved = []
+
+  for (const item of unmatchedTerms) {
+    // Build rich query: use UMLS name if available for better embedding quality
+    const queryText = item.umlsName ? `${item.term} (${item.umlsName})` : item.term
+    const result = await vectorSearchSymptom(queryText)
+
+    if (result) {
+      const { symptom, similarity } = result
+      // Skip if this symptomId is already in finalSymptoms
+      if (!finalSymptoms.some(s => s.symptomId === symptom.id)) {
+        finalSymptoms.push({
+          symptomId: symptom.id,
+          name: symptom.name,
+          cui: item.umlsCui || symptom.cui,
+          status: item.status || 'positive',
+          role: item.role || 'associated',
+          confidenceScore: parseFloat(similarity.toFixed(4)),
+          attributes: {
+            severity: item.attributes?.severity || null,
+            frequency: item.attributes?.frequency || null,
+            progression: item.attributes?.progression || null,
+            bodyLocation: item.attributes?.bodyLocation || null,
+            exacerbatingFactors: item.attributes?.exacerbatingFactors || [],
+            relievingFactors: item.attributes?.relievingFactors || []
+          }
+        })
+        auditLog('VECTOR_SEARCH', 'Success', `"${item.term}" → "${symptom.id}" (similarity: ${similarity.toFixed(4)})`)
+        resolved.push(item)
+      } else {
+        auditLog('VECTOR_SEARCH', 'Skip', `"${item.term}" matched "${symptom.id}" but already in finalSymptoms`)
+        resolved.push(item)
+      }
+    } else {
+      auditLog('VECTOR_SEARCH', 'Miss', `"${item.term}" — no symptom above threshold, deferring to LLM Fallback`, 'warn')
+      stillUnmatched.push(item)
+    }
+  }
+
+  return { resolved, stillUnmatched }
+}
+
 export async function fallbackMatchUnmatched(unmatchedTerms, symptomsList, finalSymptoms) {
   if (!unmatchedTerms || unmatchedTerms.length === 0) return finalSymptoms
 
@@ -346,9 +395,22 @@ export async function extractSymptomsFromHistory(messages, symptomsList, lang = 
   const extractedSymptoms = extractedPayload.symptoms || []
   const { finalSymptoms, unmatchedTerms } = await matchSymptomsToGraph(extractedSymptoms, symptomsList)
 
-  if (unmatchedTerms.length > 0) {
+  let stillUnmatched = unmatchedTerms
+
+  // ── STEP 1: Vector similarity search (deterministic, 0 LLM calls) ──────────
+  if (stillUnmatched.length > 0) {
     try {
-      await fallbackMatchUnmatched(unmatchedTerms, symptomsList, finalSymptoms)
+      const { stillUnmatched: remaining } = await vectorMatchUnmatched(stillUnmatched, finalSymptoms)
+      stillUnmatched = remaining
+    } catch (err) {
+      auditLog('VECTOR_SEARCH', 'Error', `Vector matching failed: ${err.message}`, 'error')
+    }
+  }
+
+  // ── STEP 2: LLM Fallback (only for terms still unmatched after vector search) ─
+  if (stillUnmatched.length > 0) {
+    try {
+      await fallbackMatchUnmatched(stillUnmatched, symptomsList, finalSymptoms)
     } catch (err) {
       auditLog('LLM_TRANSLATION', 'Error', `Fallback LLM mapping failed: ${err.message}`, 'error')
     }

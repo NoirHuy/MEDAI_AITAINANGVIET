@@ -7,6 +7,7 @@ import { renderSystemPrompt } from '../prompts/promptRegistry.js'
 import { computeAdaptiveContext } from '../graphrag/adaptiveContext.js'
 import { extractSymptomsFromHistory } from '../graphrag/symptomExtraction.js'
 import { formatAdaptiveContext } from '../graphrag/formatContext.js'
+import { initSymptomVectorIndex } from '../graphrag/symptomVectorIndex.js'
 import { evaluatePhase } from './phaseEvaluator.js'
 
 function buildMockReply(userText, specialtyId, lang = 'vi') {
@@ -62,6 +63,10 @@ export async function generateReply({ messages, specialtyId, lang = 'vi', isSugg
     let sceResult = null
     try {
       const firstCtx = await computeAdaptiveContext(new Set(), new Set())
+      // Initialize vector index once (no-op on subsequent calls)
+      initSymptomVectorIndex(firstCtx.allSymptoms).catch(err =>
+        auditLog('VECTOR_INDEX', 'Error', `Init error: ${err.message}`, 'error')
+      )
       sceResult = await extractSymptomsFromHistory(messages, firstCtx.allSymptoms, lang)
       adaptiveCtx = await computeAdaptiveContext(sceResult)
     } catch (err) {
