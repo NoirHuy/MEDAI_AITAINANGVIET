@@ -21,7 +21,7 @@ const MemoryAuditSchema = new mongoose.Schema(
     },
     action: {
       type: String,
-      enum: ['create', 'merge', 'edit', 'delete', 'lock', 'unlock', 'expire', 'contradict'],
+      enum: ['create', 'merge', 'edit', 'delete', 'lock', 'unlock', 'expire', 'contradict', 'supersede'],
       required: true,
     },
     performedBy: {
