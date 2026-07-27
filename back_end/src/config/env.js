@@ -23,7 +23,13 @@ export const env = {
   googleClientId: process.env.GOOGLE_CLIENT_ID ? process.env.GOOGLE_CLIENT_ID.trim() : null,
   // Mark the session cookie Secure once this is actually served over HTTPS.
   cookieSecure: process.env.COOKIE_SECURE === 'true',
-  neo4jUri: (process.env.NEO4J_URI || 'bolt://103.56.160.46:7687').trim(),
+  get neo4jUri() {
+    let uri = (process.env.NEO4J_URI || 'bolt://103.56.160.46:7687').trim()
+    if (uri.includes('bolt://neo4j') && process.platform === 'win32') {
+      uri = uri.replace('bolt://neo4j', 'bolt://127.0.0.1')
+    }
+    return uri
+  },
   neo4jUsername: (process.env.NEO4J_USERNAME || 'neo4j').trim(),
   neo4jPassword: (process.env.NEO4J_PASSWORD || 'MatKhauNeo4j2026!').trim(),
   neo4jDatabase: (process.env.NEO4J_DATABASE || 'neo4j').trim(),
