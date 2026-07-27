@@ -1,28 +1,104 @@
 import { env } from '../../config/env.js'
 import { auditLog } from '../../utils/auditLog.js'
 
-export async function searchUMLS(queryString, retries = 2, delay = 500) {
+// ─── 1. BUILT-IN COMMON CLINICAL SYMPTOM DICTIONARY (0ms LOOKUP) ────────────
+const BUILTIN_UMLS_DICTIONARY = new Map([
+  ['fever', [{ ui: 'C0015967', name: 'Fever' }]],
+  ['cough', [{ ui: 'C0010200', name: 'Coughing' }]],
+  ['coughing', [{ ui: 'C0010200', name: 'Coughing' }]],
+  ['odynophagia', [{ ui: 'C0221150', name: 'Swallowing painful' }]],
+  ['tonsillar erythema', [{ ui: 'C0241450', name: 'Tonsillar erythema' }]],
+  ['globus sensation', [{ ui: 'C0017650', name: 'Globus Sensation' }]],
+  ['fatigue', [{ ui: 'C0015672', name: 'Fatigue' }]],
+  ['nasal congestion', [{ ui: 'C0027424', name: 'Nasal congestion (finding)' }]],
+  ['rhinorrhea', [{ ui: 'C1260880', name: 'Rhinorrhea' }]],
+  ['runny nose', [{ ui: 'C1260880', name: 'Rhinorrhea' }]],
+  ['sore throat', [{ ui: 'C0242429', name: 'Sore Throat' }]],
+  ['headache', [{ ui: 'C0018681', name: 'Headache' }]],
+  ['abdominal pain', [{ ui: 'C0000737', name: 'Abdominal Pain' }]],
+  ['chest pain', [{ ui: 'C0008031', name: 'Chest Pain' }]],
+  ['dyspnea', [{ ui: 'C0013404', name: 'Dyspnea' }]],
+  ['shortness of breath', [{ ui: 'C0013404', name: 'Dyspnea' }]],
+  ['nausea', [{ ui: 'C0027497', name: 'Nausea' }]],
+  ['vomiting', [{ ui: 'C0042963', name: 'Vomiting' }]],
+  ['diarrhea', [{ ui: 'C0011991', name: 'Diarrhea' }]],
+  ['rash', [{ ui: 'C0015230', name: 'Exanthema' }]],
+  ['skin rash', [{ ui: 'C0015230', name: 'Exanthema' }]],
+  ['arthralgia', [{ ui: 'C0003862', name: 'Arthralgia' }]],
+  ['joint pain', [{ ui: 'C0003862', name: 'Arthralgia' }]],
+  ['myalgia', [{ ui: 'C0231528', name: 'Myalgia' }]],
+  ['muscle pain', [{ ui: 'C0231528', name: 'Myalgia' }]],
+  ['chills', [{ ui: 'C0085593', name: 'Chills' }]],
+  ['dizziness', [{ ui: 'C0012833', name: 'Dizziness' }]],
+  ['loss of appetite', [{ ui: 'C0003123', name: 'Anorexia' }]],
+  ['anorexia', [{ ui: 'C0003123', name: 'Anorexia' }]],
+  ['sneezing', [{ ui: 'C0037383', name: 'Sneezing' }]],
+  ['hoarseness', [{ ui: 'C0019825', name: 'Hoarseness' }]],
+])
+
+// ─── 2. IN-MEMORY LRU CACHE (RAM) ───────────────────────────────────────────
+const umlsRamCache = new Map()
+const RAM_CACHE_LIMIT = 2000
+
+function getFromRamCache(key) {
+  return umlsRamCache.get(key) || null
+}
+
+function setToRamCache(key, val) {
+  if (umlsRamCache.size >= RAM_CACHE_LIMIT) {
+    const firstKey = umlsRamCache.keys().next().value
+    umlsRamCache.delete(firstKey)
+  }
+  umlsRamCache.set(key, val)
+}
+
+// ─── 3. SEARCH UMLS FUNCTION WITH MULTI-LAYER CACHING ──────────────────────
+export async function searchUMLS(queryString, retries = 1, delay = 300) {
+  if (!queryString || typeof queryString !== 'string') return []
+  const normKey = queryString.trim().toLowerCase()
+
+  // Layer 1: Check Built-in Dictionary (0ms)
+  if (BUILTIN_UMLS_DICTIONARY.has(normKey)) {
+    return BUILTIN_UMLS_DICTIONARY.get(normKey)
+  }
+
+  // Layer 2: Check RAM Cache (0ms)
+  const cachedVal = getFromRamCache(normKey)
+  if (cachedVal !== null) {
+    return cachedVal
+  }
+
+  // If no UMLS_API_KEY config, return empty
   if (!env.umlsApiKey) {
     auditLog('UMLS', 'Info', 'No UMLS_API_KEY config. Skipping UMLS search.')
+    setToRamCache(normKey, [])
     return []
   }
+
+  // Layer 3: Network HTTP Request to NIH UMLS API (Fast timeout: 1.5s)
   for (let attempt = 1; attempt <= retries + 1; attempt++) {
     try {
       const url = `https://uts-ws.nlm.nih.gov/rest/search/current?string=${encodeURIComponent(queryString)}&apiKey=${env.umlsApiKey}`
-      const response = await fetch(url, { signal: AbortSignal.timeout(6000) })
+      const response = await fetch(url, { signal: AbortSignal.timeout(1500) })
       if (!response.ok) {
-        throw new Error(`Dịch vụ UMLS trả về lỗi ${response.status}`)
+        throw new Error(`UMLS HTTP ${response.status}`)
       }
       const data = await response.json()
-      return data.result?.results || []
+      const results = data.result?.results || []
+
+      // Save to RAM cache
+      setToRamCache(normKey, results)
+      return results
     } catch (err) {
       const isLastAttempt = attempt === retries + 1
       if (isLastAttempt) {
-        const isTimeout = err.name === 'TimeoutError' || err.message?.includes('aborted')
-        throw new Error(isTimeout ? "Dịch vụ UMLS không phản hồi (Timeout 6s)" : `Mất kết nối UMLS: ${err.message}`)
+        // Fallback to empty array and cache it to prevent repeated network hangs
+        setToRamCache(normKey, [])
+        return []
       }
-      auditLog('UMLS', 'Warning', `Yêu cầu tìm kiếm "${queryString}" thất bại ở lần thử ${attempt}: ${err.message}. Đang thử lại sau ${delay}ms...`, 'warn')
+      auditLog('UMLS', 'Warning', `UMLS "${queryString}" retry ${attempt}: ${err.message}`, 'warn')
       await new Promise(resolve => setTimeout(resolve, delay))
     }
   }
+  return []
 }
