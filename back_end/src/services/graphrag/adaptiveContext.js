@@ -141,8 +141,20 @@ export async function computeAdaptiveContext(sceResult, excludedSymptoms = new S
           sexes: r.get('sexes').filter(s => s.sex && s.prob)
         }
       })
-        .sort((a, b) => b.pct - a.pct || b.score - a.score)
+        // 1. Sort primarily by raw clinical score DESC
+        .sort((a, b) => b.score - a.score)
         .slice(0, 8)
+
+      // 2. Compute normalized relative probability percentage across top candidates
+      const totalScore = rankedDiseases.reduce((sum, d) => sum + d.score, 0)
+      if (totalScore > 0) {
+        rankedDiseases.forEach(d => {
+          d.pct = Math.min(95, Math.max(5, Math.round((d.score / totalScore) * 100)))
+        })
+      }
+
+      // 3. Guarantee strict monotonic percentage rank order
+      rankedDiseases.sort((a, b) => b.pct - a.pct || b.score - a.score)
     }
 
     let bestNextSymptoms = []
