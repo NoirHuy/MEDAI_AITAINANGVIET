@@ -126,8 +126,7 @@ router.post(
     res.json({
       success: true,
       message: 'Thanh toán thành công qua PayPal! Tài khoản của bạn đã được nâng cấp lên gói Pro (30 ngày).',
-      user: toPublicUser(updatedUser),
-      isMock
+      user: toPublicUser(updatedUser)
     })
   })
 )
