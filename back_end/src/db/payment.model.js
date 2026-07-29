@@ -7,7 +7,7 @@ const paymentSchema = new mongoose.Schema({
   amount: { type: Number, required: true },
   status: { type: String, enum: ['pending', 'success', 'failed'], default: 'pending' },
   type: { type: String, enum: ['initial', 'recurring'], default: 'initial' },
-  paymentGateway: { type: String, enum: ['stripe', 'momo'], required: true },
+  paymentGateway: { type: String, enum: ['paypal', 'stripe', 'momo'], required: true },
   createdAt: { type: Date, default: Date.now },
   completedAt: { type: Date, default: null }
 }, {

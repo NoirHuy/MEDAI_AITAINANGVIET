@@ -11,8 +11,6 @@ import { createPayPalOrder, capturePayPalOrder } from '../services/paypalClient.
 
 const router = Router()
 
-router.use(requireAuth)
-
 // ─── 0. PAYPAL PUBLIC CONFIG (Client ID & Mode for Frontend Buttons) ────────
 router.get('/config', (req, res) => {
   res.json({
@@ -21,6 +19,8 @@ router.get('/config', (req, res) => {
     isConfigured: !!(env.paypalClientId && env.paypalClientSecret)
   })
 })
+
+router.use(requireAuth)
 
 // ─── 1. CREATE PAYPAL ORDER ──────────────────────────────────────────────────
 router.post(

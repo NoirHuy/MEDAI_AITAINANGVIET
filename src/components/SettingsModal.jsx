@@ -76,7 +76,7 @@ export default function SettingsModal({
 
   useEffect(() => {
     if ((activeTab === 'payment' || confirmPaymentModal) && !paypalConfig) {
-      apiRequest('/api/payment/config')
+      apiRequest('/api/payments/config')
         .then((cfg) => setPaypalConfig(cfg))
         .catch((err) => console.error('[PayPal Config] Error loading config:', err))
     }
@@ -117,7 +117,7 @@ export default function SettingsModal({
         createOrder: async () => {
           setPlanLoading(true)
           try {
-            const res = await apiRequest('/api/payment/paypal/create-order', { method: 'POST' })
+            const res = await apiRequest('/api/payments/paypal/create-order', { method: 'POST' })
             return res.orderId
           } catch (err) {
             showToast?.(err.message || 'Không thể tạo đơn hàng PayPal.')
@@ -127,7 +127,7 @@ export default function SettingsModal({
         },
         onApprove: async (data) => {
           try {
-            const res = await apiRequest('/api/payment/paypal/capture-order', {
+            const res = await apiRequest('/api/payments/paypal/capture-order', {
               method: 'POST',
               body: JSON.stringify({ orderId: data.orderID }),
             })
