@@ -205,7 +205,7 @@ export default function SettingsModal({
     }
     const script = document.createElement('script')
     script.id = scriptId
-    script.src = `https://www.paypal.com/sdk/js?client-id=${paypalConfig.clientId}&currency=USD&disable-funding=card`
+    script.src = `https://www.paypal.com/sdk/js?client-id=${paypalConfig.clientId}&currency=USD`
     script.async = true
     script.onload = () => setPaypalSdkLoaded(true)
     script.onerror = () => console.error('[PayPal SDK] Failed to load SDK script.')
@@ -919,6 +919,9 @@ export default function SettingsModal({
                     </p>
                   )}
                   <div id="paypal-button-container" style={{ maxWidth: '400px', margin: '0 auto', minHeight: '120px' }} />
+                  <p className="settings-modal__hint" style={{ marginTop: '10px', textAlign: 'center', fontSize: '12px' }}>
+                    💡 <strong>Mẹo khi thanh toán Thẻ (Visa/Mastercard):</strong> Nếu PayPal yêu cầu nhập Mã bưu chính (ZIP code), vui lòng điền <strong>6 chữ số</strong> (Ví dụ: TP.HCM: <code>700000</code>, Hà Nội: <code>100000</code>, Cần Thơ: <code>900000</code>).
+                  </p>
                 </div>
               </div>
             </section>
