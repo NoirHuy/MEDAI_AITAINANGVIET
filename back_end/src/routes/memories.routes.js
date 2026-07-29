@@ -31,7 +31,91 @@ router.get(
   })
 )
 
-// ─── 2. THÊM TRÍ NHỚ THỦ CÔNG ───────────────────────────────────────────────
+// ─── 2. LẤY & CẬP NHẬT CÀI ĐẶT TRÍ NHỚ (PHẢI ĐẶT TRƯỚC /:id) ───────────────
+router.get(
+  '/settings',
+  asyncHandler(async (req, res) => {
+    const settings = await getUserMemorySettings(req.userId)
+    res.json({ settings })
+  })
+)
+
+router.patch(
+  '/settings',
+  asyncHandler(async (req, res) => {
+    const { memoryEnabled, autoRememberAllergies, autoRememberChronic, autoRememberMedications, autoRememberEpisodes } = req.body ?? {}
+    const patch = {}
+
+    if (memoryEnabled !== undefined) patch.memoryEnabled = Boolean(memoryEnabled)
+    if (autoRememberAllergies !== undefined) patch.autoRememberAllergies = Boolean(autoRememberAllergies)
+    if (autoRememberChronic !== undefined) patch.autoRememberChronic = Boolean(autoRememberChronic)
+    if (autoRememberMedications !== undefined) patch.autoRememberMedications = Boolean(autoRememberMedications)
+    if (autoRememberEpisodes !== undefined) patch.autoRememberEpisodes = Boolean(autoRememberEpisodes)
+
+    const updated = await UserMemorySettingsModel.findOneAndUpdate(
+      { userId: req.userId },
+      { $set: patch },
+      { new: true, upsert: true }
+    ).lean()
+
+    res.json({ settings: updated })
+  })
+)
+
+// ─── 3. XUẤT TỆP TÓM TẮT HỒ SƠ Y TẾ (.TXT) (PHẢI ĐẶT TRƯỚC /:id) ───────────
+router.get(
+  '/export',
+  asyncHandler(async (req, res) => {
+    const list = await UserMemoryModel.find({
+      userId: req.userId,
+      status: 'active',
+    }).lean()
+
+    const decryptedList = list.map(m => ({
+      ...m,
+      content: decryptText(m.content, m.keyVersion || 1),
+    }))
+
+    const categoriesMap = {
+      allergy: 'DỊ ỨNG THUỐC & THỨC ĂN',
+      chronic_condition: 'BỆNH NỀN MÃN TÍNH',
+      medication: 'THUỐC ĐANG SỬ DỤNG',
+      blood_type: 'NHÓM MÁU',
+      pregnancy: 'THÔNG TIN THAI KỲ',
+      past_episode: 'ĐỢT BỆNH KHÁM TRƯỚC',
+      lifestyle: 'LỐI SỐNG & TIỀN SỬ GIA ĐÌNH',
+      display_preference: 'SỞ THÍCH HIỂN THỊ',
+    }
+
+    let textContent = `=====================================================\n`
+    textContent += `   HỒ SƠ TÓM TẮT TIỀN SỬ Y TẾ CÁ NHÂN - MEDCHAT AI   \n`
+    textContent += `=====================================================\n`
+    textContent += `Thời gian xuất tệp: ${new Date().toLocaleString('vi-VN')}\n`
+    textContent += `Mã người dùng: ${req.userId}\n`
+    textContent += `-----------------------------------------------------\n\n`
+
+    Object.keys(categoriesMap).forEach(cat => {
+      const items = decryptedList.filter(m => m.category === cat)
+      if (items.length > 0) {
+        textContent += `▶ ${categoriesMap[cat]}:\n`
+        items.forEach(item => {
+          const subjectTag = item.subject === 'family' ? '[Tiền sử gia đình] ' : ''
+          textContent += `  • ${subjectTag}${item.content} (Ngày ghi nhận: ${new Date(item.createdAt).toLocaleDateString('vi-VN')})\n`
+        })
+        textContent += `\n`
+      }
+    })
+
+    textContent += `-----------------------------------------------------\n`
+    textContent += `⚠️ KHUYẾN CÁO: Tệp này chứa tóm tắt tiền sử y tế cá nhân được tổng hợp tự động từ các phiên tham vấn với MedChatAI. Thông tin này chỉ mang tính tham khảo cho bác sĩ chuyên khoa và KHÔNG thay thế hồ sơ bệnh án chính thức.\n`
+
+    res.setHeader('Content-Type', 'text/plain; charset=utf-8')
+    res.setHeader('Content-Disposition', 'attachment; filename="Ho_So_Tri_Nho_Y_Te_MedChat.txt"')
+    res.send(textContent)
+  })
+)
+
+// ─── 4. THÊM TRÍ NHỚ THỦ CÔNG ───────────────────────────────────────────────
 router.post(
   '/',
   asyncHandler(async (req, res) => {
@@ -82,7 +166,28 @@ router.post(
   })
 )
 
-// ─── 3. CẬP NHẬT TRÍ NHỚ (NỘI DUNG / KHÓA / STATUS) ─────────────────────────
+// ─── 5. XÓA MỀM TOÀN BỘ TRÍ NHỚ (CLEAR ALL PROFILE) ──────────────────────────
+router.delete(
+  '/',
+  asyncHandler(async (req, res) => {
+    await UserMemoryModel.updateMany(
+      { userId: req.userId, status: { $ne: 'deleted' } },
+      { $set: { status: 'deleted' } }
+    )
+
+    await logMemoryAudit({
+      memoryId: 'all',
+      userId: req.userId,
+      action: 'delete',
+      performedBy: 'user',
+      meta: { message: 'Clear all user memories' },
+    })
+
+    res.json({ success: true, message: 'Đã xóa toàn bộ hồ sơ trí nhớ.' })
+  })
+)
+
+// ─── 6. CẬP NHẬT MỘT MỤC TRÍ NHỚ CHÍNH XÁC THEO ID (WILDCARD ROUTE) ─────────
 router.patch(
   '/:id',
   asyncHandler(async (req, res) => {
@@ -135,7 +240,7 @@ router.patch(
   })
 )
 
-// ─── 4. XÓA MỀM MỘT MỤC TRÍ NHỚ (SOFT DELETE FOR AUDIT) ─────────────────────
+// ─── 7. XÓA MỀM MỘT MỤC TRÍ NHỚ ─────────────────────────────────────────────
 router.delete(
   '/:id',
   asyncHandler(async (req, res) => {
@@ -158,111 +263,6 @@ router.delete(
     })
 
     res.json({ success: true, message: 'Đã xóa mục trí nhớ.' })
-  })
-)
-
-// ─── 5. XÓA MỀM TOÀN BỘ TRÍ NHỚ (CLEAR ALL PROFILE) ──────────────────────────
-router.delete(
-  '/',
-  asyncHandler(async (req, res) => {
-    await UserMemoryModel.updateMany(
-      { userId: req.userId, status: { $ne: 'deleted' } },
-      { $set: { status: 'deleted' } }
-    )
-
-    await logMemoryAudit({
-      memoryId: 'all',
-      userId: req.userId,
-      action: 'delete',
-      performedBy: 'user',
-      meta: { message: 'Clear all user memories' },
-    })
-
-    res.json({ success: true, message: 'Đã xóa toàn bộ hồ sơ trí nhớ.' })
-  })
-)
-
-// ─── 6. XUẤT TỆP TÓM TẮT HỒ SƠ Y TẾ (.TXT) ──────────────────────────────────
-router.get(
-  '/export',
-  asyncHandler(async (req, res) => {
-    const list = await UserMemoryModel.find({
-      userId: req.userId,
-      status: 'active',
-    }).lean()
-
-    const decryptedList = list.map(m => ({
-      ...m,
-      content: decryptText(m.content, m.keyVersion || 1),
-    }))
-
-    const categoriesMap = {
-      allergy: 'DỊ ỨNG THUỐC & THỨC ĂN',
-      chronic_condition: 'BỆNH NỀN MÃN TÍNH',
-      medication: 'THUỐC ĐANG SỬ DỤNG',
-      blood_type: 'NHÓM MÁU',
-      pregnancy: 'THÔNG TIN THAI KỲ',
-      past_episode: 'ĐỢT BỆNH KHÁM TRƯỚC',
-      lifestyle: 'LỐI SỐNG & TIỀN SỬ GIA ĐÌNH',
-      display_preference: 'SỞ THÍCH HIỂN THỊ',
-    }
-
-    let textContent = `=====================================================\n`
-    textContent += `   HỒ SƠ TÓM TẮT TIỀN SỬ Y TẾ CÁ NHÂN - MEDCHAT AI   \n`
-    textContent += `=====================================================\n`
-    textContent += `Thời gian xuất tệp: ${new Date().toLocaleString('vi-VN')}\n`
-    textContent += `Mã người dùng: ${req.userId}\n`
-    textContent += `-----------------------------------------------------\n\n`
-
-    Object.keys(categoriesMap).forEach(cat => {
-      const items = decryptedList.filter(m => m.category === cat)
-      if (items.length > 0) {
-        textContent += `▶ ${categoriesMap[cat]}:\n`
-        items.forEach(item => {
-          const subjectTag = item.subject === 'family' ? '[Tiền sử gia đình] ' : ''
-          textContent += `  • ${subjectTag}${item.content} (Ngày ghi nhận: ${new Date(item.createdAt).toLocaleDateString('vi-VN')})\n`
-        })
-        textContent += `\n`
-      }
-    })
-
-    textContent += `-----------------------------------------------------\n`
-    textContent += `⚠️ KHUYẾN CÁO: Tệp này chứa tóm tắt tiền sử y tế cá nhân được tổng hợp tự động từ các phiên tham vấn với MedChatAI. Thông tin này chỉ mang tính tham khảo cho bác sĩ chuyên khoa và KHÔNG thay thế hồ sơ bệnh án chính thức.\n`
-
-    res.setHeader('Content-Type', 'text/plain; charset=utf-8')
-    res.setHeader('Content-Disposition', 'attachment; filename="Ho_So_Trí_Nho_Y_Te_MedChat.txt"')
-    res.send(textContent)
-  })
-)
-
-// ─── 7. LẤY & CẬP NHẬT CÀI ĐẶT TRÍ NHỚ ──────────────────────────────────────
-router.get(
-  '/settings',
-  asyncHandler(async (req, res) => {
-    const settings = await getUserMemorySettings(req.userId)
-    res.json({ settings })
-  })
-)
-
-router.patch(
-  '/settings',
-  asyncHandler(async (req, res) => {
-    const { memoryEnabled, autoRememberAllergies, autoRememberChronic, autoRememberMedications, autoRememberEpisodes } = req.body ?? {}
-    const patch = {}
-
-    if (memoryEnabled !== undefined) patch.memoryEnabled = Boolean(memoryEnabled)
-    if (autoRememberAllergies !== undefined) patch.autoRememberAllergies = Boolean(autoRememberAllergies)
-    if (autoRememberChronic !== undefined) patch.autoRememberChronic = Boolean(autoRememberChronic)
-    if (autoRememberMedications !== undefined) patch.autoRememberMedications = Boolean(autoRememberMedications)
-    if (autoRememberEpisodes !== undefined) patch.autoRememberEpisodes = Boolean(autoRememberEpisodes)
-
-    const updated = await UserMemorySettingsModel.findOneAndUpdate(
-      { userId: req.userId },
-      { $set: patch },
-      { new: true, upsert: true }
-    ).lean()
-
-    res.json({ settings: updated })
   })
 )
 
