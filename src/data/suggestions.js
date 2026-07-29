@@ -27,8 +27,8 @@ export const SUGGESTIONS = [
       en: 'Heartburn, chest heat, lump-in-throat sensation, bitter taste'
     },
     prompt: {
-      vi: 'Tôi là nữ 32 tuổi, hay bị ợ chua, nóng rát râm rẩm đằng sau xương ức sau khi ăn no hoặc nằm ngửa, kèm cảm giác nuốt vướng ở cổ họng và hay đắng miệng vào buổi sáng. Hãy chẩn đoán và hướng dẫn cách điều trị, xử lý giúp tôi.',
-      en: 'I am a 32-year-old female with heartburn after meals, acid regurgitation, and a lump sensation in my throat. Please diagnose and provide treatment and dietary management guidance.'
+      vi: 'Tôi là nữ 32 tuổi, hay bị ợ chua, trào ngược dịch vị nóng rát đằng sau xương ức sau khi ăn no hoặc nằm ngửa, kèm cảm giác nuốt vướng ở cổ họng và hay đắng miệng vào buổi sáng. Hãy chẩn đoán trào ngược dạ dày thực quản (GERD) và hướng dẫn cách điều trị, xử lý giúp tôi.',
+      en: 'I am a 32-year-old female with acid reflux, heartburn after meals, and a lump sensation in my throat. Please diagnose GERD and provide treatment and dietary management guidance.'
     },
   },
   {
