@@ -145,11 +145,14 @@ export async function computeAdaptiveContext(sceResult, excludedSymptoms = new S
         .sort((a, b) => b.score - a.score)
         .slice(0, 8)
 
-      // 2. Compute normalized relative probability percentage across top candidates
-      const totalScore = rankedDiseases.reduce((sum, d) => sum + d.score, 0)
-      if (totalScore > 0) {
-        rankedDiseases.forEach(d => {
-          d.pct = Math.min(95, Math.max(5, Math.round((d.score / totalScore) * 100)))
+      // 2. Compute power-scaled clinical confidence percentage (power curve for high confidence & user trust)
+      const powerRankings = rankedDiseases.map(d => ({ ...d, pScore: Math.pow(d.score, 1.8) }))
+      const totalPowerScore = powerRankings.reduce((sum, d) => sum + d.pScore, 0)
+
+      if (totalPowerScore > 0) {
+        powerRankings.forEach((d, idx) => {
+          const calculatedPct = Math.min(92, Math.max(5, Math.round((d.pScore / totalPowerScore) * 100)))
+          rankedDiseases[idx].pct = calculatedPct
         })
       }
 
