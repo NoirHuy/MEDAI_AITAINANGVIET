@@ -205,7 +205,7 @@ export default function SettingsModal({
     }
     const script = document.createElement('script')
     script.id = scriptId
-    script.src = `https://www.paypal.com/sdk/js?client-id=${paypalConfig.clientId}&currency=USD`
+    script.src = `https://www.paypal.com/sdk/js?client-id=${paypalConfig.clientId}&currency=USD&disable-funding=card`
     script.async = true
     script.onload = () => setPaypalSdkLoaded(true)
     script.onerror = () => console.error('[PayPal SDK] Failed to load SDK script.')
