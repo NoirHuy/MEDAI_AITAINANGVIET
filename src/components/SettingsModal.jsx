@@ -74,6 +74,119 @@ export default function SettingsModal({
   const [paypalConfig, setPaypalConfig] = useState(null)
   const [paypalSdkLoaded, setPaypalSdkLoaded] = useState(false)
 
+  // State cho Trí Nhớ Thông Minh Cá Nhân
+  const [memories, setMemories] = useState([])
+  const [memorySettings, setMemorySettings] = useState({
+    memoryEnabled: true,
+    autoRememberAllergies: true,
+    autoRememberChronic: true,
+    autoRememberMedications: true,
+    autoRememberEpisodes: true
+  })
+  const [memoryLoading, setMemoryLoading] = useState(false)
+  const [newMemoryContent, setNewMemoryContent] = useState('')
+  const [newMemoryCategory, setNewMemoryCategory] = useState('allergy')
+  const [newMemorySubject, setNewMemorySubject] = useState('self')
+
+  useEffect(() => {
+    if (activeTab === 'memory' && account) {
+      loadMemoryData()
+    }
+  }, [activeTab, account])
+
+  async function loadMemoryData() {
+    try {
+      setMemoryLoading(true)
+      const [memRes, setRes] = await Promise.all([
+        apiRequest('/api/memories'),
+        apiRequest('/api/memories/settings')
+      ])
+      setMemories(memRes.memories || [])
+      setMemorySettings(setRes.settings || {})
+    } catch (err) {
+      console.error('[Memory] Error loading memory profile:', err)
+    } finally {
+      setMemoryLoading(false)
+    }
+  }
+
+  async function handleToggleMemorySetting(key, val) {
+    try {
+      const next = { ...memorySettings, [key]: val }
+      setMemorySettings(next)
+      await apiRequest('/api/memories/settings', {
+        method: 'PATCH',
+        body: JSON.stringify({ [key]: val })
+      })
+      showToast?.('Đã cập nhật cài đặt trí nhớ.')
+    } catch (err) {
+      showToast?.(err.message || 'Không thể lưu cài đặt.')
+    }
+  }
+
+  async function handleAddMemorySubmit(e) {
+    e.preventDefault()
+    if (!newMemoryContent.trim()) return
+    const criticalCats = ['allergy', 'chronic_condition', 'blood_type', 'pregnancy']
+    const importance = criticalCats.includes(newMemoryCategory) ? 'critical' : 'medium'
+    try {
+      const { memory } = await apiRequest('/api/memories', {
+        method: 'POST',
+        body: JSON.stringify({
+          content: newMemoryContent.trim(),
+          category: newMemoryCategory,
+          subject: newMemorySubject,
+          importance
+        })
+      })
+      setMemories((prev) => [memory, ...prev])
+      setNewMemoryContent('')
+      showToast?.('Đã thêm mục trí nhớ mới.')
+    } catch (err) {
+      showToast?.(err.message || 'Không thể thêm trí nhớ.')
+    }
+  }
+
+  async function handleToggleLockSingleMemory(id, currentLockStatus) {
+    try {
+      const nextLock = !currentLockStatus
+      await apiRequest(`/api/memories/${id}`, {
+        method: 'PATCH',
+        body: JSON.stringify({ isLocked: nextLock })
+      })
+      setMemories((prev) => prev.map((m) => m.id === id ? { ...m, isLocked: nextLock } : m))
+      showToast?.(nextLock ? 'Đã khóa ký ức (AI không được tự ý ghi đè).' : 'Đã mở khóa ký ức.')
+    } catch (err) {
+      showToast?.(err.message || 'Không thể thay đổi trạng thái khóa.')
+    }
+  }
+
+  async function handleDeleteSingleMemory(id) {
+    if (!window.confirm('Bạn có chắc chắn muốn xóa mục trí nhớ này khỏi hồ sơ?')) return
+    try {
+      await apiRequest(`/api/memories/${id}`, { method: 'DELETE' })
+      setMemories((prev) => prev.filter((m) => m.id !== id))
+      showToast?.('Đã xóa mục trí nhớ.')
+    } catch (err) {
+      showToast?.(err.message || 'Không thể xóa mục trí nhớ.')
+    }
+  }
+
+  async function handleClearAllMemoriesClick() {
+    if (!window.confirm('CẢNH BÁO: Hành động này sẽ XÓA MỀM toàn bộ hồ sơ trí nhớ y tế của bạn. Bạn có chắc chắn không?')) return
+    try {
+      await apiRequest('/api/memories', { method: 'DELETE' })
+      setMemories([])
+      showToast?.('Đã xóa toàn bộ hồ sơ trí nhớ.')
+    } catch (err) {
+      showToast?.(err.message || 'Không thể xóa toàn bộ.')
+    }
+  }
+
+  function handleExportMemoryProfileClick() {
+    window.open('/api/memories/export', '_blank')
+  }
+
   useEffect(() => {
     if ((activeTab === 'payment' || confirmPaymentModal) && !paypalConfig) {
       apiRequest('/api/payments/config')
