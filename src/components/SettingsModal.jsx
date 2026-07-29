@@ -68,154 +68,95 @@ export default function SettingsModal({
     setEditingCard(!account?.billingDetails)
   }, [account?.billingDetails])
 
-  // State cho Nâng Cấp Gói & Thanh Toán
+  // State cho Nâng Cấp Gói & Thanh Toán PayPal
   const [confirmPaymentModal, setConfirmPaymentModal] = useState(false)
   const [planLoading, setPlanLoading] = useState(false)
-
-  // State cho Trí Nhớ Thông Minh Cá Nhân
-  const [memories, setMemories] = useState([])
-  const [memorySettings, setMemorySettings] = useState({
-    memoryEnabled: true,
-    autoRememberAllergies: true,
-    autoRememberChronic: true,
-    autoRememberMedications: true,
-    autoRememberEpisodes: true
-  })
-  const [memoryLoading, setMemoryLoading] = useState(false)
-  const [newMemoryContent, setNewMemoryContent] = useState('')
-  const [newMemoryCategory, setNewMemoryCategory] = useState('allergy')
-  const [newMemorySubject, setNewMemorySubject] = useState('self')
+  const [paypalConfig, setPaypalConfig] = useState(null)
+  const [paypalSdkLoaded, setPaypalSdkLoaded] = useState(false)
 
   useEffect(() => {
-    if (activeTab === 'memory' && account) {
-      loadMemoryData()
+    if ((activeTab === 'payment' || confirmPaymentModal) && !paypalConfig) {
+      apiRequest('/api/payment/config')
+        .then((cfg) => setPaypalConfig(cfg))
+        .catch((err) => console.error('[PayPal Config] Error loading config:', err))
     }
-  }, [activeTab, account])
+  }, [activeTab, confirmPaymentModal, paypalConfig])
 
-  async function loadMemoryData() {
+  // Load PayPal SDK script dynamically when PayPal config is ready
+  useEffect(() => {
+    if (!paypalConfig?.clientId || paypalSdkLoaded) return
+    const scriptId = 'paypal-js-sdk'
+    if (document.getElementById(scriptId)) {
+      setPaypalSdkLoaded(true)
+      return
+    }
+    const script = document.createElement('script')
+    script.id = scriptId
+    script.src = `https://www.paypal.com/sdk/js?client-id=${paypalConfig.clientId}&currency=USD`
+    script.async = true
+    script.onload = () => setPaypalSdkLoaded(true)
+    script.onerror = () => console.error('[PayPal SDK] Failed to load SDK script.')
+    document.body.appendChild(script)
+  }, [paypalConfig, paypalSdkLoaded])
+
+  // Render PayPal Smart Buttons inside container element
+  useEffect(() => {
+    if (!paypalSdkLoaded || !window.paypal) return
+
+    const container = document.getElementById('paypal-button-container')
+    if (!container || container.childElementCount > 0) return
+
     try {
-      setMemoryLoading(true)
-      const [memRes, setRes] = await Promise.all([
-        apiRequest('/api/memories'),
-        apiRequest('/api/memories/settings')
-      ])
-      setMemories(memRes.memories || [])
-      setMemorySettings(setRes.settings || {})
-    } catch (err) {
-      console.error('[Memory] Error loading memory profile:', err)
-    } finally {
-      setMemoryLoading(false)
+      window.paypal.Buttons({
+        style: {
+          layout: 'vertical',
+          color: 'gold',
+          shape: 'rect',
+          label: 'paypal',
+        },
+        createOrder: async () => {
+          setPlanLoading(true)
+          try {
+            const res = await apiRequest('/api/payment/paypal/create-order', { method: 'POST' })
+            return res.orderId
+          } catch (err) {
+            showToast?.(err.message || 'Không thể tạo đơn hàng PayPal.')
+            setPlanLoading(false)
+            throw err
+          }
+        },
+        onApprove: async (data) => {
+          try {
+            const res = await apiRequest('/api/payment/paypal/capture-order', {
+              method: 'POST',
+              body: JSON.stringify({ orderId: data.orderID }),
+            })
+            showToast?.(res.message || 'Thanh toán PayPal thành công!')
+            setConfirmPaymentModal(false)
+            if (res.user) {
+              onSetPlan?.('pro', res.user)
+            }
+          } catch (err) {
+            showToast?.(err.message || 'Không thể hoàn tất thanh toán PayPal.')
+          } finally {
+            setPlanLoading(false)
+          }
+        },
+        onError: (err) => {
+          console.error('[PayPal Error]', err)
+          showToast?.('Xảy ra lỗi trong quá trình thanh toán PayPal.')
+          setPlanLoading(false)
+        },
+      }).render('#paypal-button-container')
+    } catch (e) {
+      console.error('[PayPal Render Error]', e)
     }
-  }
+  }, [paypalSdkLoaded, activeTab, confirmPaymentModal])
 
-  async function handleToggleMemorySetting(key, val) {
-    try {
-      const next = { ...memorySettings, [key]: val }
-      setMemorySettings(next)
-      await apiRequest('/api/memories/settings', {
-        method: 'PATCH',
-        body: JSON.stringify({ [key]: val })
-      })
-      showToast?.('Đã cập nhật cài đặt trí nhớ.')
-    } catch (err) {
-      showToast?.(err.message || 'Không thể lưu cài đặt.')
-    }
-  }
-
-  async function handleAddMemorySubmit(e) {
-    e.preventDefault()
-    if (!newMemoryContent.trim()) return
-    const criticalCats = ['allergy', 'chronic_condition', 'blood_type', 'pregnancy']
-    const importance = criticalCats.includes(newMemoryCategory) ? 'critical' : 'medium'
-    try {
-      const { memory } = await apiRequest('/api/memories', {
-        method: 'POST',
-        body: JSON.stringify({
-          content: newMemoryContent.trim(),
-          category: newMemoryCategory,
-          subject: newMemorySubject,
-          importance
-        })
-      })
-      setMemories((prev) => [memory, ...prev])
-      setNewMemoryContent('')
-      showToast?.('Đã thêm mục trí nhớ mới.')
-    } catch (err) {
-      showToast?.(err.message || 'Không thể thêm trí nhớ.')
-    }
-  }
-
-  async function handleToggleLockSingleMemory(id, currentLockStatus) {
-    try {
-      const nextLock = !currentLockStatus
-      await apiRequest(`/api/memories/${id}`, {
-        method: 'PATCH',
-        body: JSON.stringify({ isLocked: nextLock })
-      })
-      setMemories((prev) => prev.map((m) => m.id === id ? { ...m, isLocked: nextLock } : m))
-      showToast?.(nextLock ? 'Đã khóa ký ức (AI không được tự ý ghi đè).' : 'Đã mở khóa ký ức.')
-    } catch (err) {
-      showToast?.(err.message || 'Không thể thay đổi trạng thái khóa.')
-    }
-  }
-
-  async function handleDeleteSingleMemory(id) {
-    if (!window.confirm('Bạn có chắc chắn muốn xóa mục trí nhớ này khỏi hồ sơ?')) return
-    try {
-      await apiRequest(`/api/memories/${id}`, { method: 'DELETE' })
-      setMemories((prev) => prev.filter((m) => m.id !== id))
-      showToast?.('Đã xóa mục trí nhớ.')
-    } catch (err) {
-      showToast?.(err.message || 'Không thể xóa mục trí nhớ.')
-    }
-  }
-
-  async function handleClearAllMemoriesClick() {
-    if (!window.confirm('CẢNH BÁO: Hành động này sẽ XÓA MỀM toàn bộ hồ sơ trí nhớ y tế của bạn. Bạn có chắc chắn không?')) return
-    try {
-      await apiRequest('/api/memories', { method: 'DELETE' })
-      setMemories([])
-      showToast?.('Đã xóa toàn bộ hồ sơ trí nhớ.')
-    } catch (err) {
-      showToast?.(err.message || 'Không thể xóa toàn bộ.')
-    }
-  }
-
-  function handleExportMemoryProfileClick() {
-    window.open('/api/memories/export', '_blank')
-  }
-
-  // Xử lý Xóa Thẻ Thanh Toán
-  async function handleDeleteCardClick() {
-    const cardLast4 = account?.billingDetails?.cardLast4 || ''
-    if (!window.confirm(`Bạn có chắc chắn muốn xóa thẻ thanh toán (•••• ${cardLast4}) khỏi tài khoản?`)) return
-    try {
-      setDeleteCardLoading(true)
-      await onDeleteCard()
-      setEditingCard(true)
-      setCardNumber('')
-      setCardHolder('')
-      setCardExpiry('')
-      setCardCvc('')
-      showToast?.('Đã xóa thẻ thanh toán thành công!')
-    } catch (err) {
-      showToast?.(err.message || 'Không thể xóa thẻ.')
-    } finally {
-      setDeleteCardLoading(false)
-    }
-  }
-
-  // Xử lý bấm Chuyển Gói chuẩn Quy Tắc Thanh Toán
+  // Xử lý bấm Chuyển Gói
   function handleSelectPlanClick(targetPlanId) {
     if (targetPlanId === account.planId) return
     if (targetPlanId === 'pro') {
-      // Yêu cầu bắt buộc phải có thẻ thanh toán mới được nâng cấp
-      if (!account.billingDetails || !account.billingDetails.cardLast4) {
-        showToast?.('Vui lòng thêm thẻ thanh toán (Visa/MasterCard/JCB) trước khi nâng cấp gói Pro.')
-        onChangeTab('payment')
-        return
-      }
-      // Nếu đã có thẻ -> Mở Modal Xác Nhận Thanh Toán & Trừ Tiền
       setConfirmPaymentModal(true)
     } else {
       if (window.confirm('Bạn có chắc chắn muốn chuyển về gói Miễn phí?')) {
@@ -224,19 +165,15 @@ export default function SettingsModal({
     }
   }
 
-  // Tiến hành gọi API đổi gói
+  // Tiến hành gọi API đổi gói (dành cho gói Free)
   async function processPlanChange(planId) {
     try {
       setPlanLoading(true)
       await onSetPlan(planId)
       setConfirmPaymentModal(false)
-      if (planId === 'pro') {
-        showToast?.('Thanh toán 99.000đ thành công! Đã kích hoạt gói Pro (30 ngày).')
-      } else {
-        showToast?.('Đã chuyển về gói Miễn phí.')
-      }
+      showToast?.('Đã chuyển về gói Miễn phí.')
     } catch (err) {
-      showToast?.(err.message || 'Không thể nâng cấp gói.')
+      showToast?.(err.message || 'Không thể thay đổi gói.')
     } finally {
       setPlanLoading(false)
     }
@@ -788,19 +725,19 @@ export default function SettingsModal({
             </section>
           )}
 
-          {/* TAB 4: THANH TOÁN (MỚI: VISA/MASTERCARD & THÔNG TIN HẠN PRO) */}
+          {/* TAB 4: THANH TOÁN (PAYPAL CHECKOUT) */}
           {activeTab === 'payment' && (
             <section>
-              <h2>Thanh toán &amp; Thẻ ngân hàng</h2>
+              <h2>Thanh toán &amp; Cổng PayPal</h2>
               <p className="settings-modal__hint">
-                Quản lý thẻ Visa, MasterCard, JCB và thiết lập gia hạn tự động cho gói Pro y tế.
+                Thanh toán an toàn quốc tế qua **PayPal Checkout** để nâng cấp gói Pro Chuyên Gia (99.000đ ≈ $3.99 USD / 30 ngày).
               </p>
 
               {/* THÔNG TIN HẠN SỬ DỤNG GÓI */}
               <div className="subscription-status-box">
                 <div className="status-header">
                   <div>
-                    <span className="status-label">Trạng thái gói Pro</span>
+                    <span className="status-label">Trạng thái gói dịch vụ</span>
                     <h3 className="status-title">
                       {account.planId === 'pro' ? 'Gói Pro Chuyên Gia (Active)' : 'Gói Miễn Phí (Free)'}
                     </h3>
@@ -813,31 +750,31 @@ export default function SettingsModal({
                 {account.planId === 'pro' && (
                   <div className="date-info-grid">
                     <div className="date-item">
-                      <span>Ngày đăng ký Pro</span>
-                      <strong>{regDate}</strong>
+                      <span>Phương thức thanh toán</span>
+                      <strong>PayPal ({account.billingDetails?.paypalEmail || 'Tài khoản PayPal'})</strong>
                     </div>
                     <div className="date-item">
                       <span>Ngày hết hạn</span>
-                      <strong>{expDate}</strong>
+                      <strong>{account.subscriptionExpiresAt ? new Date(account.subscriptionExpiresAt).toLocaleDateString('vi-VN') : '30 ngày kể từ ngày thanh toán'}</strong>
                     </div>
                   </div>
                 )}
 
-                {/* CÔNG TẮC GIA HẠN TỰ ĐỘNG (DEFAULT ON) */}
+                {/* CÔNG TẮC GIA HẠN TỰ ĐỘNG */}
                 <div className="auto-renew-row">
                   <div className="auto-renew-text">
-                    <strong>Gia hạn tự động</strong>
+                    <strong>Tự động nhắc gia hạn</strong>
                     <p className="auto-renew-hint">
                       {isAutoRenewOn
-                        ? 'Đang BẬT (Mặc định). Hệ thống sẽ tự động gia hạn gói Pro khi đến hạn.'
-                        : 'Đang TẮT. Gói Pro sẽ tự động chuyển về gói Miễn phí sau ngày hết hạn.'}
+                        ? 'Đang BẬT. Hệ thống sẽ nhắc bạn gia hạn gói Pro khi sắp hết hạn.'
+                        : 'Đang TẮT. Gói Pro sẽ tự động chuyển về Miễn phí sau ngày hết hạn.'}
                     </p>
                   </div>
                   <label className="toggle-switch">
                     <input
                       type="checkbox"
                       checked={isAutoRenewOn}
-                      onChange={handleToggleAutoRenewClick}
+                      onChange={(e) => onToggleAutoRenew?.(e.target.checked)}
                     />
                     <span className="toggle-slider" />
                   </label>
@@ -846,105 +783,30 @@ export default function SettingsModal({
 
               <div className="settings-divider" />
 
-              {/* MỤC THÊM / QUẢN LÝ THẺ VISA, MASTERCARD */}
+              {/* MỤC NÂNG CẤP QUA PAYPAL CHECKOUT */}
               <div className="settings-section-box">
                 <h3 className="settings-subheading">
-                  <CreditCardIcon /> Thẻ thanh toán quốc tế (Visa / MasterCard / JCB)
+                  <CreditCardIcon /> Nâng cấp gói Pro bằng PayPal (99.000đ / $3.99 USD)
                 </h3>
 
-                {account.billingDetails && !editingCard ? (
-                  <div className="saved-card-widget">
-                    <div className="card-chip-brand">
-                      <span className="card-brand-badge">{account.billingDetails.brand || 'Visa'}</span>
-                      <span className="card-last4">•••• •••• •••• {account.billingDetails.cardLast4}</span>
-                    </div>
-                    <div className="card-details-row">
-                      <span>Chủ thẻ: <strong>{account.billingDetails.holderName}</strong></span>
-                      <span>Hết hạn: <strong>{account.billingDetails.expiry}</strong></span>
-                    </div>
-                    <div className="card-actions-group" style={{ marginTop: '12px', display: 'flex', gap: '10px' }}>
-                      <button
-                        className="btn btn--outline btn--sm"
-                        onClick={() => setEditingCard(true)}
-                      >
-                        Thay đổi thẻ
-                      </button>
-                      <button
-                        className="btn btn--danger-outline btn--sm"
-                        disabled={deleteCardLoading}
-                        onClick={handleDeleteCardClick}
-                      >
-                        <TrashIcon /> {deleteCardLoading ? 'Đang xóa...' : 'Xóa thẻ thanh toán'}
-                      </button>
+                {account.planId === 'pro' ? (
+                  <div className="settings-alert settings-alert--success" style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                    <CheckIcon />
+                    <div>
+                      <strong>Tài khoản đang ở gói Pro Chuyên Gia!</strong>
+                      <p style={{ margin: 0, fontSize: '12px' }}>Bạn có thể thanh toán thêm lượt để gia hạn 30 ngày tiếp theo bất kỳ lúc nào.</p>
                     </div>
                   </div>
-                ) : (
-                  <form onSubmit={handleSaveCardSubmit} className="credit-card-form">
-                    {cardStatus && (
-                      <div className={`settings-alert settings-alert--${cardStatus.type}`}>
-                        {cardStatus.text}
-                      </div>
-                    )}
-                    <label className="settings-field">
-                      <span>Số thẻ (Visa, MasterCard, JCB, AMEX)</span>
-                      <input
-                        type="text"
-                        placeholder="4000 1234 5678 9010"
-                        value={cardNumber}
-                        onChange={handleCardNumberChange}
-                        required
-                      />
-                    </label>
-                    <label className="settings-field">
-                      <span>Tên in trên thẻ (Tên chủ thẻ)</span>
-                      <input
-                        type="text"
-                        placeholder="LE QUANG HUY"
-                        value={cardHolder}
-                        onChange={(e) => setCardHolder(e.target.value.toUpperCase())}
-                        required
-                      />
-                    </label>
-                    <div className="form-row-two">
-                      <label className="settings-field">
-                        <span>Hạn thẻ (MM/YY)</span>
-                        <input
-                          type="text"
-                          placeholder="12/28"
-                          value={cardExpiry}
-                          onChange={handleCardExpiryChange}
-                          required
-                        />
-                      </label>
-                      <label className="settings-field">
-                        <span>Mã bảo mật (CVC/CVV)</span>
-                        <input
-                          type="password"
-                          maxLength={4}
-                          placeholder="123"
-                          value={cardCvc}
-                          onChange={(e) => setCardCvc(e.target.value.replace(/\D/g, ''))}
-                          required
-                        />
-                      </label>
-                    </div>
+                ) : null}
 
-                    <div className="form-actions-row">
-                      <button type="submit" className="btn btn--primary" disabled={cardLoading}>
-                        {cardLoading ? 'Đang lưu...' : 'Lưu phương thức thanh toán'}
-                      </button>
-                      {account.billingDetails && (
-                        <button
-                          type="button"
-                          className="btn btn--outline"
-                          onClick={() => setEditingCard(false)}
-                        >
-                          Hủy
-                        </button>
-                      )}
-                    </div>
-                  </form>
-                )}
+                <div style={{ marginTop: '16px' }}>
+                  {!paypalSdkLoaded && (
+                    <p className="settings-modal__hint" style={{ textAlign: 'center', padding: '12px' }}>
+                      Đang tải cổng thanh toán bảo mật PayPal...
+                    </p>
+                  )}
+                  <div id="paypal-button-container" style={{ maxWidth: '400px', margin: '0 auto', minHeight: '120px' }} />
+                </div>
               </div>
             </section>
           )}
@@ -1009,40 +871,26 @@ export default function SettingsModal({
         </div>
       </div>
 
-      {/* MODAL XÁC NHẬN THANH TOÁN 99.000đ NÂNG CẤP PRO */}
+      {/* MODAL XÁC NHẬN THANH TOÁN PAYPAL NÂNG CẤP PRO */}
       {confirmPaymentModal && (
         <div className="modal-backdrop modal-backdrop--nested" onClick={() => setConfirmPaymentModal(false)}>
           <div className="confirm-payment-modal" onClick={(e) => e.stopPropagation()}>
             <div className="confirm-payment-header">
               <SparklesIcon />
-              <h3>Xác nhận thanh toán nâng cấp Pro</h3>
+              <h3>Nâng cấp gói Pro Chuyên Gia (PayPal)</h3>
             </div>
             <p className="confirm-payment-desc">
-              Số tiền <strong>99.000đ / tháng</strong> sẽ được trừ trực tiếp vào thẻ thanh toán của bạn để kích hoạt 30 ngày sử dụng gói Pro:
+              Hoàn tất thanh toán <strong>99.000đ (~$3.99 USD)</strong> qua cổng PayPal để nâng cấp 30 ngày sử dụng gói Pro Chuyên Gia:
             </p>
-            <div className="confirm-card-box">
-              <div className="card-chip-brand">
-                <span className="card-brand-badge">{account.billingDetails?.brand || 'Visa'}</span>
-                <span className="card-last4">•••• •••• •••• {account.billingDetails?.cardLast4}</span>
-              </div>
-              <div className="card-details-row">
-                <span>Chủ thẻ: <strong>{account.billingDetails?.holderName}</strong></span>
-                <span>Hết hạn: <strong>{account.billingDetails?.expiry}</strong></span>
-              </div>
+            <div style={{ padding: '16px 0', minHeight: '120px' }}>
+              <div id="paypal-button-container" />
             </div>
             <div className="confirm-modal-actions">
-              <button
-                className="btn btn--primary"
-                disabled={planLoading}
-                onClick={() => processPlanChange('pro')}
-              >
-                {planLoading ? 'Đang xử lý...' : 'Xác nhận thanh toán 99.000đ'}
-              </button>
               <button
                 className="btn btn--outline"
                 onClick={() => setConfirmPaymentModal(false)}
               >
-                Hủy
+                Đóng / Hủy
               </button>
             </div>
           </div>

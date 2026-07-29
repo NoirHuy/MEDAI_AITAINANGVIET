@@ -1,5 +1,4 @@
 import { Router } from 'express'
-import Stripe from 'stripe'
 import { randomUUID } from 'node:crypto'
 import { env } from '../config/env.js'
 import { requireAuth } from '../middleware/auth.js'
@@ -8,121 +7,105 @@ import { HttpError } from '../utils/httpError.js'
 import { UserModel } from '../db/user.model.js'
 import { PaymentModel } from '../db/payment.model.js'
 import { toPublicUser } from '../db/usersRepo.js'
-import { autoRenewSubscriptionForUser } from '../services/billingScheduler.js'
+import { createPayPalOrder, capturePayPalOrder } from '../services/paypalClient.js'
 
 const router = Router()
-const stripe = env.stripeSecretKey ? new Stripe(env.stripeSecretKey) : null
 
 router.use(requireAuth)
 
-// ─── 1. LIÊN KẾT THẺ TÍN DỤNG (STRIPE / MOCK) ──────────────────────────────
+// ─── 0. PAYPAL PUBLIC CONFIG (Client ID & Mode for Frontend Buttons) ────────
+router.get('/config', (req, res) => {
+  res.json({
+    clientId: env.paypalClientId,
+    mode: env.paypalMode,
+    isConfigured: !!(env.paypalClientId && env.paypalClientSecret)
+  })
+})
+
+// ─── 1. CREATE PAYPAL ORDER ──────────────────────────────────────────────────
 router.post(
-  '/link-card',
+  '/paypal/create-order',
   asyncHandler(async (req, res) => {
-    const { paymentMethodId, last4, brand } = req.body ?? {}
     const user = await UserModel.findOne({ id: req.userId })
     if (!user) throw new HttpError(404, 'Không tìm thấy tài khoản.')
 
-    if (stripe) {
-      // TRƯỜNG HỢP A: Có cấu hình Stripe thật (Chạy thực tế / Test Mode)
-      if (!paymentMethodId) {
-        throw new HttpError(400, 'Thiếu Stripe PaymentMethod ID.')
-      }
+    if (!env.paypalClientId || !env.paypalClientSecret) {
+      // Mock PayPal mode if API keys are missing in dev
+      console.log(`[PayPal Mock] Creating mock order for User ${user.id}...`)
+      const mockOrderId = `PAYPAL_MOCK_ORDER_${randomUUID().slice(0, 8)}`
+      return res.json({ orderId: mockOrderId, isMock: true })
+    }
 
-      let stripeCustomerId = user.billingToken
-      if (user.billingMethod !== 'stripe' || !stripeCustomerId) {
-        // Tạo mới Stripe Customer
-        const customer = await stripe.customers.create({
-          email: user.email,
-          name: user.name,
-          metadata: { userId: user.id }
-        })
-        stripeCustomerId = customer.id
-      }
-
-      // Gắn PaymentMethod vào Customer
-      await stripe.paymentMethods.attach(paymentMethodId, {
-        customer: stripeCustomerId
+    try {
+      const order = await createPayPalOrder({
+        amountUSD: '3.99',
+        description: `MedChat Pro Plan Subscription (30 Days) - User: ${user.email}`
       })
-
-      // Đặt làm thẻ mặc định cho Customer
-      await stripe.customers.update(stripeCustomerId, {
-        invoice_settings: {
-          default_payment_method: paymentMethodId
-        }
-      })
-
-      const updatedUser = await UserModel.findOneAndUpdate(
-        { id: req.userId },
-        {
-          $set: {
-            billingMethod: 'stripe',
-            billingToken: stripeCustomerId,
-            billingDetails: {
-              paymentMethodId,
-              brand: brand || 'Card',
-              last4: last4 || '9999'
-            },
-            autoRenew: true,
-            subscriptionStatus: user.planId === 'pro' ? 'active' : user.subscriptionStatus
-          }
-        },
-        { new: true }
-      ).lean()
-
-      res.json({ success: true, user: toPublicUser(updatedUser) })
-    } else {
-      // TRƯỜNG HỢP B: Giả lập liên kết thẻ (Khi không có Stripe Key)
-      console.log(`[Stripe Mock] Giả lập liên kết thẻ Visa/Mastercard cho User ${user.id}...`)
-      
-      const mockLast4 = last4 || '4242'
-      const mockBrand = brand || 'Visa'
-      
-      const updatedUser = await UserModel.findOneAndUpdate(
-        { id: req.userId },
-        {
-          $set: {
-            billingMethod: 'stripe',
-            billingToken: `cus_mock_${randomUUID().slice(0, 8)}`,
-            billingDetails: {
-              paymentMethodId: `pm_mock_${randomUUID().slice(0, 8)}`,
-              brand: mockBrand,
-              last4: mockLast4
-            },
-            autoRenew: true,
-            // Nếu người dùng nâng cấp lần đầu, tự động kích hoạt thử nghiệm
-            subscriptionStatus: user.planId === 'pro' ? 'active' : user.subscriptionStatus
-          }
-        },
-        { new: true }
-      ).lean()
-
-      res.json({ success: true, user: toPublicUser(updatedUser), isMock: true })
+      res.json({ orderId: order.id, isMock: false })
+    } catch (err) {
+      throw new HttpError(500, `Không thể tạo đơn hàng PayPal: ${err.message}`)
     }
   })
 )
 
-// ─── 2. GIẢ LẬP LIÊN KẾT VÍ MOMO ──────────────────────────────────────────
+// ─── 2. CAPTURE PAYPAL ORDER & UPGRADE TO PRO ──────────────────────────────
 router.post(
-  '/link-momo',
+  '/paypal/capture-order',
   asyncHandler(async (req, res) => {
-    const { phoneNumber, otp } = req.body ?? {}
-    if (!phoneNumber) throw new HttpError(400, 'Số điện thoại Ví MoMo không được để trống.')
-    if (!otp) throw new HttpError(400, 'Mã xác thực OTP không hợp lệ.')
+    const { orderId } = req.body ?? {}
+    if (!orderId) throw new HttpError(400, 'Thiếu PayPal Order ID.')
 
     const user = await UserModel.findOne({ id: req.userId })
     if (!user) throw new HttpError(404, 'Không tìm thấy tài khoản.')
 
-    console.log(`[MoMo Link] Đang liên kết Ví MoMo số ${phoneNumber} cho User ${user.id}...`)
+    let captureResult = null
+    let isMock = false
+
+    if (orderId.startsWith('PAYPAL_MOCK_ORDER_') || (!env.paypalClientId || !env.paypalClientSecret)) {
+      console.log(`[PayPal Mock] Capturing mock order ${orderId} for User ${user.id}...`)
+      isMock = true
+    } else {
+      try {
+        captureResult = await capturePayPalOrder(orderId)
+        if (captureResult.status !== 'COMPLETED') {
+          throw new HttpError(400, `Thanh toán PayPal chưa hoàn tất (Trạng thái: ${captureResult.status})`)
+        }
+      } catch (err) {
+        throw new HttpError(400, `Thanh toán PayPal thất bại: ${err.message}`)
+      }
+    }
+
+    // Ghi nhận giao dịch thanh toán vào PaymentModel
+    const paymentRecord = new PaymentModel({
+      id: `pay_${Date.now()}_${randomUUID().slice(0, 6)}`,
+      userId: user.id,
+      planId: 'pro',
+      amount: 99000,
+      status: 'success',
+      type: 'initial',
+      paymentGateway: 'paypal',
+      createdAt: new Date(),
+      completedAt: new Date()
+    })
+    await paymentRecord.save()
+
+    // Nâng cấp tài khoản User sang gói Pro (30 ngày)
+    const now = new Date()
+    const expiresAt = new Date(now.getTime() + 30 * 24 * 60 * 60 * 1000)
 
     const updatedUser = await UserModel.findOneAndUpdate(
       { id: req.userId },
       {
         $set: {
-          billingMethod: 'momo',
-          billingToken: `tok_momo_${randomUUID().slice(0, 12)}`,
+          planId: 'pro',
+          subscriptionStatus: 'active',
+          subscriptionExpiresAt: expiresAt,
+          billingMethod: 'paypal',
+          billingToken: orderId,
           billingDetails: {
-            momoPhone: phoneNumber
+            paypalPayerId: captureResult?.payer?.payer_id || 'paypal_payer_sandbox',
+            paypalEmail: captureResult?.payer?.email_address || user.email,
+            capturedAt: new Date().toISOString()
           },
           autoRenew: true
         }
@@ -130,11 +113,16 @@ router.post(
       { new: true }
     ).lean()
 
-    res.json({ success: true, user: toPublicUser(updatedUser) })
+    res.json({
+      success: true,
+      message: 'Thanh toán thành công qua PayPal! Tài khoản của bạn đã được nâng cấp lên gói Pro (30 ngày).',
+      user: toPublicUser(updatedUser),
+      isMock
+    })
   })
 )
 
-// ─── 3. HỦY LIÊN KẾT THANH TOÁN TỰ ĐỘNG ────────────────────────────────────
+// ─── 3. HỦY LIÊN KẾT THANH TOÁN ────────────────────────────────────────────
 router.post(
   '/unlink',
   asyncHandler(async (req, res) => {
@@ -176,30 +164,6 @@ router.get(
   asyncHandler(async (req, res) => {
     const history = await PaymentModel.find({ userId: req.userId }).sort({ createdAt: -1 }).lean()
     res.json({ history })
-  })
-)
-
-// ─── 6. TRIGGER KIỂM THỬ GIA HẠN NGAY LẬP TỨC ──────────────────────────────
-router.post(
-  '/trigger-renew-test',
-  asyncHandler(async (req, res) => {
-    const user = await UserModel.findOne({ id: req.userId }).lean()
-    if (!user) throw new HttpError(404, 'Không tìm thấy tài khoản.')
-    if (!user.billingToken) throw new HttpError(400, 'Bạn cần liên kết Thẻ hoặc Ví MoMo để thử nghiệm tính năng này.')
-
-    // Mô phỏng nâng cấp lên Pro bằng cách chạy hàm gia hạn
-    // Để chạy thử được, trước tiên đặt autoRenew về true
-    await UserModel.updateOne({ id: user.id }, { $set: { autoRenew: true } })
-    const userWithRenew = await UserModel.findOne({ id: user.id }).lean()
-
-    const result = await autoRenewSubscriptionForUser(userWithRenew)
-    const refreshedUser = await UserModel.findOne({ id: user.id }).lean()
-
-    res.json({
-      success: result.success,
-      error: result.error || null,
-      user: toPublicUser(refreshedUser)
-    })
   })
 )
 

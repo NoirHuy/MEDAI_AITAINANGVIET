@@ -935,8 +935,7 @@ export default function DashboardView({ account, onBack, onSignOut, lang, initia
 
                 <select value={filterPayGateway} onChange={e => { setFilterPayGateway(e.target.value); setPayPage(1); }}>
                   <option value="">-- Cổng thanh toán --</option>
-                  <option value="stripe">Stripe (Thẻ Visa/Mastercard)</option>
-                  <option value="momo">Ví MoMo</option>
+                  <option value="paypal">PayPal Checkout</option>
                 </select>
               </div>
             </div>
@@ -974,7 +973,7 @@ export default function DashboardView({ account, onBack, onSignOut, lang, initia
                           <td><span className="plan-pill plan-pro">{p.planId}</span></td>
                           <td>
                             <span className={`gateway-pill gateway-${p.paymentGateway}`}>
-                              {p.paymentGateway === 'stripe' ? '💳 Stripe (Visa/MC)' : '💗 Ví MoMo'}
+                              {p.paymentGateway === 'paypal' ? '💳 PayPal' : (p.paymentGateway || 'PayPal')}
                             </span>
                           </td>
                           <td>
@@ -1039,7 +1038,7 @@ export default function DashboardView({ account, onBack, onSignOut, lang, initia
                       p.user?.name || 'Người dùng',
                       p.user?.email || 'N/A',
                       p.planId === 'pro' ? 'Gói Pro Y Tế' : p.planId,
-                      p.paymentGateway === 'stripe' ? 'Stripe (Visa/MasterCard)' : 'Ví MoMo',
+                      p.paymentGateway === 'paypal' ? 'PayPal' : p.paymentGateway,
                       p.type === 'recurring' ? 'Gia hạn tự động' : 'Nâng cấp lần đầu',
                       p.amount || 0,
                       new Date(p.createdAt).toLocaleString('vi-VN'),

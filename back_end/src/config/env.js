@@ -39,11 +39,14 @@ export const env = {
   neo4jDatabase: (process.env.NEO4J_DATABASE || 'neo4j').trim(),
   mongodbUri: (process.env.MONGODB_URI || 'mongodb://localhost:27018/medchat').trim(),
   umlsApiKey: process.env.UMLS_API_KEY ? process.env.UMLS_API_KEY.trim() : null,
-  stripeSecretKey: (process.env.STRIPE_SECRET_KEY || '').trim(),
-  stripePublishableKey: (process.env.STRIPE_PUBLISHABLE_KEY || '').trim(),
-  payosClientId: (process.env.PAYOS_CLIENT_ID || '').trim(),
-  payosApiKey: (process.env.PAYOS_API_KEY || '').trim(),
-  payosChecksumKey: (process.env.PAYOS_CHECKSUM_KEY || '').trim(),
+  paypalClientId: (process.env.PAYPAL_CLIENT_ID || '').trim(),
+  paypalClientSecret: (process.env.PAYPAL_CLIENT_SECRET || '').trim(),
+  paypalMode: (process.env.PAYPAL_MODE || 'sandbox').trim().toLowerCase(),
+  get paypalApiBase() {
+    return this.paypalMode === 'live'
+      ? 'https://api-m.paypal.com'
+      : 'https://api-m.sandbox.paypal.com'
+  },
   adminEmail: (process.env.ADMIN_EMAIL || 'admin@medchat.ai').trim(),
   wChiefComplaint: Number(process.env.W_CHIEF_COMPLAINT) || 1.5,
   wAssociated: Number(process.env.W_ASSOCIATED) || 1.0,
