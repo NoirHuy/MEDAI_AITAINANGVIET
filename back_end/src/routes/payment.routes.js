@@ -50,7 +50,7 @@ router.post(
   '/paypal/capture-order',
   asyncHandler(async (req, res) => {
     const { orderId } = req.body ?? {}
-    if (!orderId) throw new HttpError(400, 'Thiếu PayPal Order ID.')
+    if (!orderId || typeof orderId !== 'string') throw new HttpError(400, 'Thiếu PayPal Order ID hợp lệ.')
 
     const user = await UserModel.findOne({ id: req.userId })
     if (!user) throw new HttpError(404, 'Không tìm thấy tài khoản.')
@@ -59,17 +59,32 @@ router.post(
       throw new HttpError(500, 'Hệ thống chưa cấu hình PayPal API Key.')
     }
 
+    // 🛡️ CHỐNG TÁI SỬ DỤNG MÃ ĐƠN HÀNG (Anti-Replay Attack)
+    const existingPayment = await PaymentModel.findOne({ billingToken: orderId })
+    if (existingPayment) {
+      throw new HttpError(400, 'Đơn hàng PayPal này đã được xử lý và ghi nhận trước đó.')
+    }
+
     let captureResult
     try {
       captureResult = await capturePayPalOrder(orderId)
       if (captureResult.status !== 'COMPLETED') {
         throw new HttpError(400, `Thanh toán PayPal chưa hoàn tất (Trạng thái: ${captureResult.status})`)
       }
+
+      // 🛡️ ĐỐI SOÁT GIÁ TIỀN THỰC TẾ TRÁNH BỊ THỦ THUẬT GIAN LẬN GIÁ (Price Audit)
+      const capturedAmount = captureResult.purchase_units?.[0]?.payments?.captures?.[0]?.amount?.value
+      const capturedCurrency = captureResult.purchase_units?.[0]?.payments?.captures?.[0]?.amount?.currency_code
+
+      if (capturedAmount !== '3.99' || capturedCurrency !== 'USD') {
+        console.error(`[PAYPAL AUDIT ALERT] Detected price mismatch for order ${orderId}: Expected $3.99 USD, got ${capturedAmount} ${capturedCurrency}`)
+        throw new HttpError(400, 'Giao dịch bị từ chối do số tiền thanh toán không đúng hạn mức gói Pro ($3.99 USD).')
+      }
     } catch (err) {
       throw new HttpError(400, `Thanh toán PayPal thất bại: ${err.message}`)
     }
 
-    // Ghi nhận giao dịch thanh toán vào PaymentModel
+    // Ghi nhận giao dịch thanh toán vào PaymentModel với billingToken chính là orderId
     const paymentRecord = new PaymentModel({
       id: `pay_${Date.now()}_${randomUUID().slice(0, 6)}`,
       userId: user.id,
@@ -78,6 +93,7 @@ router.post(
       status: 'success',
       type: 'initial',
       paymentGateway: 'paypal',
+      billingToken: orderId,
       createdAt: new Date(),
       completedAt: new Date()
     })
