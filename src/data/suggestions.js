@@ -1,34 +1,66 @@
 export const SUGGESTIONS = [
   {
-    id: 'suggestion_1',
-    isDemo: true, // Thẻ Demo đặc biệt: Ép xuất Báo cáo Kết luận Phase 2 ngay lượt 1
+    id: 'disease_1',
+    isDemo: true, // Ép xuất Báo cáo Kết luận Sàng lọc Y khoa & Hướng giải quyết ngay lượt 1
     title: {
-      vi: 'Xem ngay Báo cáo Sàng lọc Kết luận',
-      en: 'View Instant Screening Report'
+      vi: '🤒 Cảm Cúm & Viêm Họng Cấp',
+      en: '🤒 Acute Flu & Pharyngitis'
     },
     detail: {
-      vi: 'Xem trực tiếp giao diện Báo cáo Sàng lọc Chẩn đoán Y khoa đầy đủ.',
-      en: 'Instantly view a complete medical diagnostic screening report.'
+      vi: 'Sốt 38°C, đau rát họng khi nuốt, nghẹt mũi, mệt mỏi toàn thân',
+      en: '38°C fever, sore throat, nasal congestion, fatigue'
     },
     prompt: {
-      vi: 'Tôi là nam 25 tuổi, bị sốt 38.5 độ kèm đau rát họng khi nuốt 2 ngày nay, nhìn họng thấy 2 bên amidan đỏ rực, cảm giác nuốt vướng và mệt mỏi nhiều. Tôi không bị ho, không bị nghẹt mũi hay chảy nước mũi.',
-      en: 'I am a 25-year-old male with a 38.5°C fever and severe sore throat when swallowing for 2 days, bright red tonsils, and fatigue. I do not have a cough, nasal congestion, or runny nose.'
+      vi: 'Tôi là nam 28 tuổi, bị sốt 38°C kèm đau rát họng khi nuốt 2 ngày nay, mệt mỏi toàn thân, nghẹt mũi và chảy nước mũi trong. Tôi không bị ho hay khó thở. Hãy phân tích thông tin bệnh và đưa ra hướng giải quyết điều trị cụ thể giúp tôi.',
+      en: 'I am a 28-year-old male with a 38°C fever, severe sore throat when swallowing for 2 days, fatigue, and nasal congestion. Please provide detailed diagnostic information and treatment guidance.'
     },
   },
   {
-    id: 'suggestion_2',
-    isDemo: false, // Thẻ Quy trình: Đi qua luồng hỏi đáp từng bước bình thường
+    id: 'disease_2',
+    isDemo: true,
     title: {
-      vi: 'Trải nghiệm quy trình AI hỏi bệnh thông minh',
-      en: 'Experience Intelligent AI Symptom Interview'
+      vi: '🫁 Trào Ngược Dạ Dày (GERD)',
+      en: '🫁 Acid Reflux (GERD)'
     },
     detail: {
-      vi: 'Mô tả triệu chứng ban đầu để AI đặt câu hỏi làm rõ từng bước.',
-      en: 'Describe initial symptoms and let AI ask clarifying questions step-by-step.'
+      vi: 'Ợ chua, nóng rát đằng sau xương ức, vướng họng, đắng miệng',
+      en: 'Heartburn, chest heat, lump-in-throat sensation, bitter taste'
     },
     prompt: {
-      vi: 'Tôi là nam 22 tuổi, bị đau bụng từ sáng nay kèm sốt nhẹ và chán ăn, hãy hỏi thêm để giúp tôi tìm nguyên nhân.',
-      en: 'I am a 22-year-old male experiencing abdominal pain since this morning with a mild fever and loss of appetite. Please ask follow-up questions to help find the cause.'
+      vi: 'Tôi là nữ 32 tuổi, hay bị ợ chua, nóng rát râm rẩm đằng sau xương ức sau khi ăn no hoặc nằm ngửa, kèm cảm giác nuốt vướng ở cổ họng và hay đắng miệng vào buổi sáng. Hãy chẩn đoán và hướng dẫn cách điều trị, xử lý giúp tôi.',
+      en: 'I am a 32-year-old female with heartburn after meals, acid regurgitation, and a lump sensation in my throat. Please diagnose and provide treatment and dietary management guidance.'
+    },
+  },
+  {
+    id: 'disease_3',
+    isDemo: true,
+    title: {
+      vi: '👃 Viêm Xoang Cấp & Mãn Tính',
+      en: '👃 Sinusitis (Sinus Infection)'
+    },
+    detail: {
+      vi: 'Đau nhức vùng trán/gò má, nghẹt mũi kéo dài, đờm xanh đặc',
+      en: 'Facial pressure, nasal congestion, thick yellow-green mucus'
+    },
+    prompt: {
+      vi: 'Tôi là nam 35 tuổi, bị đau nhức nặng vùng trán và hai bên gò má khi cúi đầu, nghẹt mũi kéo dài, chảy dịch mũi đặc màu vàng xanh và giảm khứu giác 5 ngày nay. Hãy phân tích thông tin bệnh và đưa ra hướng giải quyết điều trị chi tiết.',
+      en: 'I am a 35-year-old male with facial pressure on my forehead/cheeks when bending over, thick yellow-green nasal discharge, and congestion for 5 days. Please provide diagnostic information and clear treatment guidance.'
+    },
+  },
+  {
+    id: 'disease_4',
+    isDemo: true,
+    title: {
+      vi: '🫁 Viêm Phế Quản & Ho Đờm',
+      en: '🫁 Bronchitis & Productive Cough'
+    },
+    detail: {
+      vi: 'Ho có đờm trắng đục, rát ngực khi ho, sốt nhẹ 37.8°C, khò khè',
+      en: 'Productive cough, chest soreness, mild fever, wheezing'
+    },
+    prompt: {
+      vi: 'Tôi là nữ 26 tuổi, bị ho hắng liên tục kèm đờm đục màu trắng đục, rát ngực mỗi khi ho nhiều, kèm sốt nhẹ 37.8°C và hơi khò khè 3 ngày nay. Hãy phân tích bệnh và chỉ dẫn hướng xử lý điều trị cụ thể cho tôi.',
+      en: 'I am a 26-year-old female with persistent cough, white mucus, chest soreness when coughing, 37.8°C fever, and mild wheezing. Please analyze and provide clear treatment guidance.'
     },
   },
 ]
