@@ -30,10 +30,7 @@ router.post(
     if (!user) throw new HttpError(404, 'Không tìm thấy tài khoản.')
 
     if (!env.paypalClientId || !env.paypalClientSecret) {
-      // Mock PayPal mode if API keys are missing in dev
-      console.log(`[PayPal Mock] Creating mock order for User ${user.id}...`)
-      const mockOrderId = `PAYPAL_MOCK_ORDER_${randomUUID().slice(0, 8)}`
-      return res.json({ orderId: mockOrderId, isMock: true })
+      throw new HttpError(500, 'Hệ thống chưa cấu hình PayPal API Key (PAYPAL_CLIENT_ID và PAYPAL_CLIENT_SECRET).')
     }
 
     try {
@@ -41,7 +38,7 @@ router.post(
         amountUSD: '3.99',
         description: `MedChat Pro Plan Subscription (30 Days) - User: ${user.email}`
       })
-      res.json({ orderId: order.id, isMock: false })
+      res.json({ orderId: order.id })
     } catch (err) {
       throw new HttpError(500, `Không thể tạo đơn hàng PayPal: ${err.message}`)
     }
@@ -58,21 +55,18 @@ router.post(
     const user = await UserModel.findOne({ id: req.userId })
     if (!user) throw new HttpError(404, 'Không tìm thấy tài khoản.')
 
-    let captureResult = null
-    let isMock = false
+    if (!env.paypalClientId || !env.paypalClientSecret) {
+      throw new HttpError(500, 'Hệ thống chưa cấu hình PayPal API Key.')
+    }
 
-    if (orderId.startsWith('PAYPAL_MOCK_ORDER_') || (!env.paypalClientId || !env.paypalClientSecret)) {
-      console.log(`[PayPal Mock] Capturing mock order ${orderId} for User ${user.id}...`)
-      isMock = true
-    } else {
-      try {
-        captureResult = await capturePayPalOrder(orderId)
-        if (captureResult.status !== 'COMPLETED') {
-          throw new HttpError(400, `Thanh toán PayPal chưa hoàn tất (Trạng thái: ${captureResult.status})`)
-        }
-      } catch (err) {
-        throw new HttpError(400, `Thanh toán PayPal thất bại: ${err.message}`)
+    let captureResult
+    try {
+      captureResult = await capturePayPalOrder(orderId)
+      if (captureResult.status !== 'COMPLETED') {
+        throw new HttpError(400, `Thanh toán PayPal chưa hoàn tất (Trạng thái: ${captureResult.status})`)
       }
+    } catch (err) {
+      throw new HttpError(400, `Thanh toán PayPal thất bại: ${err.message}`)
     }
 
     // Ghi nhận giao dịch thanh toán vào PaymentModel
