@@ -102,7 +102,9 @@ export default function SettingsModal({
         apiRequest('/api/memories/settings')
       ])
       setMemories(memRes.memories || [])
-      setMemorySettings(setRes.settings || {})
+      if (setRes?.settings) {
+        setMemorySettings(setRes.settings)
+      }
     } catch (err) {
       console.error('[Memory] Error loading memory profile:', err)
     } finally {
@@ -112,14 +114,17 @@ export default function SettingsModal({
 
   async function handleToggleMemorySetting(key, val) {
     try {
-      const next = { ...memorySettings, [key]: val }
-      setMemorySettings(next)
-      await apiRequest('/api/memories/settings', {
+      setMemorySettings((prev) => ({ ...prev, [key]: val }))
+      const res = await apiRequest('/api/memories/settings', {
         method: 'PATCH',
         body: JSON.stringify({ [key]: val })
       })
+      if (res?.settings) {
+        setMemorySettings(res.settings)
+      }
       showToast?.('Đã cập nhật cài đặt trí nhớ.')
     } catch (err) {
+      setMemorySettings((prev) => ({ ...prev, [key]: !val }))
       showToast?.(err.message || 'Không thể lưu cài đặt.')
     }
   }
@@ -558,7 +563,7 @@ export default function SettingsModal({
                   <div className="auto-renew-text">
                     <strong>Bật tính năng Trí nhớ thông minh</strong>
                     <p className="auto-renew-hint">
-                      {memorySettings.memoryEnabled !== false
+                      {Boolean(memorySettings?.memoryEnabled)
                         ? 'Đang BẬT. Cho phép AI tham khảo và tự động trích xuất tiền sử y tế của bạn.'
                         : 'Đang TẮT. AI sẽ không tham khảo hoặc trích xuất dữ liệu trí nhớ cá nhân.'}
                     </p>
@@ -566,7 +571,7 @@ export default function SettingsModal({
                   <label className="toggle-switch">
                     <input
                       type="checkbox"
-                      checked={memorySettings.memoryEnabled !== false}
+                      checked={Boolean(memorySettings?.memoryEnabled)}
                       onChange={(e) => handleToggleMemorySetting('memoryEnabled', e.target.checked)}
                     />
                     <span className="toggle-slider" />
