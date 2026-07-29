@@ -3,16 +3,16 @@ export const SUGGESTIONS = [
     id: 'disease_1',
     isDemo: true, // Ép xuất Báo cáo Sàng lọc & Hướng giải quyết ngay lượt 1
     title: {
-      vi: '🤒 Cảm Cúm & Viêm Họng Cấp',
-      en: '🤒 Acute Flu & Pharyngitis'
+      vi: '🤒 Viêm Họng Cấp',
+      en: '🤒 Acute Pharyngitis'
     },
     detail: {
-      vi: 'Sốt 38°C, hắt hơi, chảy nước mũi, đau rát họng khi nuốt, mệt mỏi ớn lạnh',
-      en: '38°C fever, sneezing, runny nose, sore throat, fatigue, chills'
+      vi: 'Sốt 38°C, đau rát họng khi nuốt, họng sưng tấy, đau nhức mệt mỏi',
+      en: '38°C fever, severe sore throat, painful swallowing, throat swelling'
     },
     prompt: {
-      vi: 'Tôi là nam 28 tuổi, bị cảm lạnh sốt nhẹ 38°C, đau rát họng khi nuốt, nghẹt mũi, chảy nước mũi trong, ho hắng nhẹ và ớn lạnh 2 ngày nay. Hãy phân tích dự đoán khả năng và hướng dẫn cách điều trị, xử lý giúp tôi.',
-      en: 'I am a 28-year-old male with a 38°C fever, cold symptoms, sneezing, runny nose, sore throat, fatigue, and chills for 2 days. Please evaluate potential possibilities and provide treatment guidance.'
+      vi: 'Tôi là nam 28 tuổi, bị sốt 38°C kèm đau rát họng dữ dội khi nuốt 2 ngày nay, họng sưng tấy, đau nhức vùng cổ họng và mệt mỏi toàn thân. Hãy phân tích dự đoán khả năng và hướng dẫn cách điều trị, xử lý giúp tôi.',
+      en: 'I am a 28-year-old male with a 38°C fever, severe sore throat, and painful swallowing for 2 days. Please evaluate potential possibilities and provide treatment guidance.'
     },
   },
   {
@@ -51,15 +51,15 @@ export const SUGGESTIONS = [
     id: 'disease_4',
     isDemo: true,
     title: {
-      vi: '🫁 Viêm Phế Quản & Ho Đờm',
-      en: '🫁 Bronchitis & Productive Cough'
+      vi: '🫁 Viêm Phế Quản',
+      en: '🫁 Acute Bronchitis'
     },
     detail: {
       vi: 'Ho kéo dài, ho khạc đờm trắng đục, khó thở nhẹ, rát ngực, sốt nhẹ 37.8°C',
       en: 'Persistent cough, productive sputum, shortness of breath, chest soreness'
     },
     prompt: {
-      vi: 'Tôi là nữ 26 tuổi, bị ho kéo dài liên tục, ho khạc đờm đặc màu trắng đục, khó thở nhẹ và tức ngực mỗi khi ho, kèm sốt nhẹ 37.8°C 3 ngày nay. Hãy phân tích dự đoán khả năng và hướng dẫn cách điều trị, xử lý giúp tôi.',
+      vi: 'Tôi là nữ 26 tuổi, bị ho kéo dài liên tục, ho khạc đờm đặc màu trắng đục, khó thở nhẹ và tức ngực mỗi khi ho, kèm sốt nhẹ 37.8°C 3 ngày nay, không đau họng hay nghẹt mũi. Hãy phân tích dự đoán khả năng và hướng dẫn cách điều trị, xử lý giúp tôi.',
       en: 'I am a 26-year-old female with persistent productive cough with white mucus, mild shortness of breath, chest soreness when coughing, 37.8°C fever for 3 days. Please evaluate potential possibilities and provide clear treatment guidance.'
     },
   },
