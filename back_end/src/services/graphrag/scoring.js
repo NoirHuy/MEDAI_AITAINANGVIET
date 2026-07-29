@@ -15,7 +15,11 @@ export function getPrevalenceBoost(diseaseName, nodeBoost) {
     nameL.includes('common cold') ||
     nameL.includes('bronchitis') ||
     nameL.includes('rhinitis') ||
+    nameL.includes('sinusitis') ||
     nameL.includes('gastroenteritis') ||
+    nameL.includes('gastroesophageal') ||
+    nameL.includes('reflux') ||
+    nameL.includes('gerd') ||
     nameL.includes('dengue') ||
     nameL.includes('gastritis') ||
     nameL.includes('tension headache') ||
@@ -25,6 +29,8 @@ export function getPrevalenceBoost(diseaseName, nodeBoost) {
   if (isCommonPrimaryCare) return 1.5
 
   const isRareOrSpecific =
+    nameL.includes('stricture') ||
+    nameL.includes('fistula') ||
     nameL.includes('mononucleosis') ||
     nameL.includes('abscess') ||
     nameL.includes('hypertrophy') ||
