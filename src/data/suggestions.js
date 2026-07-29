@@ -19,8 +19,8 @@ export const SUGGESTIONS = [
     id: 'disease_2',
     isDemo: true,
     title: {
-      vi: '🫁 Trào Ngược Dạ Dày (GERD)',
-      en: '🫁 Acid Reflux (GERD)'
+      vi: '🤢 Trào Ngược Dạ Dày (GERD)',
+      en: '🤢 Acid Reflux (GERD)'
     },
     detail: {
       vi: 'Ợ chua, trào ngược axit, đau rát đằng sau xương ức, buồn nôn, đắng miệng',
