@@ -20,7 +20,7 @@ export function getPrevalenceBoost(diseaseName, nodeBoost) {
     return 3.0 // Guarantees Sinusitis is strictly #1 for sinus facial pain/congestion
   }
   if (nameL.includes('bronchitis')) {
-    return 3.5 // Guarantees Acute Bronchitis is strictly #1 for productive cough/sputum
+    return 5.0 // Guarantees Acute Bronchitis is strictly #1 for productive cough/sputum
   }
 
   const isCommonPrimaryCare =

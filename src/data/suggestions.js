@@ -55,12 +55,12 @@ export const SUGGESTIONS = [
       en: '🫁 Acute Bronchitis'
     },
     detail: {
-      vi: 'Ho kéo dài, ho khạc đờm trắng đục, khó thở nhẹ, rát ngực, sốt nhẹ 37.8°C',
-      en: 'Persistent cough, productive sputum, shortness of breath, chest soreness'
+      vi: 'Ho khạc đờm đặc liên tục, rát phế quản, tức ngực khi ho, sốt nhẹ 37.8°C',
+      en: 'Persistent productive cough, bronchial soreness, chest tightness, mild fever'
     },
     prompt: {
-      vi: 'Tôi là nữ 26 tuổi, bị ho kéo dài liên tục, ho khạc đờm đặc màu trắng đục, khó thở nhẹ và tức ngực mỗi khi ho, kèm sốt nhẹ 37.8°C 3 ngày nay, không đau họng hay nghẹt mũi. Hãy phân tích dự đoán khả năng và hướng dẫn cách điều trị, xử lý giúp tôi.',
-      en: 'I am a 26-year-old female with persistent productive cough with white mucus, mild shortness of breath, chest soreness when coughing, 37.8°C fever for 3 days. Please evaluate potential possibilities and provide clear treatment guidance.'
+      vi: 'Tôi là nữ 26 tuổi, bị ho khạc đờm đặc liên tục 3 ngày nay, ho rát phế quản và tức ngực mỗi khi ho, kèm sốt nhẹ 37.8°C và thở khò khè nhẹ. Hãy phân tích dự đoán khả năng và hướng dẫn cách điều trị, xử lý giúp tôi.',
+      en: 'I am a 26-year-old female with persistent productive cough with thick sputum, bronchial soreness, chest tightness when coughing, 37.8°C fever for 3 days. Please evaluate potential possibilities and provide clear treatment guidance.'
     },
   },
 ]
