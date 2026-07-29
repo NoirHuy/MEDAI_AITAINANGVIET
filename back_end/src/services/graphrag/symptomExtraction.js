@@ -416,6 +416,33 @@ export async function extractSymptomsFromHistory(messages, symptomsList, lang = 
     }
   }
 
+  // ── STEP 3: Clinical Implication Expansion (Auto-expand core parent symptoms) ──
+  const hasSymptom = (id) => finalSymptoms.some(s => s.symptomId === id && s.status === 'positive')
+  const addSymptomIfMissing = (id, name, role = 'associated') => {
+    if (!hasSymptom(id)) {
+      finalSymptoms.push({
+        symptomId: id,
+        name: name,
+        cui: null,
+        status: 'positive',
+        role: role,
+        confidenceScore: 0.9,
+        attributes: {}
+      })
+    }
+  }
+
+  // If coughing-up-sputum is present -> auto-expand base 'cough'
+  if (hasSymptom('coughing-up-sputum')) {
+    addSymptomIfMissing('cough', 'Cough', 'chief_complaint')
+  }
+
+  // If heartburn or burning-chest-pain is present -> auto-expand 'gastroesophageal-reflux' & 'heartburn'
+  if (hasSymptom('heartburn') || hasSymptom('burning-chest-pain')) {
+    addSymptomIfMissing('gastroesophageal-reflux', 'Gastroesophageal reflux', 'chief_complaint')
+    addSymptomIfMissing('heartburn', 'Heartburn', 'chief_complaint')
+  }
+
   applyChiefComplaintRule(finalSymptoms)
 
   return {

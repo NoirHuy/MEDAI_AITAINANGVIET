@@ -7,12 +7,12 @@ export const SUGGESTIONS = [
       en: '🤒 Acute Flu & Pharyngitis'
     },
     detail: {
-      vi: 'Sốt 38°C, đau rát họng khi nuốt, nghẹt mũi, mệt mỏi toàn thân',
-      en: '38°C fever, sore throat, nasal congestion, fatigue'
+      vi: 'Sốt 38°C, hắt hơi, chảy nước mũi, đau rát họng khi nuốt, mệt mỏi ớn lạnh',
+      en: '38°C fever, sneezing, runny nose, sore throat, fatigue, chills'
     },
     prompt: {
-      vi: 'Tôi là nam 28 tuổi, bị sốt 38°C kèm đau rát họng khi nuốt 2 ngày nay, mệt mỏi toàn thân, nghẹt mũi và chảy nước mũi trong. Tôi không bị ho hay khó thở. Hãy phân tích dự đoán khả năng và hướng dẫn cách điều trị, xử lý giúp tôi.',
-      en: 'I am a 28-year-old male with a 38°C fever, severe sore throat when swallowing for 2 days, fatigue, and nasal congestion. Please evaluate potential possibilities and provide treatment guidance.'
+      vi: 'Tôi là nam 28 tuổi, bị cảm lạnh sốt nhẹ 38°C, đau rát họng khi nuốt, nghẹt mũi, chảy nước mũi trong, ho hắng nhẹ và ớn lạnh 2 ngày nay. Hãy phân tích dự đoán khả năng và hướng dẫn cách điều trị, xử lý giúp tôi.',
+      en: 'I am a 28-year-old male with a 38°C fever, cold symptoms, sneezing, runny nose, sore throat, fatigue, and chills for 2 days. Please evaluate potential possibilities and provide treatment guidance.'
     },
   },
   {
@@ -23,12 +23,12 @@ export const SUGGESTIONS = [
       en: '🫁 Acid Reflux (GERD)'
     },
     detail: {
-      vi: 'Ợ chua, trào ngược dịch vị, nóng rát đằng sau xương ức, vướng họng, đắng miệng',
-      en: 'Heartburn, acid regurgitation, chest heat, lump-in-throat sensation'
+      vi: 'Ợ chua, trào ngược axit, đau rát đằng sau xương ức, buồn nôn, đắng miệng',
+      en: 'Heartburn, acid regurgitation, chest heat, nausea'
     },
     prompt: {
-      vi: 'Tôi là nữ 32 tuổi, hay bị ợ chua, trào ngược dịch vị axit gây nóng rát đằng sau xương ức sau khi ăn no hoặc nằm ngửa, kèm cảm giác nuốt vướng ở cổ họng và hay đắng miệng vào buổi sáng. Hãy phân tích dự đoán khả năng và hướng dẫn cách điều trị, xử lý giúp tôi.',
-      en: 'I am a 32-year-old female with acid reflux, heartburn after meals, and a lump sensation in my throat. Please evaluate potential possibilities and provide treatment guidance.'
+      vi: 'Tôi là nữ 32 tuổi, hay bị ợ chua, trào ngược axit gây đau rát đằng sau xương ức sau khi ăn no hoặc nằm ngửa, kèm cảm giác buồn nôn và đắng miệng vào buổi sáng. Hãy phân tích dự đoán khả năng và hướng dẫn cách điều trị, xử lý giúp tôi.',
+      en: 'I am a 32-year-old female with acid reflux, heartburn after meals, and nausea. Please evaluate potential possibilities and provide treatment guidance.'
     },
   },
   {
@@ -55,12 +55,12 @@ export const SUGGESTIONS = [
       en: '🫁 Bronchitis & Productive Cough'
     },
     detail: {
-      vi: 'Ho có đờm trắng đục, rát ngực khi ho, sốt nhẹ 37.8°C, khò khè',
-      en: 'Productive cough, chest soreness, mild fever, wheezing'
+      vi: 'Ho kéo dài, ho khạc đờm trắng đục, khó thở nhẹ, rát ngực, sốt nhẹ 37.8°C',
+      en: 'Persistent cough, productive sputum, shortness of breath, chest soreness'
     },
     prompt: {
-      vi: 'Tôi là nữ 26 tuổi, bị ho hắng liên tục kèm đờm đục màu trắng đục, rát ngực mỗi khi ho nhiều, kèm sốt nhẹ 37.8°C và hơi khò khè 3 ngày nay. Hãy phân tích dự đoán khả năng và hướng dẫn cách điều trị, xử lý giúp tôi.',
-      en: 'I am a 26-year-old female with persistent cough, white mucus, chest soreness when coughing, 37.8°C fever, and mild wheezing. Please evaluate potential possibilities and provide clear treatment guidance.'
+      vi: 'Tôi là nữ 26 tuổi, bị ho kéo dài liên tục, ho khạc đờm đặc màu trắng đục, khó thở nhẹ và tức ngực mỗi khi ho, kèm sốt nhẹ 37.8°C 3 ngày nay. Hãy phân tích dự đoán khả năng và hướng dẫn cách điều trị, xử lý giúp tôi.',
+      en: 'I am a 26-year-old female with persistent productive cough with white mucus, mild shortness of breath, chest soreness when coughing, 37.8°C fever for 3 days. Please evaluate potential possibilities and provide clear treatment guidance.'
     },
   },
 ]
