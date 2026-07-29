@@ -77,7 +77,7 @@ export default function SettingsModal({
   // State cho Trí Nhớ Thông Minh Cá Nhân
   const [memories, setMemories] = useState([])
   const [memorySettings, setMemorySettings] = useState({
-    memoryEnabled: true,
+    memoryEnabled: false,
     autoRememberAllergies: true,
     autoRememberChronic: true,
     autoRememberMedications: true,

@@ -10,7 +10,7 @@ const UserMemorySettingsSchema = new mongoose.Schema(
     },
     memoryEnabled: {
       type: Boolean,
-      default: true,
+      default: false,
     },
     autoRememberAllergies: {
       type: Boolean,
