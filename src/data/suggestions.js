@@ -3,8 +3,8 @@ export const SUGGESTIONS = [
     id: 'disease_1',
     isDemo: true, // Ép xuất Báo cáo Sàng lọc & Hướng giải quyết ngay lượt 1
     title: {
-      vi: '🤒 Viêm Họng Cấp',
-      en: '🤒 Acute Pharyngitis'
+      vi: 'Viêm Họng Cấp',
+      en: 'Acute Pharyngitis'
     },
     detail: {
       vi: 'Sốt 38°C, đau rát họng khi nuốt, họng sưng tấy, đau nhức mệt mỏi',
@@ -19,8 +19,8 @@ export const SUGGESTIONS = [
     id: 'disease_2',
     isDemo: true,
     title: {
-      vi: '🤢 Trào Ngược Dạ Dày (GERD)',
-      en: '🤢 Acid Reflux (GERD)'
+      vi: 'Trào Ngược Dạ Dày (GERD)',
+      en: 'Acid Reflux (GERD)'
     },
     detail: {
       vi: 'Ợ chua, trào ngược axit, đau rát đằng sau xương ức, buồn nôn, đắng miệng',
@@ -35,8 +35,8 @@ export const SUGGESTIONS = [
     id: 'disease_3',
     isDemo: true,
     title: {
-      vi: '👃 Viêm Xoang Cấp & Mãn Tính',
-      en: '👃 Sinusitis (Sinus Infection)'
+      vi: 'Viêm Xoang Cấp & Mãn Tính',
+      en: 'Sinusitis (Sinus Infection)'
     },
     detail: {
       vi: 'Đau nhức vùng trán/gò má, nghẹt mũi kéo dài, đờm xanh đặc',
@@ -51,8 +51,8 @@ export const SUGGESTIONS = [
     id: 'disease_4',
     isDemo: true,
     title: {
-      vi: '🫁 Viêm Phế Quản',
-      en: '🫁 Acute Bronchitis'
+      vi: 'Viêm Phế Quản',
+      en: 'Acute Bronchitis'
     },
     detail: {
       vi: 'Ho khạc đờm đặc liên tục, rát phế quản, tức ngực khi ho, sốt nhẹ 37.8°C',
