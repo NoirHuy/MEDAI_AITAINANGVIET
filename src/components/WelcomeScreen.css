@@ -1,11 +1,13 @@
 .welcome {
   max-width: 720px;
+  width: 100%;
   margin: 0 auto;
   padding: 8vh 24px 24px;
   display: flex;
   flex-direction: column;
   align-items: center;
   text-align: center;
+  box-sizing: border-box;
 }
 
 .welcome__icon {
@@ -33,14 +35,23 @@
   grid-template-columns: repeat(2, 1fr);
   gap: 12px;
   width: 100%;
+  box-sizing: border-box;
 }
 
-@media (max-width: 640px) {
-  .welcome__grid {
-    grid-template-columns: 1fr;
+@media (max-width: 860px) {
+  .welcome {
+    padding: 56px 14px 16px;
   }
   .welcome__title {
-    font-size: 24px;
+    font-size: 22px;
+  }
+  .welcome__subtitle {
+    font-size: 13.5px;
+    margin-bottom: 20px;
+  }
+  .welcome__grid {
+    grid-template-columns: 1fr !important;
+    gap: 10px;
   }
 }
 
@@ -55,6 +66,8 @@
   border-radius: var(--radius-md);
   padding: 14px 16px;
   transition: background 0.12s ease;
+  width: 100%;
+  box-sizing: border-box;
 }
 
 .suggestion-chip:hover {
