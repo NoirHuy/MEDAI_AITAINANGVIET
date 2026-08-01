@@ -24,6 +24,8 @@ function loadGsiScript(onReady) {
 
 export default function GoogleAuthButton({ onCredential }) {
   const containerRef = useRef(null)
+  const onCredentialRef = useRef(onCredential)
+  onCredentialRef.current = onCredential
 
   useEffect(() => {
     let cancelled = false
@@ -35,23 +37,26 @@ export default function GoogleAuthButton({ onCredential }) {
       if (cancelled || !containerRef.current || !window.google?.accounts?.id) return
       window.google.accounts.id.initialize({
         client_id: clientId,
-        callback: (response) => onCredential(response.credential),
+        callback: (response) => onCredentialRef.current?.(response.credential),
       })
-      window.google.accounts.id.renderButton(containerRef.current, {
-        type: 'standard',
-        theme: 'outline',
-        size: 'large',
-        text: 'continue_with',
-        shape: 'pill',
-        width: 360,
-        locale: 'vi',
-      })
+      if (containerRef.current) {
+        containerRef.current.innerHTML = ''
+        window.google.accounts.id.renderButton(containerRef.current, {
+          type: 'standard',
+          theme: 'outline',
+          size: 'large',
+          text: 'continue_with',
+          shape: 'pill',
+          width: 360,
+          locale: 'vi',
+        })
+      }
     })
 
     return () => {
       cancelled = true
     }
-  }, [onCredential])
+  }, [])
 
   return <div ref={containerRef} className="google-auth-button" />
 }
