@@ -73,8 +73,9 @@ router.post(
       planId: DEFAULT_PLAN_ID,
     })
 
+    const token = signSessionToken(user.id)
     setSessionCookie(res, user.id)
-    res.status(201).json({ user: toPublicUser(user) })
+    res.status(201).json({ user: toPublicUser(user), token })
   }),
 )
 
@@ -96,8 +97,9 @@ router.post(
     const passwordMatches = await bcrypt.compare(password ?? '', user.passwordHash)
     if (!passwordMatches) throw new HttpError(401, 'Email hoặc mật khẩu không chính xác.')
 
+    const token = signSessionToken(user.id)
     setSessionCookie(res, user.id)
-    res.json({ user: toPublicUser(user) })
+    res.json({ user: toPublicUser(user), token })
   }),
 )
 
@@ -146,8 +148,9 @@ router.post(
       }
     }
 
+    const token = signSessionToken(user.id)
     setSessionCookie(res, user.id)
-    res.json({ user: toPublicUser(user) })
+    res.json({ user: toPublicUser(user), token })
   }),
 )
 
