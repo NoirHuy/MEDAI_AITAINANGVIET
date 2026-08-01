@@ -17,8 +17,9 @@ connectDatabase()
 
 const app = express()
 
-// 🛡️ Đọc IP thật của người dùng khi đứng sau Reverse Proxy (Nginx / Cloudflare / Docker)
-app.set('trust proxy', 1)
+// 🛡️ CHỐNG GIẢ MẠO HEADER (IP SPOOFING): Chỉ tin tưởng X-Forwarded-For nếu request thực sự đến từ Nginx/Loopback nội bộ.
+// Nếu hacker gọi trực tiếp vào Port máy chủ từ Internet, Express sẽ bỏ qua header giả mạo và lấy IP TCP thật của hacker!
+app.set('trust proxy', ['loopback', 'linklocal', 'uniquelocal'])
 
 app.use(cors({ origin: env.clientOrigin, credentials: true }))
 app.use(express.json())
