@@ -1,5 +1,6 @@
 import { Router } from 'express'
 import { requireAuth } from '../middleware/auth.js'
+import { memoriesLimiter } from '../middleware/rateLimiters.js'
 import { asyncHandler } from '../utils/asyncHandler.js'
 import { HttpError } from '../utils/httpError.js'
 import { UserMemoryModel } from '../db/user_memory.model.js'
@@ -9,12 +10,12 @@ import { encryptText, decryptText } from '../utils/memoryCrypto.js'
 
 const router = Router()
 router.use(requireAuth)
+router.use(memoriesLimiter)
 
 // ─── 1. LẤY DANH SÁCH HỒ SƠ TRÍ NHỚ ĐÃ GIẢI MÃ ─────────────────────────────
 router.get(
   '/',
   asyncHandler(async (req, res) => {
-    // IDOR Guard: Filter strictly by req.userId
     const list = await UserMemoryModel.find({
       userId: req.userId,
       status: { $ne: 'deleted' },
@@ -126,7 +127,7 @@ router.post(
     const encrypted = encryptText(content.trim(), 1)
     let expiresAt = null
     if (category === 'past_episode') {
-      expiresAt = new Date(Date.now() + 90 * 24 * 60 * 60 * 1000) // 90 days
+      expiresAt = new Date(Date.now() + 90 * 24 * 60 * 60 * 1000)
     }
 
     const memory = await UserMemoryModel.create({
@@ -141,7 +142,7 @@ router.post(
       medicalStatus: 'confirmed',
       confidence: 1.0,
       source: 'manual',
-      isLocked: true, // Manual additions are locked by default to prevent AI overwriting
+      isLocked: true,
       version: 1,
       extractedAt: new Date(),
       lastConfirmedAt: new Date(),
@@ -166,7 +167,7 @@ router.post(
   })
 )
 
-// ─── 5. XÓA MỀM TOÀN BỘ TRÍ NHỚ (CLEAR ALL PROFILE) ──────────────────────────
+// ─── 5. XÓA MỀM TOÀN BỘ TRÍ NHỚ ──────────────────────────────────────────────
 router.delete(
   '/',
   asyncHandler(async (req, res) => {
@@ -187,14 +188,13 @@ router.delete(
   })
 )
 
-// ─── 6. CẬP NHẬT MỘT MỤC TRÍ NHỚ CHÍNH XÁC THEO ID (WILDCARD ROUTE) ─────────
+// ─── 6. CẬP NHẬT MỘT MỤC TRÍ NHỚ CHÍNH XÁC THEO ID ─────────────────────────
 router.patch(
   '/:id',
   asyncHandler(async (req, res) => {
     const { id } = req.params
     const { content, isLocked, status } = req.body ?? {}
 
-    // IDOR Guard: Verify ownership
     const memory = await UserMemoryModel.findOne({ id, userId: req.userId })
     if (!memory) throw new HttpError(404, 'Không tìm thấy mục trí nhớ.')
 
@@ -245,7 +245,6 @@ router.delete(
   '/:id',
   asyncHandler(async (req, res) => {
     const { id } = req.params
-    // IDOR Guard: Verify ownership
     const memory = await UserMemoryModel.findOne({ id, userId: req.userId })
     if (!memory) throw new HttpError(404, 'Không tìm thấy mục trí nhớ.')
 

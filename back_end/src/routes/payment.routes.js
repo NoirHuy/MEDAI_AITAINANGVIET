@@ -2,6 +2,7 @@ import { Router } from 'express'
 import { randomUUID } from 'node:crypto'
 import { env } from '../config/env.js'
 import { requireAuth } from '../middleware/auth.js'
+import { paymentLimiter } from '../middleware/rateLimiters.js'
 import { asyncHandler } from '../utils/asyncHandler.js'
 import { HttpError } from '../utils/httpError.js'
 import { UserModel } from '../db/user.model.js'
@@ -25,6 +26,7 @@ router.use(requireAuth)
 // ─── 1. CREATE PAYPAL ORDER ──────────────────────────────────────────────────
 router.post(
   '/paypal/create-order',
+  paymentLimiter,
   asyncHandler(async (req, res) => {
     const user = await UserModel.findOne({ id: req.userId })
     if (!user) throw new HttpError(404, 'Không tìm thấy tài khoản.')
@@ -48,6 +50,7 @@ router.post(
 // ─── 2. CAPTURE PAYPAL ORDER & UPGRADE TO PRO ──────────────────────────────
 router.post(
   '/paypal/capture-order',
+  paymentLimiter,
   asyncHandler(async (req, res) => {
     const { orderId } = req.body ?? {}
     if (!orderId || typeof orderId !== 'string') throw new HttpError(400, 'Thiếu PayPal Order ID hợp lệ.')
@@ -72,7 +75,6 @@ router.post(
         throw new HttpError(400, `Thanh toán PayPal chưa hoàn tất (Trạng thái: ${captureResult.status})`)
       }
 
-      // 🛡️ ĐỐI SOÁT GIÁ TIỀN THỰC TẾ TRÁNH BỊ THỦ THUẬT GIAN LẬN GIÁ (Price Audit)
       const capturedAmount = captureResult.purchase_units?.[0]?.payments?.captures?.[0]?.amount?.value
       const capturedCurrency = captureResult.purchase_units?.[0]?.payments?.captures?.[0]?.amount?.currency_code
 
@@ -84,7 +86,6 @@ router.post(
       throw new HttpError(400, `Thanh toán PayPal thất bại: ${err.message}`)
     }
 
-    // Ghi nhận giao dịch thanh toán vào PaymentModel với billingToken chính là orderId
     const paymentRecord = new PaymentModel({
       id: `pay_${Date.now()}_${randomUUID().slice(0, 6)}`,
       userId: user.id,
@@ -99,7 +100,6 @@ router.post(
     })
     await paymentRecord.save()
 
-    // Nâng cấp tài khoản User sang gói Pro (30 ngày)
     const now = new Date()
     const expiresAt = new Date(now.getTime() + 30 * 24 * 60 * 60 * 1000)
 
@@ -134,6 +134,7 @@ router.post(
 // ─── 3. HỦY LIÊN KẾT THANH TOÁN ────────────────────────────────────────────
 router.post(
   '/unlink',
+  paymentLimiter,
   asyncHandler(async (req, res) => {
     const updatedUser = await UserModel.findOneAndUpdate(
       { id: req.userId },
@@ -155,6 +156,7 @@ router.post(
 // ─── 4. BẬT/TẮT TỰ ĐỘNG GIA HẠN ───────────────────────────────────────────
 router.post(
   '/toggle-autorenew',
+  paymentLimiter,
   asyncHandler(async (req, res) => {
     const { autoRenew } = req.body ?? {}
     const updatedUser = await UserModel.findOneAndUpdate(

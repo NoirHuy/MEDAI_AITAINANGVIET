@@ -2,6 +2,10 @@ import { Router } from 'express'
 import { asyncHandler } from '../utils/asyncHandler.js'
 import { HttpError } from '../utils/httpError.js'
 import { requireAuth } from '../middleware/auth.js'
+import {
+  accountPasswordLimiter,
+  accountGeneralLimiter,
+} from '../middleware/rateLimiters.js'
 import { getPlan, isValidPlanId } from '../config/plans.js'
 import { findUserById, updateUser, toPublicUser } from '../db/usersRepo.js'
 
@@ -11,6 +15,7 @@ router.use(requireAuth)
 
 router.patch(
   '/name',
+  accountGeneralLimiter,
   asyncHandler(async (req, res) => {
     const name = (req.body?.name ?? '').trim()
     if (!name) throw new HttpError(400, 'Tên hiển thị không được để trống.')
@@ -21,6 +26,7 @@ router.patch(
 
 router.patch(
   '/plan',
+  accountGeneralLimiter,
   asyncHandler(async (req, res) => {
     const { planId } = req.body ?? {}
     if (!isValidPlanId(planId)) throw new HttpError(400, 'Gói thuê bao không hợp lệ.')
@@ -50,6 +56,7 @@ router.patch(
 
 router.patch(
   '/autorenew',
+  accountGeneralLimiter,
   asyncHandler(async (req, res) => {
     const { autoRenew } = req.body ?? {}
     const user = await updateUser(req.userId, { autoRenew: !!autoRenew })
@@ -69,6 +76,7 @@ router.get(
 
 router.patch(
   '/password',
+  accountPasswordLimiter,
   asyncHandler(async (req, res) => {
     const bcrypt = await import('bcryptjs').then(m => m.default)
     const { oldPassword, newPassword } = req.body ?? {}

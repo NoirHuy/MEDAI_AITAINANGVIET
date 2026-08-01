@@ -4,6 +4,12 @@ import { asyncHandler } from '../utils/asyncHandler.js'
 import { HttpError } from '../utils/httpError.js'
 import { AUTH_COOKIE_NAME, signSessionToken } from '../utils/jwt.js'
 import { requireAuth } from '../middleware/auth.js'
+import {
+  authSigninLimiter,
+  authSignupLimiter,
+  authGoogleLimiter,
+  authGeneralLimiter,
+} from '../middleware/rateLimiters.js'
 import { env } from '../config/env.js'
 import { DEFAULT_PLAN_ID } from '../config/plans.js'
 import { verifyGoogleCredential } from '../services/googleAuthService.js'
@@ -32,6 +38,7 @@ function setSessionCookie(res, userId) {
 
 router.get(
   '/config',
+  authGeneralLimiter,
   asyncHandler(async (_req, res) => {
     res.json({
       googleClientId: env.googleClientId || null,
@@ -41,6 +48,7 @@ router.get(
 
 router.post(
   '/signup',
+  authSignupLimiter,
   asyncHandler(async (req, res) => {
     const { name, email, password } = req.body ?? {}
     const trimmedName = (name ?? '').trim()
@@ -72,6 +80,7 @@ router.post(
 
 router.post(
   '/signin',
+  authSigninLimiter,
   asyncHandler(async (req, res) => {
     const { email, password } = req.body ?? {}
     const trimmedEmail = (email ?? '').trim().toLowerCase()
@@ -94,14 +103,13 @@ router.post(
 
 router.post(
   '/google',
+  authGoogleLimiter,
   asyncHandler(async (req, res) => {
     let verifiedEmail
     let verifiedName
     let verifiedPicture
 
     if (env.googleClientId) {
-      // Real path: cryptographically verify the ID token from Google
-      // Identity Services. Nothing here trusts client-supplied data.
       const { credential } = req.body ?? {}
       const payload = await verifyGoogleCredential(credential)
       verifiedEmail = payload.email
@@ -143,7 +151,7 @@ router.post(
   }),
 )
 
-router.post('/signout', (_req, res) => {
+router.post('/signout', authGeneralLimiter, (_req, res) => {
   res.clearCookie(AUTH_COOKIE_NAME, { ...COOKIE_OPTIONS, maxAge: undefined })
   res.status(204).end()
 })

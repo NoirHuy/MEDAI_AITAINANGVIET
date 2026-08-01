@@ -3,17 +3,24 @@ import { randomUUID } from 'node:crypto'
 import { asyncHandler } from '../utils/asyncHandler.js'
 import { HttpError } from '../utils/httpError.js'
 import { attachUserIfPresent, requireAuth } from '../middleware/auth.js'
+import {
+  chatLimiter,
+  chatTitleLimiter,
+  chatGeneralLimiter,
+} from '../middleware/rateLimiters.js'
 import { generateReply, estimateTokens } from '../services/chat/generateReply.js'
 import { generateSmartTitle } from '../services/chat/generateSmartTitle.js'
 import { incrementUsage } from '../db/usersRepo.js'
 import { ConversationModel } from '../db/conversation.model.js'
 import { SystemLogModel } from '../db/systemLog.model.js'
+import { runMemoryExtractionPass } from '../services/memory/memoryExtractor.js'
 
 const router = Router()
 
 // Endpoint tự động tạo tiêu đề ChatGPT (2-4 từ súc tích) dựa trên ý chính câu thoại
 router.post(
   '/generate-title',
+  chatTitleLimiter,
   asyncHandler(async (req, res) => {
     const { text, lang } = req.body ?? {}
     const title = await generateSmartTitle(text, lang || 'vi')
@@ -21,14 +28,11 @@ router.post(
   })
 )
 
-import { runMemoryExtractionPass } from '../services/memory/memoryExtractor.js'
-
-// Chat works for guests too (no requireAuth) — only logged-in users get
-// their token usage tracked, matching the frontend's "no login wall for
-// chatting" UX.
+// Chat works for guests too (no requireAuth) — attachUserIfPresent identifies user
 router.post(
   '/',
   attachUserIfPresent,
+  chatLimiter,
   asyncHandler(async (req, res) => {
     const { messages, specialtyId, lang, isSuggestionDemo, sessionMemoryPaused, conversationId } = req.body ?? {}
     console.log(`[API CHAT] Incoming request specialtyId: "${specialtyId}", lang: "${lang}", isSuggestionDemo: ${!!isSuggestionDemo}, messages count: ${messages?.length}`)
@@ -80,7 +84,6 @@ router.post(
       const durationMs = Math.round(performance.now() - start)
       
       const messagesText = messages.reduce((acc, m) => acc + (m.content || ''), '')
-      // Tính toán Input Tokens bao gồm cả System Prompt + Ngữ cảnh Đồ thị Y khoa Adaptive Context (khoảng 3,000 - 5,500 tokens) để khớp 100% với log 9Router
       const inputTokens = estimateTokens(messagesText) + 3200
       const outputTokens = estimateTokens(full)
       const totalTokens = inputTokens + outputTokens
@@ -129,7 +132,6 @@ router.post(
       const tokens = estimateTokens(lastUserMessage?.content ?? '') + estimateTokens(full)
       await incrementUsage(req.userId, tokens)
 
-      // Asynchronous Background Memory Extraction Pass (isolated in try/catch so chat response is NEVER blocked)
       if (!sessionMemoryPaused && full) {
         setImmediate(async () => {
           try {
@@ -153,6 +155,7 @@ router.post(
 router.get(
   '/conversations',
   requireAuth,
+  chatGeneralLimiter,
   asyncHandler(async (req, res) => {
     const list = await ConversationModel.find({ userId: req.userId })
       .sort({ createdAt: -1 })
@@ -165,6 +168,7 @@ router.get(
 router.post(
   '/conversations',
   attachUserIfPresent,
+  chatGeneralLimiter,
   asyncHandler(async (req, res) => {
     const { id, title, specialtyId, messages, lang, responseTimeMs, symptomsMatched } = req.body ?? {}
     if (!id || !title || !specialtyId || !Array.isArray(messages)) {
@@ -174,7 +178,6 @@ router.post(
     const userId = req.userId || `guest_${id}`
     const isGuest = !req.userId
 
-    // Phân loại mức độ khẩn cấp tự động dựa trên từ khóa y tế
     const emergencyKeywords = ['cấp cứu', 'khẩn cấp', 'nguy hiểm', 'bác sĩ ngay', 'nhập viện', 'tử vong', 'dữ dội', 'đau nhói ngực', 'khó thở', 'emergency', 'hospit']
     const warningKeywords = ['theo dõi', 'chú ý', 'bác sĩ', 'khám', 'sớm', 'watch out', 'see a doctor', 'consult']
     
@@ -217,6 +220,7 @@ router.post(
 router.delete(
   '/conversations/:id',
   attachUserIfPresent,
+  chatGeneralLimiter,
   asyncHandler(async (req, res) => {
     const { id } = req.params
     const userId = req.userId || `guest_${id}`

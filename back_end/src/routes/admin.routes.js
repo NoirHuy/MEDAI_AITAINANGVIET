@@ -1,5 +1,6 @@
 import { Router } from 'express'
 import { requireAuth, requireAdmin } from '../middleware/auth.js'
+import { adminLimiter } from '../middleware/rateLimiters.js'
 import { asyncHandler } from '../utils/asyncHandler.js'
 import { HttpError } from '../utils/httpError.js'
 import { UserModel } from '../db/user.model.js'
@@ -10,8 +11,8 @@ import { toPublicUser } from '../db/usersRepo.js'
 
 const router = Router()
 
-// Bắt buộc quyền Admin
-router.use(requireAuth, requireAdmin)
+// Bắt buộc quyền Admin & áp dụng Admin Rate Limiter
+router.use(requireAuth, requireAdmin, adminLimiter)
 
 // ─── 1. TỔNG QUAN (DASHBOARD OVERVIEW) ──────────────────────────────────────
 router.get(
@@ -22,7 +23,6 @@ router.get(
     const startOfWeek = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000)
     const startOfMonth = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000)
 
-    // A. Đếm số cuộc trò chuyện / lượt tư vấn mới (Tính cả Khách & Người dùng đã xóa chat)
     const logToday = await SystemLogModel.countDocuments({ type: 'perf', createdAt: { $gte: startOfToday } })
     const logWeek = await SystemLogModel.countDocuments({ type: 'perf', createdAt: { $gte: startOfWeek } })
     const logMonth = await SystemLogModel.countDocuments({ type: 'perf', createdAt: { $gte: startOfMonth } })
@@ -35,11 +35,9 @@ router.get(
     const chatWeek = Math.max(logWeek, convWeek)
     const chatMonth = Math.max(logMonth, convMonth)
 
-    // B. Số người dùng hoạt động (Unique users in conversations / logs last 30 days)
     const activeUsersList = await ConversationModel.distinct('userId', { createdAt: { $gte: startOfMonth } })
     const activeUsers = Math.max(activeUsersList.length, 1)
 
-    // C. Thời gian phản hồi trung bình (Từ log hiệu năng thực tế trong MongoDB)
     const avgResponseTimeAggregate = await SystemLogModel.aggregate([
       { $match: { type: 'perf', createdAt: { $gte: startOfMonth } } },
       { $group: { _id: null, avgTime: { $avg: '$meta.durationMs' } } }
@@ -53,7 +51,6 @@ router.get(
       avgResponseTimeMs = Math.round(convAvg[0]?.avgTime || 0)
     }
 
-    // D. Tỷ lệ cuộc gọi khẩn cấp (Emergency rate) & Phân bố nguy cơ thực tế từ CSDL
     const emergencyChats = await ConversationModel.countDocuments({ urgency: 'emergency' })
     const warningChats = await ConversationModel.countDocuments({ urgency: 'warning' })
     const normalChats = await ConversationModel.countDocuments({ urgency: 'normal' })
@@ -63,7 +60,6 @@ router.get(
     const totalChats = Math.max(totalRecordedUrgency, convMonth, 1)
     const emergencyRate = Math.round((emergencyChats / totalChats) * 100)
 
-    // E. Thống kê biểu đồ triệu chứng thực tế từ CSDL MongoDB (Top Symptoms)
     let topSymptoms = await ConversationModel.aggregate([
       { $unwind: '$symptomsMatched' },
       { $group: { _id: '$symptomsMatched', count: { $sum: 1 } } },
@@ -71,7 +67,6 @@ router.get(
       { $limit: 6 }
     ])
 
-    // Nếu chưa có mảng symptomsMatched, tự động quét từ tiêu đề & nội dung hội thoại thực tế
     if (topSymptoms.length === 0) {
       const allConvs = await ConversationModel.find().select('title messages').lean()
       const symptomCounts = {}
@@ -102,7 +97,6 @@ router.get(
       topSymptoms = topSymptoms.map(s => ({ _id: s._id, count: s.count }))
     }
 
-    // F. Doanh thu & Người dùng trả phí
     const revenueStats = await PaymentModel.aggregate([
       { $match: { status: 'success' } },
       { $group: { _id: null, total: { $sum: '$amount' } } }
@@ -137,9 +131,9 @@ router.get(
     const page = Math.max(1, Number(req.query.page) || 1)
     const limit = Math.max(1, Number(req.query.limit) || 10)
     const search = (req.query.search || '').trim()
-    const urgency = req.query.urgency // 'normal' | 'warning' | 'emergency'
-    const lang = req.query.lang // 'vi' | 'en'
-    const isGuest = req.query.isGuest // 'true' | 'false'
+    const urgency = req.query.urgency
+    const lang = req.query.lang
+    const isGuest = req.query.isGuest
 
     const filter = {}
 
@@ -214,13 +208,11 @@ router.patch(
 router.get(
   '/ops/logs',
   asyncHandler(async (req, res) => {
-    // A. Lấy log lỗi hệ thống
     const errors = await SystemLogModel.find({ type: 'error' })
       .sort({ createdAt: -1 })
       .limit(30)
       .lean()
 
-    // B. Thống kê chi phí API LLM & số lượng Tokens sử dụng theo ngày
     const costStats = await SystemLogModel.aggregate([
       { $match: { type: 'perf' } },
       {
@@ -234,10 +226,10 @@ router.get(
       { $limit: 15 }
     ])
 
-    // Mock dynamic cost data nếu trống (tính 5 ngày gần nhất với mảng 0 thực tế)
     let finalizedCosts = costStats
     if (!finalizedCosts || finalizedCosts.length === 0) {
       const days = []
+      const now = new Date()
       for (let i = 4; i >= 0; i--) {
         const d = new Date(now.getTime() - i * 24 * 60 * 60 * 1000)
         const dateStr = d.toISOString().split('T')[0]
@@ -246,7 +238,6 @@ router.get(
       finalizedCosts = days
     }
 
-    // C. Tính toán Tỷ lệ Uptime thời gian thực của Server (dựa trên process.uptime và tỷ lệ lỗi)
     const uptimeSec = process.uptime()
     const totalLogs = await SystemLogModel.countDocuments()
     const errorLogsCount = await SystemLogModel.countDocuments({ type: 'error' })
@@ -278,7 +269,6 @@ router.get(
 router.get(
   '/safety-logs',
   asyncHandler(async (req, res) => {
-    // Lấy danh sách hội thoại khẩn cấp hoặc bị gắn cờ review
     const list = await ConversationModel.find({
       $or: [
         { urgency: 'emergency' },
@@ -293,7 +283,7 @@ router.get(
   })
 )
 
-// ─── 7. QUẢN LÝ THÀNH VIÊN (KẾ THỪA CŨ) ──────────────────────────────────────
+// ─── 7. QUẢN LÝ THÀNH VIÊN ──────────────────────────────────────────────────
 router.get(
   '/users',
   asyncHandler(async (req, res) => {
@@ -366,14 +356,14 @@ router.delete(
   })
 )
 
-// ─── 8. QUẢN LÝ GIAO DỊCH & DOANH THU (PAYMENTS & REVENUE) ───────────────────
+// ─── 8. QUẢN LÝ GIAO DỊCH & DOANH THU ──────────────────────────────────────
 router.get(
   '/payments',
   asyncHandler(async (req, res) => {
     const page = Math.max(1, Number(req.query.page) || 1)
     const limit = Math.max(1, Number(req.query.limit) || 10)
-    const status = req.query.status // 'pending' | 'success' | 'failed'
-    const gateway = req.query.gateway // 'stripe' | 'momo'
+    const status = req.query.status
+    const gateway = req.query.gateway
 
     const filter = {}
     if (status) filter.status = status
@@ -387,7 +377,6 @@ router.get(
       .limit(limit)
       .lean()
 
-    // Lấy thông tin user tương ứng cho mỗi giao dịch
     const userIds = [...new Set(list.map(p => p.userId))]
     const users = await UserModel.find({ id: { $in: userIds } }).lean()
     const userMap = new Map(users.map(u => [u.id, u]))
