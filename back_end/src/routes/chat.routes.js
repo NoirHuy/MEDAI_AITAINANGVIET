@@ -194,6 +194,12 @@ router.post(
       }
     }
 
+    const formattedMessages = messages.map((m, idx) => ({
+      id: m.id || `${Date.now()}_${idx}`,
+      role: m.role || 'user',
+      content: m.content || '',
+    }))
+
     const conversation = await ConversationModel.findOneAndUpdate(
       { id },
       {
@@ -201,7 +207,7 @@ router.post(
           userId,
           title,
           specialtyId,
-          messages,
+          messages: formattedMessages,
           urgency,
           lang: lang || 'vi',
           isGuest,
