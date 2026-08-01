@@ -17,6 +17,9 @@ connectDatabase()
 
 const app = express()
 
+// 🛡️ Đọc IP thật của người dùng khi đứng sau Reverse Proxy (Nginx / Cloudflare / Docker)
+app.set('trust proxy', 1)
+
 app.use(cors({ origin: env.clientOrigin, credentials: true }))
 app.use(express.json())
 app.use(cookieParser())
@@ -36,15 +39,12 @@ import { fileURLToPath } from 'url'
 const __filename = fileURLToPath(import.meta.url)
 const __dirname = path.dirname(__filename)
 
-
 // Phục vụ tệp tĩnh Frontend trong môi trường Production
 if (process.env.NODE_ENV === 'production') {
   const distPath = path.resolve(__dirname, '../../dist')
   app.use(express.static(distPath))
   app.get('*', (req, res, next) => {
-    // Các route API không khớp thì để errorHandler lo
     if (req.path.startsWith('/api/')) return next()
-    // SPA fallback: Chuyển hướng các request thường về index.html
     res.sendFile(path.join(distPath, 'index.html'))
   })
 }
