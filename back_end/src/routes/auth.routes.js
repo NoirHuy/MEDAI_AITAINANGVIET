@@ -87,14 +87,14 @@ router.post(
 
     const user = await findUserByEmail(trimmedEmail)
     if (!user) {
-      throw new HttpError(404, 'Không tìm thấy tài khoản với email này. Vui lòng đăng ký.')
+      throw new HttpError(401, 'Email hoặc mật khẩu không chính xác.')
     }
     if (user.provider !== 'form') {
-      throw new HttpError(400, 'Email này đăng ký qua Google. Hãy dùng nút "Tiếp tục với Google".')
+      throw new HttpError(400, 'Tài khoản này được đăng ký qua Google. Vui lòng nhấn nút "Tiếp tục với Google".')
     }
 
     const passwordMatches = await bcrypt.compare(password ?? '', user.passwordHash)
-    if (!passwordMatches) throw new HttpError(401, 'Mật khẩu không đúng.')
+    if (!passwordMatches) throw new HttpError(401, 'Email hoặc mật khẩu không chính xác.')
 
     setSessionCookie(res, user.id)
     res.json({ user: toPublicUser(user) })
