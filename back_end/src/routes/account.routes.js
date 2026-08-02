@@ -34,23 +34,19 @@ router.patch(
     const user = await findUserById(req.userId)
     if (!user) throw new HttpError(404, 'Không tìm thấy tài khoản.')
 
-    const now = new Date()
-    const patch = { planId }
-
+    // Only planId=free is allowed here. Pro upgrades MUST go through the
+    // PayPal capture flow (POST /api/payments/paypal/capture-order).
     if (planId === 'pro') {
-      const expiresAt = new Date(now.getTime() + 30 * 24 * 60 * 60 * 1000)
-      patch.subscriptionStatus = 'active'
-      patch.subscriptionExpiresAt = expiresAt
-      patch.billingMethod = 'paypal'
-      patch.autoRenew = true
-    } else if (planId === 'free') {
-      patch.subscriptionStatus = 'none'
-      patch.subscriptionExpiresAt = null
-      patch.autoRenew = false
+      throw new HttpError(403, 'Vui lòng sử dụng thanh toán PayPal để nâng cấp gói Pro.')
     }
 
+    const patch = { planId: 'free' }
+    patch.subscriptionStatus = 'none'
+    patch.subscriptionExpiresAt = null
+    patch.autoRenew = false
+
     const updatedUser = await updateUser(req.userId, patch)
-    res.json({ user: toPublicUser(updatedUser), message: 'Cập nhật gói tài khoản thành công.' })
+    res.json({ user: toPublicUser(updatedUser), message: 'Đã chuyển về gói Miễn phí.' })
   }),
 )
 

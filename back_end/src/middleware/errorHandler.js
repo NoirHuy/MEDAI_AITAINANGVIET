@@ -11,15 +11,19 @@ export function errorHandler(err, req, res, next) {
     console.warn(`[Client Error ${status}] ${err.message} - Path: ${req.method} ${req.path}`)
   }
 
-  global.serverErrors = global.serverErrors || []
-  global.serverErrors.push({
-    timestamp: new Date().toISOString(),
-    message: err.message,
-    stack: err.stack,
-    path: req.path,
-    method: req.method
-  })
-  if (global.serverErrors.length > 50) global.serverErrors.shift()
+  // Errors are only accumulated in-memory for non-production environments.
+  // Production: no in-memory error log to prevent memory leaks.
+  if (process.env.NODE_ENV !== 'production') {
+    global.serverErrors = global.serverErrors || []
+    global.serverErrors.push({
+      timestamp: new Date().toISOString(),
+      message: err.message,
+      stack: err.stack,
+      path: req.path,
+      method: req.method
+    })
+    if (global.serverErrors.length > 50) global.serverErrors.shift()
+  }
 
   res.status(status).json({ error: err.message || 'Đã xảy ra lỗi máy chủ.' })
 }

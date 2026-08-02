@@ -50,26 +50,15 @@ if (process.env.NODE_ENV === 'production') {
   })
 }
 
-app.get('/api/error-log', (req, res) => {
-  res.json({
-    ok: true,
-    env: {
-      NODE_ENV: process.env.NODE_ENV,
-      PORT: process.env.PORT,
-    },
-    errors: global.serverErrors || []
-  })
-})
-
 app.use(notFoundHandler)
 app.use(errorHandler)
 
 app.listen(env.port, '0.0.0.0', () => {
   console.log(`MedChat backend listening on http://0.0.0.0:${env.port}`)
   startBillingScheduler()
-  if (!env.openrouterApiKey) {
-    console.log('OPENROUTER_API_KEY not set — /api/chat is using the mock reply generator.')
-  } else {
-    console.log(`OpenRouter API active — using model: ${env.openrouterModel}`)
+  if (process.env.NODE_ENV === 'production') {
+    console.log('[startup] Production mode — all secrets must be real values.')
+  } else if (!env.ninerouterApi) {
+    console.log('[startup] WARNING: NINEROUTER_API not set — chat will return demo replies.')
   }
 })

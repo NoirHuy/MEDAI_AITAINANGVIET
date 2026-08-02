@@ -35,8 +35,14 @@ import { getActiveMemoryContext } from '../memory/memoryRetrieval.js'
 export async function generateReply({ messages, specialtyId, lang = 'vi', isSuggestionDemo = false, userId = null, sessionMemoryPaused = false, onChunk, signal }) {
   const isEn = lang === 'en'
 
-  // No API Key: return demo mock streaming reply
+  // No API Key: hard error in production; dev-only mock via flag
   if (!env.llmApiKey) {
+    const msg = '[generateReply] NINEROUTER_API is not configured. Set NINEROUTER_API in back_end/.env.'
+    if (env.isProd) {
+      console.error(msg)
+      throw new Error('AI service is not configured. Please contact the administrator.')
+    }
+    console.warn(msg)
     const lastUser = [...messages].reverse().find(m => m.role === 'user')
     const fullReplyText = await streamText(buildMockReply(lastUser?.content ?? '', specialtyId, lang), onChunk, signal)
     return { fullReplyText, memoriesUsed: [] }
