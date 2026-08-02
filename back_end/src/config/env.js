@@ -62,7 +62,7 @@ export const env = {
   },
   get neo4jUsername() {
     const val = (process.env.NEO4J_USERNAME || PLACEHOLDER_SECRET).trim()
-    requireInProd(val !== PLACEHOLDER_SECRET, 'NEO4J_USERNAME')
+    requireInProd(val, 'NEO4J_USERNAME')
     return val
   },
   get neo4jPassword() {
