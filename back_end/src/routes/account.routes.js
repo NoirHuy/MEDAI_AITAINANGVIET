@@ -34,16 +34,16 @@ router.patch(
     const user = await findUserById(req.userId)
     if (!user) throw new HttpError(404, 'Không tìm thấy tài khoản.')
 
-    if (planId === 'free' && user.planId === 'pro') {
-      throw new HttpError(400, 'Tài khoản đang trong thời hạn gói Pro. Bạn có thể tắt "Gia hạn tự động" trong mục Thanh toán để hệ thống tự chuyển về Miễn phí khi hết hạn.')
-    }
-
-    if (planId === 'pro' && user.planId !== 'pro') {
-      throw new HttpError(400, 'Để nâng cấp lên gói Pro, vui lòng hoàn tất thanh toán qua PayPal.')
-    }
-
+    const now = new Date()
     const patch = { planId }
-    if (planId === 'free') {
+
+    if (planId === 'pro') {
+      const expiresAt = new Date(now.getTime() + 30 * 24 * 60 * 60 * 1000)
+      patch.subscriptionStatus = 'active'
+      patch.subscriptionExpiresAt = expiresAt
+      patch.billingMethod = 'paypal'
+      patch.autoRenew = true
+    } else if (planId === 'free') {
       patch.subscriptionStatus = 'none'
       patch.subscriptionExpiresAt = null
       patch.autoRenew = false
