@@ -43,21 +43,32 @@ export async function getPayPalAccessToken() {
 /**
  * Create a PayPal Checkout Order (v2)
  * Default amount $3.99 USD (~99,000 VND)
+ *
+ * `custom` (string): JSON-encoded metadata gắn vào order, PayPal sẽ gửi lại
+ *                    trong webhook event. Dùng để truyền userId, planId,...
  */
-export async function createPayPalOrder({ amountUSD = '3.99', description = 'MedChat Pro Subscription (30 Days)' } = {}) {
+export async function createPayPalOrder({
+  amountUSD = '3.99',
+  description = 'MedChat Pro Subscription (30 Days)',
+  custom = null,
+} = {}) {
   const accessToken = await getPayPalAccessToken()
+
+  const purchaseUnit = {
+    amount: {
+      currency_code: 'USD',
+      value: String(amountUSD),
+    },
+    description,
+  }
+
+  if (custom) {
+    purchaseUnit.custom = custom
+  }
 
   const payload = {
     intent: 'CAPTURE',
-    purchase_units: [
-      {
-        amount: {
-          currency_code: 'USD',
-          value: String(amountUSD),
-        },
-        description,
-      },
-    ],
+    purchase_units: [purchaseUnit],
     application_context: {
       brand_name: 'MedChat AI',
       landing_page: 'NO_PREFERENCE',

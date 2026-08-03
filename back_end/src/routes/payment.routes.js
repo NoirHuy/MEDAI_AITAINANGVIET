@@ -1,4 +1,4 @@
-import { Router } from 'express'
+import { Router, raw } from 'express'
 import { randomUUID } from 'node:crypto'
 import { env } from '../config/env.js'
 import { requireAuth } from '../middleware/auth.js'
@@ -9,6 +9,15 @@ import { UserModel } from '../db/user.model.js'
 import { PaymentModel } from '../db/payment.model.js'
 import { toPublicUser } from '../db/usersRepo.js'
 import { createPayPalOrder, capturePayPalOrder } from '../services/paypalClient.js'
+import {
+  verifyPayPalWebhookSignature,
+  parsePayPalCustom,
+} from '../utils/paypal-webhook.util.js'
+import { auditLog } from '../utils/auditLog.js'
+import {
+  upsertSubscriptionAndSync,
+  cancelSubscriptionAndSync,
+} from '../services/subscription.service.js'
 
 const router = Router()
 
@@ -20,6 +29,118 @@ router.get('/config', (req, res) => {
     isConfigured: !!(env.paypalClientId && env.paypalClientSecret)
   })
 })
+
+// ─── 0.5 PAYPAL WEBHOOK (Public — no JWT) ────────────────────────────────────
+// PayPal gọi đến endpoint này khi có event (payment.completed, refunded, ...).
+// Phải đặt TRƯỚC router.use(requireAuth) vì PayPal không gửi JWT.
+router.post(
+  '/paypal/webhook',
+  raw({ type: 'application/json', limit: '1mb' }),
+  asyncHandler(async (req, res) => {
+    let event
+    try {
+      // req.body là Buffer do dùng raw()
+      event = JSON.parse(req.body.toString('utf8'))
+    } catch (err) {
+      auditLog('PAYPAL_WEBHOOK', 'Error', `Invalid JSON body: ${err.message}`, 'error')
+      return res.status(400).json({ error: 'Invalid JSON' })
+    }
+
+    // 1. Verify signature
+    const verifyResult = await verifyPayPalWebhookSignature(req.headers, event)
+    if (!verifyResult.valid) {
+      auditLog('PAYPAL_WEBHOOK', 'Warn', `Signature invalid: ${verifyResult.reason}`, 'warn')
+      return res.status(400).json({ error: 'Invalid signature' })
+    }
+
+    const eventType = event.event_type
+    const resource = event.resource || {}
+    const custom = parsePayPalCustom(resource.custom || resource.custom_id)
+    const orderId = resource.id || resource.billing_agreement_id
+
+    auditLog('PAYPAL_WEBHOOK', 'Info', `Received ${eventType} for order ${orderId}`, 'info')
+
+    // 2. Handle events
+    switch (eventType) {
+      case 'CHECKOUT.ORDER.COMPLETED':
+      case 'PAYMENT.CAPTURE.COMPLETED': {
+        // User thanh toán thành công
+        if (!custom.userId) {
+          auditLog('PAYPAL_WEBHOOK', 'Warn', `Missing userId in custom for ${orderId}`, 'warn')
+          break
+        }
+
+        // Tính expiresAt = now + 30 ngày
+        const expiresAt = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000)
+
+        await upsertSubscriptionAndSync({
+          userId: custom.userId,
+          platform: 'paypal',
+          externalId: orderId,
+          productId: custom.planId || 'pro',
+          startedAt: new Date(),
+          expiresAt,
+          autoRenew: false,
+          metadata: {
+            amount: resource.amount?.total || resource.amount?.value,
+            currency: resource.amount?.currency || resource.amount?.currency_code,
+            payerEmail: resource.payer?.email_address || resource.payer?.payer_info?.email,
+            transactionId: resource.id,
+            eventType,
+          },
+        })
+
+        // Update payment record nếu có
+        await PaymentModel.findOneAndUpdate(
+          { billingToken: orderId },
+          {
+            $set: {
+              status: 'success',
+              completedAt: new Date(),
+              paymentGateway: 'paypal',
+            },
+          },
+        )
+
+        auditLog('PAYPAL_WEBHOOK', 'Info', `Upgraded user ${custom.userId} to Pro via PayPal`, 'info')
+        break
+      }
+
+      case 'PAYMENT.CAPTURE.REFUNDED':
+      case 'CHECKOUT.ORDER.CANCELLED': {
+        // User refund hoặc cancel
+        if (!custom.userId) {
+          auditLog('PAYPAL_WEBHOOK', 'Warn', `Missing userId in custom for ${orderId}`, 'warn')
+          break
+        }
+
+        await cancelSubscriptionAndSync({
+          userId: custom.userId,
+          platform: 'paypal',
+          externalId: orderId,
+        })
+
+        await PaymentModel.findOneAndUpdate(
+          { billingToken: orderId },
+          {
+            $set: {
+              status: 'failed',
+              completedAt: new Date(),
+            },
+          },
+        )
+
+        auditLog('PAYPAL_WEBHOOK', 'Info', `Canceled PayPal subscription for user ${custom.userId}`, 'info')
+        break
+      }
+
+      default:
+        auditLog('PAYPAL_WEBHOOK', 'Info', `Unhandled event ${eventType}`, 'info')
+    }
+
+    return res.status(200).json({ received: true })
+  }),
+)
 
 router.use(requireAuth)
 
@@ -38,7 +159,13 @@ router.post(
     try {
       const order = await createPayPalOrder({
         amountUSD: '3.99',
-        description: `MedChat Pro Plan Subscription (30 Days) - User: ${user.email}`
+        description: `MedChat Pro Plan Subscription (30 Days) - User: ${user.email}`,
+        // Truyền userId qua custom để webhook có thể map về user khi nhận event
+        custom: JSON.stringify({
+          userId: user.id,
+          planId: 'pro',
+          source: 'web',
+        }),
       })
       res.json({ orderId: order.id })
     } catch (err) {
@@ -103,25 +230,24 @@ router.post(
     const now = new Date()
     const expiresAt = new Date(now.getTime() + 30 * 24 * 60 * 60 * 1000)
 
-    const updatedUser = await UserModel.findOneAndUpdate(
-      { id: req.userId },
-      {
-        $set: {
-          planId: 'pro',
-          subscriptionStatus: 'active',
-          subscriptionExpiresAt: expiresAt,
-          billingMethod: 'paypal',
-          billingToken: orderId,
-          billingDetails: {
-            paypalPayerId: captureResult?.payer?.payer_id || 'paypal_payer_sandbox',
-            paypalEmail: captureResult?.payer?.email_address || user.email,
-            capturedAt: new Date().toISOString()
-          },
-          autoRenew: true
-        }
+    // Ghi subscription record + sync plan (dùng chung với webhook)
+    await upsertSubscriptionAndSync({
+      userId: user.id,
+      platform: 'paypal',
+      externalId: orderId,
+      productId: 'pro',
+      startedAt: now,
+      expiresAt,
+      autoRenew: true,
+      metadata: {
+        paypalPayerId: captureResult?.payer?.payer_id || null,
+        paypalEmail: captureResult?.payer?.email_address || user.email,
+        capturedAt: new Date().toISOString(),
+        source: 'web',
       },
-      { new: true }
-    ).lean()
+    })
+
+    const updatedUser = await UserModel.findOne({ id: req.userId }).lean()
 
     res.json({
       success: true,

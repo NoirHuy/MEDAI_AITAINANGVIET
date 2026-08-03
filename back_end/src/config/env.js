@@ -103,6 +103,10 @@ export const env = {
       ? 'https://api-m.paypal.com'
       : 'https://api-m.sandbox.paypal.com'
   },
+  get paypalWebhookId() {
+    const val = (process.env.PAYPAL_WEBHOOK_ID || '').trim()
+    return val
+  },
 
   adminEmail: (process.env.ADMIN_EMAIL || 'admin@medchat.ai').trim(),
 
