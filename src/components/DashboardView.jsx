@@ -308,7 +308,7 @@ export default function DashboardView({ account, onBack, onSignOut, lang, initia
   }
 
   const handleSaveFbUpdate = async () => {
-    if (!selectedFb) return
+    if (!selectedFb?.id) return
     setFbSaving(true)
     try {
       const res = await fetch(`/api/admin/feedbacks/${selectedFb.id}`, {
