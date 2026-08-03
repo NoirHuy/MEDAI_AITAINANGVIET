@@ -20,6 +20,11 @@ import {
   updateUser,
   toPublicUser,
 } from '../db/usersRepo.js'
+import {
+  issueMobileTokens,
+  revokeMobileRefreshToken,
+  rotateMobileRefreshToken,
+} from '../services/mobileToken.service.js'
 
 const router = Router()
 
@@ -27,13 +32,26 @@ const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
 const isSecureCookie = env.cookieSecure
 const COOKIE_OPTIONS = {
   httpOnly: true,
-  sameSite: isSecureCookie ? 'none' : 'lax',
+  sameSite: 'lax',
   secure: isSecureCookie,
   maxAge: 7 * 24 * 60 * 60 * 1000,
 }
 
 function setSessionCookie(res, userId) {
   res.cookie(AUTH_COOKIE_NAME, signSessionToken(userId), COOKIE_OPTIONS)
+}
+
+function isMobileClient(req) {
+  return req.body?.client === 'mobile'
+}
+
+async function sendAuthenticated(res, req, user, status = 200) {
+  if (isMobileClient(req)) {
+    const tokens = await issueMobileTokens(user.id)
+    return res.status(status).json({ user: toPublicUser(user), tokens })
+  }
+  setSessionCookie(res, user.id)
+  return res.status(status).json({ user: toPublicUser(user) })
 }
 
 router.get(
@@ -73,9 +91,7 @@ router.post(
       planId: DEFAULT_PLAN_ID,
     })
 
-    const token = signSessionToken(user.id)
-    setSessionCookie(res, user.id)
-    res.status(201).json({ user: toPublicUser(user), token })
+    await sendAuthenticated(res, req, user, 201)
   }),
 )
 
@@ -97,9 +113,7 @@ router.post(
     const passwordMatches = await bcrypt.compare(password ?? '', user.passwordHash)
     if (!passwordMatches) throw new HttpError(401, 'Email hoặc mật khẩu không chính xác.')
 
-    const token = signSessionToken(user.id)
-    setSessionCookie(res, user.id)
-    res.json({ user: toPublicUser(user), token })
+    await sendAuthenticated(res, req, user)
   }),
 )
 
@@ -148,9 +162,7 @@ router.post(
       }
     }
 
-    const token = signSessionToken(user.id)
-    setSessionCookie(res, user.id)
-    res.json({ user: toPublicUser(user), token })
+    await sendAuthenticated(res, req, user)
   }),
 )
 
@@ -158,6 +170,33 @@ router.post('/signout', authGeneralLimiter, (_req, res) => {
   res.clearCookie(AUTH_COOKIE_NAME, { ...COOKIE_OPTIONS, maxAge: undefined })
   res.status(204).end()
 })
+
+router.post(
+  '/mobile/refresh',
+  authGeneralLimiter,
+  asyncHandler(async (req, res) => {
+    const { refreshToken } = req.body ?? {}
+    if (typeof refreshToken !== 'string' || !refreshToken) {
+      throw new HttpError(400, 'A refresh token is required.')
+    }
+    const tokens = await rotateMobileRefreshToken(refreshToken)
+    if (!tokens) throw new HttpError(401, 'Invalid or expired refresh token.')
+    res.json({ tokens })
+  }),
+)
+
+router.post(
+  '/mobile/signout',
+  requireAuth,
+  authGeneralLimiter,
+  asyncHandler(async (req, res) => {
+    const { refreshToken } = req.body ?? {}
+    if (typeof refreshToken === 'string' && refreshToken) {
+      await revokeMobileRefreshToken(req.userId, refreshToken)
+    }
+    res.status(204).end()
+  }),
+)
 
 router.get(
   '/me',

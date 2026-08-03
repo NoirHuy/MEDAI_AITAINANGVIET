@@ -6,6 +6,10 @@ export function notFoundHandler(req, res) {
 export function errorHandler(err, req, res, next) {
   const status = err.status ?? 500
   if (status >= 500) {
+    // Keep implementation details in server logs only.
+    err.message = 'An unexpected server error occurred.'
+  }
+  if (status >= 500) {
     console.error(err)
   } else {
     console.warn(`[Client Error ${status}] ${err.message} - Path: ${req.method} ${req.path}`)

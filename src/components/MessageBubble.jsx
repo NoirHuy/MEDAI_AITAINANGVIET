@@ -17,7 +17,7 @@ export default function MessageBubble({ role, content, streaming, lang = 'vi', o
   if (memoryMatch) {
     try {
       memoriesUsed = JSON.parse(memoryMatch[1].trim())
-    } catch (e) {}
+    } catch {}
   }
 
   const [checkedIds, setCheckedIds] = useState([])

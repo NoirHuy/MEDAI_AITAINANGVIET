@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
+import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { isValidPlanId } from '../config/plans.js'
 
 // Mock the repo functions used by account.routes

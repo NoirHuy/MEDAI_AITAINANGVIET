@@ -107,7 +107,7 @@ Trả về định dạng JSON thuần duy nhất dạng mảng:
           extractedAt: new Date(),
           ignoredExpiresAt: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000), // 30 days TTL
         })
-      } catch (err) {}
+      } catch {}
     }
 
     if (validCandidates.length === 0) return

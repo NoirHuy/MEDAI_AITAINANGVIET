@@ -64,7 +64,7 @@ async function runImport() {
 
   const ihmeRecords = []
   for (let i = 1; i < lines.length; i++) {
-    const cols = lines[i].split(/,(?=(?:[^\"]*\"[^\"]*\")*[^\"]*$)/)
+    const cols = lines[i].split(/,(?=(?:[^"]*"[^"]*")*[^"]*$)/)
     if (cols.length >= 16) {
       const causeId = cols[10]?.trim()
       const causeName = cols[11]?.replace(/"/g, '').trim()

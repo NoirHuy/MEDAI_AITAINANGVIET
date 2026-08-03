@@ -1,7 +1,5 @@
 import cron from 'node-cron'
-import { randomUUID } from 'node:crypto'
 import { UserModel } from '../db/user.model.js'
-import { PaymentModel } from '../db/payment.model.js'
 
 // Check expired subscriptions and update status
 export async function checkExpiredSubscriptions() {

@@ -32,7 +32,7 @@ describe('errorHandler', () => {
     const res = makeMockRes()
     errorHandler(err, {}, res)
     expect(res._status).toBe(500)
-    expect(res._body.error).toBe('DB down')
+    expect(res._body.error).toBe('An unexpected server error occurred.')
     expect(consoleErrorSpy).toHaveBeenCalled()
   })
 
@@ -68,7 +68,7 @@ describe('errorHandler', () => {
     const res = makeMockRes()
     errorHandler(err, {}, res)
     expect(res._body.error).not.toContain('stack')
-    expect(res._body.error).toBe('secret internal message')
+    expect(res._body.error).toBe('An unexpected server error occurred.')
   })
 })
 

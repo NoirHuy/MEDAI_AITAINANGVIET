@@ -1,5 +1,5 @@
 export function formatAdaptiveContext(ctx, lang = 'vi') {
-  const { confirmedSymptoms, excludedSymptoms, rankedDiseases, bestNextSymptoms, diseaseOverview, sce } = ctx
+  const { confirmedSymptoms, excludedSymptoms, rankedDiseases, bestNextSymptoms, sce } = ctx
   const isEn = lang === 'en'
 
   let text = isEn ? '## ADAPTIVE GRAPH CONTEXT (Current Turn)\n\n' : '## ADAPTIVE GRAPH CONTEXT (Cap nhat luot nay)\n\n'

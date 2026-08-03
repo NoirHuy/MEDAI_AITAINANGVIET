@@ -4,12 +4,9 @@ import {
   GaugeIcon,
   CreditCardIcon,
   HelpCircleIcon,
-  TrashIcon,
   SearchIcon,
   CheckIcon,
-  SpinnerIcon,
   PulseIcon,
-  CloseIcon,
   RefreshIcon,
   ChevronLeftIcon,
   ChevronRightIcon,
@@ -35,7 +32,7 @@ function exportToExcelCSV(filename, headers, rows) {
   document.body.removeChild(link)
 }
 
-export default function DashboardView({ account, onBack, onSignOut, lang, initialTab }) {
+export default function DashboardView({ account, onSignOut, initialTab }) {
   const [activeTab, setActiveTab] = useState(initialTab || 'overview')
   const [isAdmin, setIsAdmin] = useState(account.role === 'admin')
 
@@ -178,6 +175,8 @@ export default function DashboardView({ account, onBack, onSignOut, lang, initia
   // Tự động load dữ liệu tùy thuộc vào tab đang active
   useEffect(() => {
     fetchAdminData()
+  // fetchAdminData is intentionally re-created with the current filter values.
+  // oxlint-disable-next-line react-hooks/exhaustive-deps
   }, [activeTab, convPage, searchConv, filterUrgency, filterLang, filterGuest, userPage, searchUser, payPage, filterPayStatus, filterPayGateway, fbPage, searchFb, filterFbStatus, filterFbCategory, isAdmin])
 
   // Xem chi tiết hội thoại

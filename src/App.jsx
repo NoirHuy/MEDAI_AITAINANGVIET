@@ -37,7 +37,7 @@ function App() {
   const [collapsed, setCollapsed] = useState(false)
   const [mobileOpen, setMobileOpen] = useState(false)
   const [view, setView] = useState('chat')
-  const [dashboardTab, setDashboardTab] = useState('overview')
+  const [dashboardTab] = useState('overview')
   const [settingsTab, setSettingsTab] = useState(null)
   const [authTab, setAuthTab] = useState(null)
   const [lang, setLang] = useState(localStorage.getItem('medai_lang') || 'en')
@@ -63,7 +63,7 @@ function App() {
         window.history.replaceState({}, '', '/')
       }
     }
-  }, [account, view, lang, isAdminPath])
+  }, [account, view, lang, isAdminPath, showToast])
 
   const specialtyId = chat.activeConversation?.specialtyId ?? pendingSpecialtyId
 

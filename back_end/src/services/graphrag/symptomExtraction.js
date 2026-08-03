@@ -7,7 +7,7 @@ import { vectorSearchSymptom, isVectorIndexReady } from './symptomVectorIndex.js
 export function tryRepairJson(jsonStr) {
   try {
     return JSON.parse(jsonStr)
-  } catch (e) {
+  } catch {
     auditLog('JSON_REPAIR', 'Attempting to repair truncated JSON...')
     let clean = jsonStr.trim()
     const symptomsIndex = clean.lastIndexOf('symptoms')

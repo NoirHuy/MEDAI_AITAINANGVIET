@@ -14,7 +14,7 @@ function getMasterKey() {
  * @param {number} keyVersion 
  * @returns {string}
  */
-export function encryptText(text, keyVersion = 1) {
+export function encryptText(text) {
   if (!text || typeof text !== 'string') return text
   try {
     const key = getMasterKey()
@@ -37,7 +37,7 @@ export function encryptText(text, keyVersion = 1) {
  * @param {number} keyVersion 
  * @returns {string}
  */
-export function decryptText(encryptedData, keyVersion = 1) {
+export function decryptText(encryptedData) {
   if (!encryptedData || typeof encryptedData !== 'string') return encryptedData
   const parts = encryptedData.split(':')
   if (parts.length !== 3) {

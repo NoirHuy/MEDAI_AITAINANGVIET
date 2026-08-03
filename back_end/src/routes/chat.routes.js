@@ -16,6 +16,32 @@ import { SystemLogModel } from '../db/systemLog.model.js'
 import { runMemoryExtractionPass } from '../services/memory/memoryExtractor.js'
 
 const router = Router()
+const MAX_MESSAGES = 40
+const MAX_MESSAGE_LENGTH = 6000
+const MAX_CONVERSATION_CHARACTERS = 24000
+
+export function validateMessages(messages) {
+  if (!Array.isArray(messages) || messages.length === 0) {
+    throw new HttpError(400, 'Missing conversation messages.')
+  }
+  if (messages.length > MAX_MESSAGES) {
+    throw new HttpError(400, `A conversation cannot exceed ${MAX_MESSAGES} messages.`)
+  }
+
+  let totalLength = 0
+  for (const message of messages) {
+    if (!message || !['user', 'assistant'].includes(message.role) || typeof message.content !== 'string') {
+      throw new HttpError(400, 'Invalid message format.')
+    }
+    if (message.content.length > MAX_MESSAGE_LENGTH) {
+      throw new HttpError(400, `Each message cannot exceed ${MAX_MESSAGE_LENGTH} characters.`)
+    }
+    totalLength += message.content.length
+  }
+  if (totalLength > MAX_CONVERSATION_CHARACTERS) {
+    throw new HttpError(400, 'Conversation content exceeds the allowed limit.')
+  }
+}
 
 // Endpoint tự động tạo tiêu đề ChatGPT (2-4 từ súc tích) dựa trên ý chính câu thoại
 router.post(
@@ -23,6 +49,9 @@ router.post(
   chatTitleLimiter,
   asyncHandler(async (req, res) => {
     const { text, lang } = req.body ?? {}
+    if (typeof text !== 'string' || !text.trim() || text.length > 1000) {
+      throw new HttpError(400, 'Title input must be between 1 and 1000 characters.')
+    }
     const title = await generateSmartTitle(text, lang || 'vi')
     res.json({ title })
   })
@@ -35,10 +64,7 @@ router.post(
   chatLimiter,
   asyncHandler(async (req, res) => {
     const { messages, specialtyId, lang, isSuggestionDemo, sessionMemoryPaused, conversationId } = req.body ?? {}
-    console.log(`[API CHAT] Incoming request specialtyId: "${specialtyId}", lang: "${lang}", isSuggestionDemo: ${!!isSuggestionDemo}, messages count: ${messages?.length}`)
-    if (messages && messages.length > 0) {
-      console.log(`[API CHAT] Last message:`, messages[messages.length - 1])
-    }
+    validateMessages(messages)
     if (!Array.isArray(messages) || messages.length === 0) {
       throw new HttpError(400, 'Thiếu nội dung hội thoại (messages).')
     }
@@ -109,6 +135,8 @@ router.post(
     } catch (err) {
       const isAbort = err.name === 'AbortError' || err.message === 'aborted' || controller.signal.aborted
       if (!isAbort) {
+        // Do not expose provider, network, or infrastructure errors to users.
+        err.message = 'AI service is temporarily unavailable.'
         console.error('[API CHAT Error]', err)
         res.write(`\n\n⚠️ **Cảnh báo hệ thống:** Mất kết nối y khoa (${err.message}). Vui lòng kiểm tra lại cấu hình API hoặc đường truyền mạng của bạn.`)
         
@@ -119,8 +147,7 @@ router.post(
           meta: {
             userId: req.userId || 'guest',
             specialtyId,
-            error: err.message,
-            stack: err.stack
+            error: err.name || 'UnknownError'
           }
         })
         await logErr.save()
@@ -164,19 +191,23 @@ router.get(
   })
 )
 
-// Save or update a conversation (works for guests too)
+// Conversations are server-side data and must always be owned by an account.
 router.post(
   '/conversations',
-  attachUserIfPresent,
+  requireAuth,
   chatGeneralLimiter,
   asyncHandler(async (req, res) => {
     const { id, title, specialtyId, messages, lang, responseTimeMs, symptomsMatched } = req.body ?? {}
-    if (!id || !title || !specialtyId || !Array.isArray(messages)) {
+    if (typeof id !== 'string' || !id || typeof title !== 'string' || !title.trim() || typeof specialtyId !== 'string' || !specialtyId || !Array.isArray(messages)) {
       throw new HttpError(400, 'Thiếu thông tin hội thoại.')
     }
 
-    const userId = req.userId || `guest_${id}`
-    const isGuest = !req.userId
+    validateMessages(messages)
+
+    const existing = await ConversationModel.findOne({ id }).select({ userId: 1 }).lean()
+    if (existing && existing.userId !== req.userId) {
+      throw new HttpError(404, 'Conversation not found.')
+    }
 
     const emergencyKeywords = ['cấp cứu', 'khẩn cấp', 'nguy hiểm', 'bác sĩ ngay', 'nhập viện', 'tử vong', 'dữ dội', 'đau nhói ngực', 'khó thở', 'emergency', 'hospit']
     const warningKeywords = ['theo dõi', 'chú ý', 'bác sĩ', 'khám', 'sớm', 'watch out', 'see a doctor', 'consult']
@@ -201,16 +232,16 @@ router.post(
     }))
 
     const conversation = await ConversationModel.findOneAndUpdate(
-      { id },
+      { id, userId: req.userId },
       {
         $set: {
-          userId,
-          title,
+          userId: req.userId,
+          title: title.trim().slice(0, 200),
           specialtyId,
           messages: formattedMessages,
           urgency,
           lang: lang || 'vi',
-          isGuest,
+          isGuest: false,
           responseTimeMs: responseTimeMs || 0,
           symptomsMatched: symptomsMatched || []
         }
@@ -225,12 +256,11 @@ router.post(
 // Delete a conversation
 router.delete(
   '/conversations/:id',
-  attachUserIfPresent,
+  requireAuth,
   chatGeneralLimiter,
   asyncHandler(async (req, res) => {
     const { id } = req.params
-    const userId = req.userId || `guest_${id}`
-    const result = await ConversationModel.deleteOne({ id, userId })
+    const result = await ConversationModel.deleteOne({ id, userId: req.userId })
     if (result.deletedCount === 0) {
       throw new HttpError(404, 'Không tìm thấy cuộc hội thoại hoặc không có quyền xóa.')
     }

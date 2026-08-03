@@ -1,22 +1,4 @@
-import { fileURLToPath } from 'url'
-import { dirname, join } from 'path'
 import crypto from 'node:crypto'
-
-const __filename = fileURLToPath(import.meta.url)
-const __dirname = dirname(__filename)
-
-// Minimal in-process test app that mirrors server.js routes
-// without MongoDB/Neo4j dependencies for pure HTTP tests.
-async function createTestApp() {
-  const express = await import('express').then(m => m.default)
-  const cookieParser = await import('cookie-parser').then(m => m.default)
-  const app = express()
-  app.use(express.json())
-  app.use(cookieParser())
-  app.get('/health', (_req, res) => res.json({ ok: true }))
-  app.get('/api/error-log', (_req, res) => res.json({ ok: true }))
-  return app
-}
 
 // ─── Plans config ─────────────────────────────────────────────────────────────
 

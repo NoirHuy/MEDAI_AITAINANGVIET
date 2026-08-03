@@ -1,4 +1,4 @@
-:80, :8080, http://{$DOMAIN} {
+{$DOMAIN} {
 	handle /api/* {
 		reverse_proxy backend:4000
 	}

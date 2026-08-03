@@ -23,7 +23,20 @@ const app = express()
 app.set('trust proxy', ['loopback', 'linklocal', 'uniquelocal'])
 
 app.use(cors({ origin: env.clientOrigin, credentials: true }))
-app.use(express.json())
+app.use((req, res, next) => {
+  res.setHeader('X-Content-Type-Options', 'nosniff')
+  res.setHeader('X-Frame-Options', 'DENY')
+  res.setHeader('Referrer-Policy', 'strict-origin-when-cross-origin')
+  res.setHeader('Permissions-Policy', 'camera=(), microphone=(), geolocation=()')
+  next()
+})
+
+// PayPal verifies the original byte stream. Its route owns body parsing with
+// express.raw(), so the JSON parser must not consume it first.
+app.use(express.json({
+  limit: '200kb',
+  type: (req) => !req.originalUrl.startsWith('/api/payments/paypal/webhook'),
+}))
 app.use(cookieParser())
 
 app.get('/health', (_req, res) => res.json({ ok: true }))
