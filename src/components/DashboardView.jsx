@@ -300,6 +300,7 @@ export default function DashboardView({ account, onBack, onSignOut, lang, initia
 
   // ─── QUẢN LÝ PHẢN HỒI ──────────────────────────────────────────────────
   const handleViewFbDetails = (fb) => {
+    if (!fb?.id) return
     setSelectedFb(fb)
     setFbReplyText(fb.adminReply || '')
     setFbNotesText(fb.adminNotes || '')
@@ -1242,7 +1243,7 @@ export default function DashboardView({ account, onBack, onSignOut, lang, initia
                             <span className="text-sm">{(fb.content || '').slice(0, 60)}{(fb.content || '').length > 60 ? '...' : ''}</span>
                           </td>
                           <td className="text-xs text-muted">
-                            {new Date(fb.createdAt).toLocaleString('vi-VN', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' })}
+                            {fb.createdAt ? new Date(fb.createdAt).toLocaleString('vi-VN', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' }) : '—'}
                           </td>
                           <td>
                             <div className="actions-cell">
@@ -1282,7 +1283,7 @@ export default function DashboardView({ account, onBack, onSignOut, lang, initia
               <div>
                 <h2>Chi tiết phản hồi</h2>
                 <p className="text-xs text-muted">
-                  ID: {selectedFb.id} | Gửi: {new Date(selectedFb.createdAt).toLocaleString('vi-VN')}
+                  ID: {selectedFb.id} | Gửi: {selectedFb.createdAt ? new Date(selectedFb.createdAt).toLocaleString('vi-VN') : '—'}
                 </p>
               </div>
               <button className="modal-close" onClick={() => setShowFbDetail(false)}>×</button>
@@ -1316,7 +1317,7 @@ export default function DashboardView({ account, onBack, onSignOut, lang, initia
                 </div>
                 {selectedFb.adminReply && (
                   <div className="flagged-banner" style={{ background: 'rgba(14, 165, 233, 0.08)', borderColor: '#0ea5e9', color: '#0ea5e9' }}>
-                    Đã phản hồi bởi {selectedFb.replierName || 'Admin'} ({new Date(selectedFb.repliedAt).toLocaleString('vi-VN')})
+                    Đã phản hồi bởi {selectedFb.replierName || 'Admin'} ({selectedFb.repliedAt ? new Date(selectedFb.repliedAt).toLocaleString('vi-VN') : '—'})
                   </div>
                 )}
               </div>
