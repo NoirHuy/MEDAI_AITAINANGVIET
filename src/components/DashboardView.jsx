@@ -1239,7 +1239,7 @@ export default function DashboardView({ account, onBack, onSignOut, lang, initia
                             </span>
                           </td>
                           <td className="limit-chars" style={{ maxWidth: '200px' }}>
-                            <span className="text-sm">{fb.content.slice(0, 60)}{fb.content.length > 60 ? '...' : ''}</span>
+                            <span className="text-sm">{(fb.content || '').slice(0, 60)}{(fb.content || '').length > 60 ? '...' : ''}</span>
                           </td>
                           <td className="text-xs text-muted">
                             {new Date(fb.createdAt).toLocaleString('vi-VN', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' })}

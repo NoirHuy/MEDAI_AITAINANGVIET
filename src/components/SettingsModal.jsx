@@ -1104,15 +1104,21 @@ export default function SettingsModal({
                             : 'Admin sẽ thấy tên và email tài khoản của bạn.'}
                         </p>
                       </div>
-                      <label className="toggle-switch">
+                      <label className={`toggle-switch ${feedbackCategory === 'help' ? 'toggle-switch--disabled' : ''}`}>
                         <input
                           type="checkbox"
                           checked={feedbackAnonymous}
                           onChange={e => setFeedbackAnonymous(e.target.checked)}
+                          disabled={feedbackCategory === 'help'}
                         />
                         <span className="toggle-slider" />
                       </label>
                     </div>
+                    {feedbackCategory === 'help' && (
+                      <p className="settings-modal__hint" style={{ fontSize: '12px', marginTop: '4px', color: 'var(--text-muted)' }}>
+                        Khi chọn "Trợ giúp (cần phản hồi)", tài khoản của bạn sẽ được gửi kèm để đội ngũ hỗ trợ liên hệ lại.
+                      </p>
+                    )}
 
                     <div style={{ marginTop: '14px', display: 'flex', gap: '10px', alignItems: 'center' }}>
                       <button type="submit" className="btn btn--primary" disabled={feedbackSubmitting || !feedbackContent.trim()}>
