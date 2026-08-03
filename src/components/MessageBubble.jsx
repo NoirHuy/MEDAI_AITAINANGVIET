@@ -430,20 +430,3 @@ function renderInline(text, keyPrefix) {
     })
 }
 
-// ─── INLINE RENDERER (no bold — dành cho danh sách câu hỏi Phase 1) ──────────
-function renderInlineNoBold(text, keyPrefix) {
-  // Strip ** trước, rồi render italic/code bình thường
-  const stripped = text.replace(/\*\*([^*]+)\*\*/g, '$1')
-  return stripped
-    .split(/(_[^_]+_|`[^`]+`)/g)
-    .filter(part => part.length > 0)
-    .map((part, i) => {
-      const k = `${keyPrefix}-${i}`
-      if (part.startsWith('_') && part.endsWith('_'))
-        return <em key={k}>{part.slice(1, -1)}</em>
-      if (part.startsWith('`') && part.endsWith('`'))
-        return <code key={k} className="msg-code">{part.slice(1, -1)}</code>
-      return <span key={k}>{part}</span>
-    })
-}
-

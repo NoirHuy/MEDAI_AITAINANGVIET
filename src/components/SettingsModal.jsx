@@ -35,8 +35,6 @@ export default function SettingsModal({
   account,
   onUpdateName,
   onChangePassword,
-  onUpdateCard,
-  onDeleteCard,
   onToggleAutoRenew,
   onSetPlan,
   onSignOut,
@@ -55,22 +53,10 @@ export default function SettingsModal({
   const [passwordLoading, setPasswordLoading] = useState(false)
 
   // State cho Thẻ Thanh Toán
-  const [cardNumber, setCardNumber] = useState('')
-  const [cardHolder, setCardHolder] = useState('')
-  const [cardExpiry, setCardExpiry] = useState('')
-  const [cardCvc, setCardCvc] = useState('')
-  const [cardStatus, setCardStatus] = useState(null)
-  const [cardLoading, setCardLoading] = useState(false)
-  const [deleteCardLoading, setDeleteCardLoading] = useState(false)
-  const [editingCard, setEditingCard] = useState(!account?.billingDetails)
-
-  useEffect(() => {
-    setEditingCard(!account?.billingDetails)
-  }, [account?.billingDetails])
 
   // State cho Nâng Cấp Gói & Thanh Toán PayPal
   const [confirmPaymentModal, setConfirmPaymentModal] = useState(false)
-  const [planLoading, setPlanLoading] = useState(false)
+  const [, setPlanLoading] = useState(false)
   const [paypalConfig, setPaypalConfig] = useState(null)
   const [paypalSdkLoaded, setPaypalSdkLoaded] = useState(false)
 
@@ -328,7 +314,7 @@ export default function SettingsModal({
     } catch (e) {
       console.error('[PayPal Render Error]', e)
     }
-  }, [paypalSdkLoaded, activeTab, confirmPaymentModal])
+  }, [paypalSdkLoaded, activeTab, confirmPaymentModal, showToast, onSetPlan])
 
   // Xử lý bấm Chuyển Gói
   function handleSelectPlanClick(targetPlanId) {
@@ -394,23 +380,6 @@ export default function SettingsModal({
   const isGoogleAccount = account.provider === 'google'
   const isAutoRenewOn = account.autoRenew !== false
 
-  // Định dạng số thẻ tự động nhóm 4 số
-  function handleCardNumberChange(e) {
-    const raw = e.target.value.replace(/\D/g, '').slice(0, 19)
-    const formatted = raw.match(/.{1,4}/g)?.join(' ') || raw
-    setCardNumber(formatted)
-  }
-
-  // Định dạng ngày hết hạn MM/YY
-  function handleCardExpiryChange(e) {
-    const raw = e.target.value.replace(/\D/g, '').slice(0, 4)
-    if (raw.length >= 3) {
-      setCardExpiry(`${raw.slice(0, 2)}/${raw.slice(2)}`)
-    } else {
-      setCardExpiry(raw)
-    }
-  }
-
   // Xử lý đổi mật khẩu
   async function handleChangePasswordSubmit(e) {
     e.preventDefault()
@@ -439,46 +408,6 @@ export default function SettingsModal({
       setPasswordLoading(false)
     }
   }
-
-  // Xử lý lưu thẻ thanh toán
-  async function handleSaveCardSubmit(e) {
-    e.preventDefault()
-    setCardStatus(null)
-
-    try {
-      setCardLoading(true)
-      await onUpdateCard({
-        cardNumber,
-        holderName: cardHolder,
-        expiry: cardExpiry,
-        cvc: cardCvc,
-      })
-      setCardStatus({ type: 'success', text: 'Đã lưu thẻ thanh toán thành công!' })
-      setEditingCard(false)
-      showToast?.('Đã lưu thẻ thanh toán thành công!')
-    } catch (err) {
-      setCardStatus({ type: 'error', text: err.message || 'Thẻ không hợp lệ.' })
-    } finally {
-      setCardLoading(false)
-    }
-  }
-
-  // Xử lý bật/tắt gia hạn tự động
-  async function handleToggleAutoRenewClick() {
-    try {
-      const nextState = !isAutoRenewOn
-      await onToggleAutoRenew(nextState)
-      showToast?.(nextState ? 'Đã BẬT gia hạn tự động' : 'Đã TẮT gia hạn tự động')
-    } catch (err) {
-      showToast?.(err.message)
-    }
-  }
-
-  // Tính ngày đăng ký & ngày hết hạn
-  const regDate = account.createdAt ? new Date(account.createdAt).toLocaleDateString('vi-VN') : '22/07/2026'
-  const expDate = account.subscriptionExpiresAt
-    ? new Date(account.subscriptionExpiresAt).toLocaleDateString('vi-VN')
-    : new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toLocaleDateString('vi-VN')
 
   return (
     <div className="modal-backdrop" onClick={onClose}>
@@ -622,7 +551,7 @@ export default function SettingsModal({
                   <div className="auto-renew-text">
                     <strong>Bật tính năng Trí nhớ thông minh</strong>
                     <p className="auto-renew-hint">
-                      {Boolean(memorySettings?.memoryEnabled)
+                      {memorySettings?.memoryEnabled
                         ? 'Đang BẬT. Cho phép AI tham khảo và tự động trích xuất tiền sử y tế của bạn.'
                         : 'Đang TẮT. AI sẽ không tham khảo hoặc trích xuất dữ liệu trí nhớ cá nhân.'}
                     </p>

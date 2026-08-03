@@ -190,7 +190,7 @@ export default function DashboardView({ account, onSignOut, initialTab }) {
         setShowFlagInput(false)
         setShowDetailModal(true)
       }
-    } catch (err) {
+    } catch {
       alert('Không thể tải chi tiết cuộc hội thoại.')
     }
   }
@@ -217,7 +217,7 @@ export default function DashboardView({ account, onSignOut, initialTab }) {
         }
         alert(nextFlag ? 'Đã gắn cờ cuộc hội thoại thành công!' : 'Đã gỡ cờ cuộc hội thoại.')
       }
-    } catch (err) {
+    } catch {
       alert('Không thể thực hiện gắn cờ.')
     }
   }
@@ -264,7 +264,7 @@ export default function DashboardView({ account, onSignOut, initialTab }) {
         setUsers(prev => prev.map(u => u.id === userId ? { ...u, planId: editPlan, role: editRole } : u))
         alert('Cập nhật quyền hạn thành viên thành công!')
       }
-    } catch (err) {
+    } catch {
       alert('Lỗi cập nhật người dùng.')
     }
   }
@@ -334,7 +334,7 @@ export default function DashboardView({ account, onSignOut, initialTab }) {
         const err = await res.json().catch(() => ({}))
         alert('Lỗi: ' + (err.error || 'Không thể cập nhật.'))
       }
-    } catch (err) {
+    } catch {
       alert('Lỗi khi cập nhật phản hồi.')
     } finally {
       setFbSaving(false)
