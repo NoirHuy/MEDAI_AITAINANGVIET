@@ -75,15 +75,19 @@ router.get(
     const { page = 1, limit = 10 } = req.query
     const skip = (Number(page) - 1) * Number(limit)
 
-    const [feedbacks, total] = await Promise.all([
+    const [feedbacksRaw, total] = await Promise.all([
       FeedbackModel.find({ userId: req.userId })
-        .select('id category priority status adminReply repliedAt replierName createdAt content')
         .sort({ createdAt: -1 })
         .skip(skip)
         .limit(Number(limit))
         .lean(),
       FeedbackModel.countDocuments({ userId: req.userId }),
     ])
+
+    const feedbacks = feedbacksRaw.map(f => ({
+      ...f,
+      id: f.id || f._id?.toString(),
+    }))
 
     return res.json({
       feedbacks,

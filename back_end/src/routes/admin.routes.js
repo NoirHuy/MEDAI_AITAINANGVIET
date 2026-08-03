@@ -433,10 +433,14 @@ router.get(
     const users = await UserModel.find({ id: { $in: userIds } }).lean()
     const userMap = new Map(users.map(u => [u.id, u]))
 
-    const finalizedList = list.map(f => ({
-      ...f,
-      user: f.userId && userMap.get(f.userId) ? toPublicUser(userMap.get(f.userId)) : null,
-    }))
+    const finalizedList = list.map(f => {
+      const fbId = f.id || f._id?.toString()
+      return {
+        ...f,
+        id: fbId,
+        user: f.userId && userMap.get(f.userId) ? toPublicUser(userMap.get(f.userId)) : null,
+      }
+    })
 
     res.json({
       feedbacks: finalizedList,
@@ -476,8 +480,15 @@ router.patch(
       }
     }
 
+    const query = {
+      $or: [
+        { id },
+        { _id: id.match(/^[0-9a-fA-F]{24}$/) ? id : null }
+      ]
+    }
+
     const updated = await FeedbackModel.findOneAndUpdate(
-      { id },
+      query,
       { $set: patch },
       { new: true }
     ).lean()
@@ -485,7 +496,10 @@ router.patch(
     if (!updated) throw new HttpError(404, 'Không tìm thấy phản hồi.')
 
     // Lấy lại tên replier
-    let finalUpdated = { ...updated }
+    let finalUpdated = {
+      ...updated,
+      id: updated.id || updated._id?.toString()
+    }
     if (updated.replierId) {
       const replier = await UserModel.findOne({ id: updated.replierId }).lean()
       if (replier) finalUpdated.replierName = replier.name || replier.email || 'Admin'
@@ -499,7 +513,13 @@ router.delete(
   '/feedbacks/:id',
   asyncHandler(async (req, res) => {
     const { id } = req.params
-    const result = await FeedbackModel.deleteOne({ id })
+    const query = {
+      $or: [
+        { id },
+        { _id: id.match(/^[0-9a-fA-F]{24}$/) ? id : null }
+      ]
+    }
+    const result = await FeedbackModel.deleteOne(query)
     if (result.deletedCount === 0) {
       throw new HttpError(404, 'Không tìm thấy phản hồi.')
     }

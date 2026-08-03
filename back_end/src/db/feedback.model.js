@@ -1,6 +1,11 @@
 import mongoose from 'mongoose'
 
 const feedbackSchema = new mongoose.Schema({
+  id: {
+    type: String,
+    sparse: true,
+    index: true,
+  },
   userId: {
     type: String,
     default: null,

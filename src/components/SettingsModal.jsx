@@ -218,10 +218,10 @@ export default function SettingsModal({
   }
 
   useEffect(() => {
-    if (activeTab === 'help' && isLoggedIn && showFeedbackHistory) {
+    if (activeTab === 'help' && isLoggedIn) {
       loadMyFeedbacks()
     }
-  }, [activeTab, showFeedbackHistory])
+  }, [activeTab, isLoggedIn])
 
   async function handleSubmitFeedback(e) {
     e.preventDefault()

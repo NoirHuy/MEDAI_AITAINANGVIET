@@ -300,19 +300,22 @@ export default function DashboardView({ account, onBack, onSignOut, lang, initia
 
   // ─── QUẢN LÝ PHẢN HỒI ──────────────────────────────────────────────────
   const handleViewFbDetails = (fb) => {
-    if (!fb?.id) return
-    setSelectedFb(fb)
+    const fbId = fb?.id || fb?._id
+    if (!fbId) return
+    const normalizedFb = { ...fb, id: fbId }
+    setSelectedFb(normalizedFb)
     setFbReplyText(fb.adminReply || '')
     setFbNotesText(fb.adminNotes || '')
-    setFbStatusUpdate(fb.status)
+    setFbStatusUpdate(fb.status || 'new')
     setShowFbDetail(true)
   }
 
   const handleSaveFbUpdate = async () => {
-    if (!selectedFb?.id) return
+    const fbId = selectedFb?.id || selectedFb?._id
+    if (!fbId) return
     setFbSaving(true)
     try {
-      const res = await fetch(`/api/admin/feedbacks/${selectedFb.id}`, {
+      const res = await fetch(`/api/admin/feedbacks/${fbId}`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -323,12 +326,13 @@ export default function DashboardView({ account, onBack, onSignOut, lang, initia
       })
       if (res.ok) {
         const data = await res.json()
-        setSelectedFb(data.feedback)
-        setFeedbacks(prev => prev.map(f => f.id === selectedFb.id ? data.feedback : f))
+        const updatedFb = data.feedback || { ...selectedFb, status: fbStatusUpdate, adminNotes: fbNotesText, adminReply: fbReplyText }
+        setSelectedFb(updatedFb)
+        setFeedbacks(prev => prev.map(f => (f.id === fbId || f._id === fbId) ? updatedFb : f))
         alert('Cập nhật phản hồi thành công!')
         setShowFbDetail(false)
       } else {
-        const err = await res.json()
+        const err = await res.json().catch(() => ({}))
         alert('Lỗi: ' + (err.error || 'Không thể cập nhật.'))
       }
     } catch (err) {
@@ -338,13 +342,14 @@ export default function DashboardView({ account, onBack, onSignOut, lang, initia
     }
   }
 
-  const handleDeleteFb = async (fbId) => {
+  const handleDeleteFb = async (targetId) => {
+    if (!targetId) return
     if (!confirm('Xóa phản hồi này? Hành động không thể hoàn tác.')) return
     try {
-      const res = await fetch(`/api/admin/feedbacks/${fbId}`, { method: 'DELETE' })
+      const res = await fetch(`/api/admin/feedbacks/${targetId}`, { method: 'DELETE' })
       if (res.ok) {
-        setFeedbacks(prev => prev.filter(f => f.id !== fbId))
-        if (selectedFb?.id === fbId) setShowFbDetail(false)
+        setFeedbacks(prev => prev.filter(f => f.id !== targetId && f._id !== targetId))
+        if (selectedFb?.id === targetId || selectedFb?._id === targetId) setShowFbDetail(false)
       }
     } catch (err) {
       console.error(err)
@@ -1248,7 +1253,7 @@ export default function DashboardView({ account, onBack, onSignOut, lang, initia
                           <td>
                             <div className="actions-cell">
                               <button className="btn-table-action blue" onClick={() => handleViewFbDetails(fb)}>Xem &amp; Xử lý</button>
-                              <button className="btn-table-action danger" onClick={() => handleDeleteFb(fb.id)}>Xóa</button>
+                              <button className="btn-table-action danger" onClick={() => handleDeleteFb(fb.id || fb._id)}>Xóa</button>
                             </div>
                           </td>
                         </tr>
