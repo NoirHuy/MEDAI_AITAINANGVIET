@@ -7,6 +7,7 @@ import { UserModel } from '../db/user.model.js'
 import { PaymentModel } from '../db/payment.model.js'
 import { ConversationModel } from '../db/conversation.model.js'
 import { SystemLogModel } from '../db/systemLog.model.js'
+import { FeedbackModel } from '../db/feedback.model.js'
 import { toPublicUser } from '../db/usersRepo.js'
 
 const router = Router()
@@ -395,6 +396,114 @@ router.get(
         totalPages: Math.ceil(total / limit)
       }
     })
+  })
+)
+
+// ─── 9. QUẢN LÝ GÓP Ý / PHẢN HỒI ──────────────────────────────────────────
+router.get(
+  '/feedbacks',
+  asyncHandler(async (req, res) => {
+    const page = Math.max(1, Number(req.query.page) || 1)
+    const limit = Math.max(1, Number(req.query.limit) || 10)
+    const status = req.query.status
+    const category = req.query.category
+    const search = (req.query.search || '').trim()
+
+    const filter = {}
+    if (status) filter.status = status
+    if (category) filter.category = category
+    if (search) {
+      filter.$or = [
+        { userName: { $regex: search, $options: 'i' } },
+        { userEmail: { $regex: search, $options: 'i' } },
+        { content: { $regex: search, $options: 'i' } }
+      ]
+    }
+
+    const skip = (page - 1) * limit
+    const total = await FeedbackModel.countDocuments(filter)
+    const list = await FeedbackModel.find(filter)
+      .sort({ createdAt: -1 })
+      .skip(skip)
+      .limit(limit)
+      .lean()
+
+    // Lấy thông tin user cho các feedback có userId
+    const userIds = [...new Set(list.filter(f => f.userId).map(f => f.userId))]
+    const users = await UserModel.find({ id: { $in: userIds } }).lean()
+    const userMap = new Map(users.map(u => [u.id, u]))
+
+    const finalizedList = list.map(f => ({
+      ...f,
+      user: f.userId && userMap.get(f.userId) ? toPublicUser(userMap.get(f.userId)) : null,
+    }))
+
+    res.json({
+      feedbacks: finalizedList,
+      pagination: {
+        page,
+        limit,
+        total,
+        totalPages: Math.ceil(total / limit)
+      }
+    })
+  })
+)
+
+router.patch(
+  '/feedbacks/:id',
+  asyncHandler(async (req, res) => {
+    const { id } = req.params
+    const { status, adminNotes, adminReply } = req.body ?? {}
+
+    const validStatuses = ['new', 'read', 'in_progress', 'resolved', 'closed']
+    const patch = {}
+
+    if (status && validStatuses.includes(status)) {
+      patch.status = status
+    }
+    if (adminNotes !== undefined) {
+      patch.adminNotes = adminNotes
+    }
+    if (adminReply !== undefined) {
+      patch.adminReply = adminReply
+      patch.repliedAt = adminReply ? new Date() : null
+      patch.replierId = adminReply ? req.userId : null
+      patch.replierName = null
+
+      if (adminReply && patch.status === 'new') {
+        patch.status = 'in_progress'
+      }
+    }
+
+    const updated = await FeedbackModel.findOneAndUpdate(
+      { id },
+      { $set: patch },
+      { new: true }
+    ).lean()
+
+    if (!updated) throw new HttpError(404, 'Không tìm thấy phản hồi.')
+
+    // Lấy lại tên replier
+    let finalUpdated = { ...updated }
+    if (updated.replierId) {
+      const replier = await UserModel.findOne({ id: updated.replierId }).lean()
+      if (replier) finalUpdated.replierName = replier.name || replier.email || 'Admin'
+    }
+
+    res.json({ success: true, feedback: finalUpdated })
+  })
+)
+
+router.delete(
+  '/feedbacks/:id',
+  asyncHandler(async (req, res) => {
+    const { id } = req.params
+    const result = await FeedbackModel.deleteOne({ id })
+    if (result.deletedCount === 0) {
+      throw new HttpError(404, 'Không tìm thấy phản hồi.')
+    }
+    res.json({ success: true })
   })
 )
 

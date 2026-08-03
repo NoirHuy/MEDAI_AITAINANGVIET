@@ -854,3 +854,103 @@
   background: rgba(239, 68, 68, 0.08);
 }
 
+/* ─── Góp Ý / Phản hồi ─────────────────────────────────────── */
+.help-tabs-toggle {
+  display: flex;
+  gap: 4px;
+  background: var(--bg-surface-hover);
+  border-radius: var(--radius-md);
+  padding: 4px;
+  margin-bottom: 16px;
+}
+
+.help-tab-btn {
+  flex: 1;
+  padding: 8px 12px;
+  border: none;
+  border-radius: 6px;
+  background: transparent;
+  color: var(--text-muted);
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s;
+  font-family: inherit;
+}
+
+.help-tab-btn.active {
+  background: var(--bg-surface);
+  color: var(--text-primary);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.15);
+}
+
+.feedback-history-card {
+  padding: 14px;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--border-subtle);
+  background: var(--bg-surface);
+}
+
+.fb-history-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 10px;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.fb-history-content {
+  font-size: 13px;
+  color: var(--text-primary);
+  line-height: 1.5;
+  margin: 0 0 8px;
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+/* Priority / Category / Status badges */
+.priority-badge,
+.category-badge,
+.status-badge {
+  display: inline-block;
+  padding: 2px 8px;
+  border-radius: 20px;
+  font-size: 11px;
+  font-weight: 600;
+  line-height: 1.5;
+}
+
+.priority-low { background: rgba(107, 114, 128, 0.15); color: #6b7280; }
+.priority-medium { background: rgba(59, 130, 246, 0.15); color: #3b82f6; }
+.priority-high { background: rgba(249, 115, 22, 0.15); color: #f97316; }
+.priority-urgent { background: rgba(239, 68, 68, 0.15); color: #ef4444; }
+
+.category-bug { background: rgba(239, 68, 68, 0.12); color: #dc2626; }
+.category-feature { background: rgba(16, 185, 129, 0.12); color: #059669; }
+.category-question { background: rgba(99, 102, 241, 0.12); color: #6366f1; }
+.category-complaint { background: rgba(245, 158, 11, 0.12); color: #d97706; }
+.category-help { background: rgba(14, 165, 233, 0.12); color: #0284c7; }
+.category-other { background: rgba(107, 114, 128, 0.12); color: #6b7280; }
+
+.status-new { background: rgba(59, 130, 246, 0.12); color: #3b82f6; }
+.status-read { background: rgba(107, 114, 128, 0.12); color: #6b7280; }
+.status-in_progress { background: rgba(249, 115, 22, 0.12); color: #f97316; }
+.status-resolved { background: rgba(16, 185, 129, 0.12); color: #059669; }
+.status-closed { background: rgba(107, 114, 128, 0.12); color: #9ca3af; }
+
+.admin-reply-box {
+  margin-top: 10px;
+  padding: 10px 12px;
+  background: rgba(14, 165, 233, 0.08);
+  border-left: 3px solid #0ea5e9;
+  border-radius: 0 6px 6px 0;
+  font-size: 12px;
+  color: var(--text-muted);
+  line-height: 1.5;
+}
+
+.admin-reply-box strong {
+  color: #0ea5e9;
+  font-size: 12px;
+}

@@ -88,6 +88,16 @@ export default function SettingsModal({
   const [newMemoryCategory, setNewMemoryCategory] = useState('allergy')
   const [newMemorySubject, setNewMemorySubject] = useState('self')
 
+  // State cho Góp Ý / Phản hồi
+  const [feedbackContent, setFeedbackContent] = useState('')
+  const [feedbackCategory, setFeedbackCategory] = useState('help')
+  const [feedbackPriority, setFeedbackPriority] = useState('medium')
+  const [feedbackAnonymous, setFeedbackAnonymous] = useState(false)
+  const [feedbackSubmitting, setFeedbackSubmitting] = useState(false)
+  const [myFeedbacks, setMyFeedbacks] = useState([])
+  const [myFeedbacksLoading, setMyFeedbacksLoading] = useState(false)
+  const [showFeedbackHistory, setShowFeedbackHistory] = useState(false)
+
   useEffect(() => {
     if (activeTab === 'memory' && account) {
       loadMemoryData()
@@ -190,6 +200,55 @@ export default function SettingsModal({
 
   function handleExportMemoryProfileClick() {
     window.open('/api/memories/export', '_blank')
+  }
+
+  // ─── GÓP Ý / PHẢN HỒI ───────────────────────────────────────────────
+  const isLoggedIn = !!account?.id
+
+  async function loadMyFeedbacks() {
+    setMyFeedbacksLoading(true)
+    try {
+      const data = await apiRequest('/api/feedback/me')
+      setMyFeedbacks(data.feedbacks || [])
+    } catch (err) {
+      console.error('[Feedback] Load history error:', err)
+    } finally {
+      setMyFeedbacksLoading(false)
+    }
+  }
+
+  useEffect(() => {
+    if (activeTab === 'help' && isLoggedIn && showFeedbackHistory) {
+      loadMyFeedbacks()
+    }
+  }, [activeTab, showFeedbackHistory])
+
+  async function handleSubmitFeedback(e) {
+    e.preventDefault()
+    if (!feedbackContent.trim()) return
+
+    setFeedbackSubmitting(true)
+    try {
+      await apiRequest('/api/feedback', {
+        method: 'POST',
+        body: JSON.stringify({
+          content: feedbackContent.trim(),
+          category: feedbackCategory,
+          priority: feedbackPriority,
+          isAnonymous: feedbackAnonymous,
+        }),
+      })
+      showToast?.('Gửi phản hồi thành công! Cảm ơn bạn đã đóng góp ý kiến.')
+      setFeedbackContent('')
+      setFeedbackAnonymous(false)
+      setFeedbackPriority('medium')
+      setShowFeedbackHistory(true)
+      loadMyFeedbacks()
+    } catch (err) {
+      showToast?.(err.message || 'Không thể gửi phản hồi.')
+    } finally {
+      setFeedbackSubmitting(false)
+    }
   }
 
   useEffect(() => {
@@ -939,54 +998,205 @@ export default function SettingsModal({
               <p className="settings-modal__hint">
                 Gặp khó khăn khi sử dụng hoặc muốn đóng góp ý kiến nâng cấp hệ thống? Bạn có thể gửi phản hồi trực tiếp cho đội ngũ phát triển MedAI tại đây.
               </p>
-              
-              <form onSubmit={(e) => {
-                e.preventDefault();
-                const feedback = e.target.elements.feedback.value;
-                if (!feedback.trim()) return;
-                alert('Cảm ơn bạn đã gửi phản hồi! Đội ngũ phát triển MedAI sẽ phản hồi lại bạn sớm nhất.');
-                e.target.reset();
-              }} className="feedback-form" style={{ marginTop: '16px' }}>
-                <label className="settings-field" style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
-                  <span>Nội dung phản hồi / Yêu cầu hỗ trợ</span>
-                  <textarea 
-                    name="feedback" 
-                    placeholder="Mô tả chi tiết câu hỏi hoặc lỗi bạn gặp phải..." 
-                    rows={4}
-                    required
-                    style={{
-                      width: '100%',
-                      padding: '12px',
-                      borderRadius: 'var(--radius-md)',
-                      border: '1px solid var(--border-subtle)',
-                      background: 'var(--bg-surface-hover)',
-                      color: 'var(--text-primary)',
-                      fontFamily: 'inherit',
-                      fontSize: '13px',
-                      resize: 'none'
-                    }}
-                  />
-                </label>
-                <div style={{ marginTop: '14px' }}>
-                  <button type="submit" className="btn btn--primary">
-                    Gửi phản hồi
-                  </button>
-                </div>
-              </form>
 
-              <div className="faq-box" style={{ marginTop: '24px', paddingTop: '16px', borderTop: '1px solid var(--border-subtle)' }}>
-                <h3 style={{ fontSize: '15px', fontWeight: '600', marginBottom: '12px', color: 'var(--text-primary)' }}>Câu hỏi thường gặp (FAQ)</h3>
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
-                  <div>
-                    <strong style={{ fontSize: '13px', display: 'block', color: 'var(--text-primary)', marginBottom: '4px' }}>1. MedAI chẩn đoán có chính xác không?</strong>
-                    <span style={{ fontSize: '12px', color: 'var(--text-muted)', lineHeight: '1.5' }}>Hệ thống chỉ mang tính chất sàng lọc và tư vấn ban đầu dựa trên đồ thị tri thức lâm sàng SymCAT. Kết quả không thay thế chẩn đoán của bác sĩ chuyên khoa.</span>
-                  </div>
-                  <div>
-                    <strong style={{ fontSize: '13px', display: 'block', color: 'var(--text-primary)', marginBottom: '4px' }}>2. Tại sao số lượng câu hỏi lại thay đổi giữa các lượt?</strong>
-                    <span style={{ fontSize: '12px', color: 'var(--text-muted)', lineHeight: '1.5' }}>Hệ thống tự động phân tích độ phủ và tầm quan trọng của các triệu chứng phân biệt còn lại để đưa ra từ 3 đến 5 câu hỏi tối ưu nhất.</span>
-                  </div>
-                </div>
+              {/* Toggle: Gửi mới / Lịch sử */}
+              <div className="help-tabs-toggle">
+                <button
+                  className={`help-tab-btn ${!showFeedbackHistory ? 'active' : ''}`}
+                  onClick={() => setShowFeedbackHistory(false)}
+                >
+                  Gửi phản hồi mới
+                </button>
+                {isLoggedIn && (
+                  <button
+                    className={`help-tab-btn ${showFeedbackHistory ? 'active' : ''}`}
+                    onClick={() => { setShowFeedbackHistory(true); loadMyFeedbacks(); }}
+                  >
+                    Lịch sử phản hồi ({myFeedbacks.length})
+                  </button>
+                )}
               </div>
+
+              {!showFeedbackHistory ? (
+                <>
+                  {/* Form gửi phản hồi */}
+                  <form onSubmit={handleSubmitFeedback} style={{ marginTop: '16px' }}>
+
+                    <label className="settings-field">
+                      <span>Loại phản hồi</span>
+                      <select
+                        value={feedbackCategory}
+                        onChange={e => setFeedbackCategory(e.target.value)}
+                        style={{
+                          width: '100%',
+                          padding: '10px 12px',
+                          borderRadius: 'var(--radius-md)',
+                          border: '1px solid var(--border-subtle)',
+                          background: 'var(--bg-surface-hover)',
+                          color: 'var(--text-primary)',
+                          fontSize: '13px',
+                          fontFamily: 'inherit',
+                        }}
+                      >
+                        <option value="help">Trợ giúp (cần phản hồi)</option>
+                        <option value="bug">Báo lỗi (Bug)</option>
+                        <option value="feature">Yêu cầu tính năng mới</option>
+                        <option value="question">Câu hỏi</option>
+                        <option value="complaint">Khiếu nại</option>
+                        <option value="other">Khác</option>
+                      </select>
+                    </label>
+
+                    <label className="settings-field">
+                      <span>Mức độ ưu tiên</span>
+                      <select
+                        value={feedbackPriority}
+                        onChange={e => setFeedbackPriority(e.target.value)}
+                        style={{
+                          width: '100%',
+                          padding: '10px 12px',
+                          borderRadius: 'var(--radius-md)',
+                          border: '1px solid var(--border-subtle)',
+                          background: 'var(--bg-surface-hover)',
+                          color: 'var(--text-primary)',
+                          fontSize: '13px',
+                          fontFamily: 'inherit',
+                        }}
+                      >
+                        <option value="low">Thấp</option>
+                        <option value="medium">Trung bình</option>
+                        <option value="high">Cao</option>
+                        <option value="urgent">Khẩn cấp</option>
+                      </select>
+                    </label>
+
+                    <label className="settings-field" style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                      <span>Nội dung phản hồi</span>
+                      <textarea
+                        name="feedback"
+                        placeholder="Mô tả chi tiết câu hỏi hoặc vấn đề bạn gặp phải..."
+                        rows={5}
+                        required
+                        value={feedbackContent}
+                        onChange={e => setFeedbackContent(e.target.value)}
+                        style={{
+                          width: '100%',
+                          padding: '12px',
+                          borderRadius: 'var(--radius-md)',
+                          border: '1px solid var(--border-subtle)',
+                          background: 'var(--bg-surface-hover)',
+                          color: 'var(--text-primary)',
+                          fontFamily: 'inherit',
+                          fontSize: '13px',
+                          resize: 'vertical',
+                          minHeight: '100px',
+                        }}
+                      />
+                    </label>
+
+                    {/* Toggle gửi ẩn danh */}
+                    <div className="auto-renew-row" style={{ marginTop: '4px' }}>
+                      <div className="auto-renew-text">
+                        <strong>Gửi ẩn danh</strong>
+                        <p className="auto-renew-hint">
+                          {feedbackAnonymous
+                            ? 'Tên và email của bạn sẽ bị ẩn với admin.'
+                            : 'Admin sẽ thấy tên và email tài khoản của bạn.'}
+                        </p>
+                      </div>
+                      <label className="toggle-switch">
+                        <input
+                          type="checkbox"
+                          checked={feedbackAnonymous}
+                          onChange={e => setFeedbackAnonymous(e.target.checked)}
+                        />
+                        <span className="toggle-slider" />
+                      </label>
+                    </div>
+
+                    <div style={{ marginTop: '14px', display: 'flex', gap: '10px', alignItems: 'center' }}>
+                      <button type="submit" className="btn btn--primary" disabled={feedbackSubmitting || !feedbackContent.trim()}>
+                        {feedbackSubmitting ? 'Đang gửi...' : 'Gửi phản hồi'}
+                      </button>
+                      {feedbackCategory === 'help' && (
+                        <span className="settings-modal__hint" style={{ fontSize: '12px', margin: 0 }}>
+                          Đội ngũ sẽ phản hồi qua tài khoản của bạn.
+                        </span>
+                      )}
+                    </div>
+                  </form>
+
+                  <div className="faq-box" style={{ marginTop: '24px', paddingTop: '16px', borderTop: '1px solid var(--border-subtle)' }}>
+                    <h3 style={{ fontSize: '15px', fontWeight: '600', marginBottom: '12px', color: 'var(--text-primary)' }}>Câu hỏi thường gặp (FAQ)</h3>
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
+                      <div>
+                        <strong style={{ fontSize: '13px', display: 'block', color: 'var(--text-primary)', marginBottom: '4px' }}>1. MedAI chẩn đoán có chính xác không?</strong>
+                        <span style={{ fontSize: '12px', color: 'var(--text-muted)', lineHeight: '1.5' }}>Hệ thống chỉ mang tính chất sàng lọc và tư vấn ban đầu dựa trên đồ thị tri thức lâm sàng SymCAT. Kết quả không thay thế chẩn đoán của bác sĩ chuyên khoa.</span>
+                      </div>
+                      <div>
+                        <strong style={{ fontSize: '13px', display: 'block', color: 'var(--text-primary)', marginBottom: '4px' }}>2. Tại sao số lượng câu hỏi lại thay đổi giữa các lượt?</strong>
+                        <span style={{ fontSize: '12px', color: 'var(--text-muted)', lineHeight: '1.5' }}>Hệ thống tự động phân tích độ phủ và tầm quan trọng của các triệu chứng phân biệt còn lại để đưa ra từ 3 đến 5 câu hỏi tối ưu nhất.</span>
+                      </div>
+                    </div>
+                  </div>
+                </>
+              ) : (
+                /* Lịch sử phản hồi của user */
+                <div style={{ marginTop: '16px' }}>
+                  {myFeedbacksLoading ? (
+                    <p className="settings-modal__hint">Đang tải lịch sử...</p>
+                  ) : myFeedbacks.length === 0 ? (
+                    <div className="empty-memory-state">
+                      <p className="empty-title">Chưa có phản hồi nào.</p>
+                      <p className="empty-desc">Các phản hồi bạn gửi sẽ hiển thị tại đây.</p>
+                    </div>
+                  ) : (
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                      {myFeedbacks.map(fb => (
+                        <div key={fb.id} className="feedback-history-card card-box">
+                          <div className="fb-history-header">
+                            <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+                              <span className={`priority-badge priority-${fb.priority}`}>
+                                {fb.priority === 'urgent' ? 'Khẩn cấp' :
+                                 fb.priority === 'high' ? 'Cao' :
+                                 fb.priority === 'medium' ? 'TB' : 'Thấp'}
+                              </span>
+                              <span className={`category-badge category-${fb.category}`}>
+                                {fb.category === 'help' ? 'Trợ giúp' :
+                                 fb.category === 'bug' ? 'Báo lỗi' :
+                                 fb.category === 'feature' ? 'Tính năng' :
+                                 fb.category === 'question' ? 'Câu hỏi' :
+                                 fb.category === 'complaint' ? 'Khiếu nại' : 'Khác'}
+                              </span>
+                              <span className={`status-badge status-${fb.status}`}>
+                                {fb.status === 'new' ? 'Mới' :
+                                 fb.status === 'read' ? 'Đã đọc' :
+                                 fb.status === 'in_progress' ? 'Đang xử lý' :
+                                 fb.status === 'resolved' ? 'Đã giải quyết' : 'Đã đóng'}
+                              </span>
+                            </div>
+                            <span className="text-xs text-muted">
+                              {new Date(fb.createdAt).toLocaleString('vi-VN')}
+                            </span>
+                          </div>
+                          <p className="fb-history-content">{fb.content}</p>
+                          {fb.adminReply && (
+                            <div className="admin-reply-box">
+                              <strong>Phản hồi từ đội ngũ MedAI:</strong>
+                              <p style={{ margin: '4px 0 0' }}>{fb.adminReply}</p>
+                              {fb.repliedAt && (
+                                <span className="text-xs text-muted" style={{ display: 'block', marginTop: '4px' }}>
+                                  {new Date(fb.repliedAt).toLocaleString('vi-VN')}
+                                </span>
+                              )}
+                            </div>
+                          )}
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              )}
             </section>
           )}
         </div>

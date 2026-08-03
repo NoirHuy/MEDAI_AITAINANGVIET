@@ -1178,3 +1178,36 @@
   border-radius: 4px;
 }
 
+/* ─── Feedback tab ──────────────────────────────────────── */
+.row-new-feedback {
+  background: rgba(59, 130, 246, 0.04);
+}
+
+.priority-badge,
+.category-badge,
+.status-badge {
+  display: inline-block;
+  padding: 2px 8px;
+  border-radius: 20px;
+  font-size: 11px;
+  font-weight: 600;
+  line-height: 1.6;
+}
+
+.priority-low { background: rgba(107, 114, 128, 0.15); color: #6b7280; }
+.priority-medium { background: rgba(59, 130, 246, 0.15); color: #3b82f6; }
+.priority-high { background: rgba(249, 115, 22, 0.15); color: #f97316; }
+.priority-urgent { background: rgba(239, 68, 68, 0.15); color: #ef4444; }
+
+.category-bug { background: rgba(239, 68, 68, 0.12); color: #dc2626; }
+.category-feature { background: rgba(16, 185, 129, 0.12); color: #059669; }
+.category-question { background: rgba(99, 102, 241, 0.12); color: #6366f1; }
+.category-complaint { background: rgba(245, 158, 11, 0.12); color: #d97706; }
+.category-help { background: rgba(14, 165, 233, 0.12); color: #0284c7; }
+.category-other { background: rgba(107, 114, 128, 0.12); color: #6b7280; }
+
+.status-new { background: rgba(59, 130, 246, 0.12); color: #3b82f6; }
+.status-read { background: rgba(107, 114, 128, 0.12); color: #6b7280; }
+.status-in_progress { background: rgba(249, 115, 22, 0.12); color: #f97316; }
+.status-resolved { background: rgba(16, 185, 129, 0.12); color: #059669; }
+.status-closed { background: rgba(107, 114, 128, 0.12); color: #9ca3af; }

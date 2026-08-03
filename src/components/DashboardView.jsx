@@ -14,6 +14,7 @@ import {
   ChevronLeftIcon,
   ChevronRightIcon,
   FileSpreadsheetIcon,
+  MessageSquareIcon,
 } from './Icons'
 import './DashboardView.css'
 
@@ -73,6 +74,20 @@ export default function DashboardView({ account, onBack, onSignOut, lang, initia
   const [totalPayPages, setTotalPayPages] = useState(1)
   const [filterPayStatus, setFilterPayStatus] = useState('')
   const [filterPayGateway, setFilterPayGateway] = useState('')
+
+  // Quản lý Phản hồi / Góp ý
+  const [feedbacks, setFeedbacks] = useState([])
+  const [fbPage, setFbPage] = useState(1)
+  const [totalFbPages, setTotalFbPages] = useState(1)
+  const [filterFbStatus, setFilterFbStatus] = useState('')
+  const [filterFbCategory, setFilterFbCategory] = useState('')
+  const [searchFb, setSearchFb] = useState('')
+  const [selectedFb, setSelectedFb] = useState(null)
+  const [showFbDetail, setShowFbDetail] = useState(false)
+  const [fbReplyText, setFbReplyText] = useState('')
+  const [fbNotesText, setFbNotesText] = useState('')
+  const [fbStatusUpdate, setFbStatusUpdate] = useState('')
+  const [fbSaving, setFbSaving] = useState(false)
 
   const [loading, setLoading] = useState(false)
 
@@ -138,6 +153,20 @@ export default function DashboardView({ account, onBack, onSignOut, lang, initia
           setPayments(data.payments || [])
           setTotalPayPages(data.pagination?.totalPages || 1)
         }
+      } else if (activeTab === 'feedbacks') {
+        const queryParams = new URLSearchParams({
+          page: fbPage,
+          limit: 8,
+          status: filterFbStatus,
+          category: filterFbCategory,
+          search: searchFb,
+        })
+        const res = await fetch(`/api/admin/feedbacks?${queryParams}`)
+        if (res.ok) {
+          const data = await res.json()
+          setFeedbacks(data.feedbacks || [])
+          setTotalFbPages(data.pagination?.totalPages || 1)
+        }
       }
     } catch (err) {
       console.error('Lỗi khi lấy dữ liệu admin:', err)
@@ -149,7 +178,7 @@ export default function DashboardView({ account, onBack, onSignOut, lang, initia
   // Tự động load dữ liệu tùy thuộc vào tab đang active
   useEffect(() => {
     fetchAdminData()
-  }, [activeTab, convPage, searchConv, filterUrgency, filterLang, filterGuest, userPage, searchUser, payPage, filterPayStatus, filterPayGateway, isAdmin])
+  }, [activeTab, convPage, searchConv, filterUrgency, filterLang, filterGuest, userPage, searchUser, payPage, filterPayStatus, filterPayGateway, fbPage, searchFb, filterFbStatus, filterFbCategory, isAdmin])
 
   // Xem chi tiết hội thoại
   const handleViewDetails = async (convId) => {
@@ -269,6 +298,58 @@ export default function DashboardView({ account, onBack, onSignOut, lang, initia
     }
   }
 
+  // ─── QUẢN LÝ PHẢN HỒI ──────────────────────────────────────────────────
+  const handleViewFbDetails = (fb) => {
+    setSelectedFb(fb)
+    setFbReplyText(fb.adminReply || '')
+    setFbNotesText(fb.adminNotes || '')
+    setFbStatusUpdate(fb.status)
+    setShowFbDetail(true)
+  }
+
+  const handleSaveFbUpdate = async () => {
+    if (!selectedFb) return
+    setFbSaving(true)
+    try {
+      const res = await fetch(`/api/admin/feedbacks/${selectedFb.id}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          status: fbStatusUpdate,
+          adminNotes: fbNotesText,
+          adminReply: fbReplyText || null,
+        }),
+      })
+      if (res.ok) {
+        const data = await res.json()
+        setSelectedFb(data.feedback)
+        setFeedbacks(prev => prev.map(f => f.id === selectedFb.id ? data.feedback : f))
+        alert('Cập nhật phản hồi thành công!')
+        setShowFbDetail(false)
+      } else {
+        const err = await res.json()
+        alert('Lỗi: ' + (err.error || 'Không thể cập nhật.'))
+      }
+    } catch (err) {
+      alert('Lỗi khi cập nhật phản hồi.')
+    } finally {
+      setFbSaving(false)
+    }
+  }
+
+  const handleDeleteFb = async (fbId) => {
+    if (!confirm('Xóa phản hồi này? Hành động không thể hoàn tác.')) return
+    try {
+      const res = await fetch(`/api/admin/feedbacks/${fbId}`, { method: 'DELETE' })
+      if (res.ok) {
+        setFeedbacks(prev => prev.filter(f => f.id !== fbId))
+        if (selectedFb?.id === fbId) setShowFbDetail(false)
+      }
+    } catch (err) {
+      console.error(err)
+    }
+  }
+
   // Xuất báo cáo hoạt động định kỳ (Tuần/Tháng) dạng tóm tắt
   const handleExportPeriodicReport = (type) => {
     const reportData = {
@@ -338,6 +419,10 @@ export default function DashboardView({ account, onBack, onSignOut, lang, initia
           <button className={`admin-nav-item ${activeTab === 'payments' ? 'active' : ''}`} onClick={() => { setActiveTab('payments'); setPayPage(1); }}>
             <CreditCardIcon />
             <span>Thanh toán &amp; Doanh thu</span>
+          </button>
+          <button className={`admin-nav-item ${activeTab === 'feedbacks' ? 'active' : ''}`} onClick={() => { setActiveTab('feedbacks'); setFbPage(1); }}>
+            <MessageSquareIcon />
+            <span>Phản hồi</span>
           </button>
           <button className={`admin-nav-item ${activeTab === 'ops' ? 'active' : ''}`} onClick={() => setActiveTab('ops')}>
             <HelpCircleIcon />
@@ -1053,7 +1138,313 @@ export default function DashboardView({ account, onBack, onSignOut, lang, initia
             </div>
           </div>
         )}
+        {/* TAB 7: PHẢN HỒI / GÓP Ý */}
+        {activeTab === 'feedbacks' && (
+          <div className="tab-pane">
+            <header className="pane-header">
+              <div>
+                <h1>Quản Lý Phản Hồi &amp; Góp Ý</h1>
+                <p>Xem và xử lý các góp ý, báo lỗi, yêu cầu trợ giúp từ người dùng.</p>
+              </div>
+              <button className="btn-reload-dashboard" onClick={fetchAdminData} disabled={loading} title="Tải lại dữ liệu">
+                <RefreshIcon className={loading ? 'animate-spin' : ''} />
+                <span>Làm mới</span>
+              </button>
+            </header>
+
+            {/* Filter bar */}
+            <div className="filters-bar card-box mb-4">
+              <div className="search-input-wrapper">
+                <SearchIcon />
+                <input
+                  type="text"
+                  placeholder="Tìm kiếm tên, email, nội dung..."
+                  value={searchFb}
+                  onChange={e => { setSearchFb(e.target.value); setFbPage(1); }}
+                />
+              </div>
+              <div className="filter-dropdowns">
+                <select value={filterFbCategory} onChange={e => { setFilterFbCategory(e.target.value); setFbPage(1); }}>
+                  <option value="">-- Loại --</option>
+                  <option value="help">Trợ giúp</option>
+                  <option value="bug">Báo lỗi</option>
+                  <option value="feature">Tính năng</option>
+                  <option value="question">Câu hỏi</option>
+                  <option value="complaint">Khiếu nại</option>
+                  <option value="other">Khác</option>
+                </select>
+                <select value={filterFbStatus} onChange={e => { setFilterFbStatus(e.target.value); setFbPage(1); }}>
+                  <option value="">-- Trạng thái --</option>
+                  <option value="new">Mới</option>
+                  <option value="read">Đã đọc</option>
+                  <option value="in_progress">Đang xử lý</option>
+                  <option value="resolved">Đã giải quyết</option>
+                  <option value="closed">Đã đóng</option>
+                </select>
+              </div>
+            </div>
+
+            {/* Table */}
+            <div className="card-box">
+              <div className="table-responsive">
+                <table className="admin-table-custom">
+                  <thead>
+                    <tr>
+                      <th>ID</th>
+                      <th>Người gửi</th>
+                      <th>Loại</th>
+                      <th>Ưu tiên</th>
+                      <th>Trạng thái</th>
+                      <th>Nội dung</th>
+                      <th>Ngày gửi</th>
+                      <th>Thao tác</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {feedbacks.length === 0 ? (
+                      <tr>
+                        <td colSpan="8" className="text-center-muted">Không có phản hồi nào.</td>
+                      </tr>
+                    ) : (
+                      feedbacks.map(fb => (
+                        <tr key={fb.id} className={fb.status === 'new' ? 'row-new-feedback' : ''}>
+                          <td className="font-mono text-sm text-muted">{fb.id.slice(0, 10)}...</td>
+                          <td>
+                            <strong>{fb.isAnonymous ? 'Khách ẩn danh' : (fb.user?.name || fb.userName)}</strong>
+                            <br />
+                            <span className="text-xs text-muted">{fb.isAnonymous ? '—' : (fb.user?.email || fb.userEmail || '—')}</span>
+                          </td>
+                          <td>
+                            <span className={`category-badge category-${fb.category}`}>
+                              {fb.category === 'help' ? 'Trợ giúp' :
+                               fb.category === 'bug' ? 'Báo lỗi' :
+                               fb.category === 'feature' ? 'Tính năng' :
+                               fb.category === 'question' ? 'Câu hỏi' :
+                               fb.category === 'complaint' ? 'Khiếu nại' : 'Khác'}
+                            </span>
+                          </td>
+                          <td>
+                            <span className={`priority-badge priority-${fb.priority}`}>
+                              {fb.priority === 'urgent' ? 'Khẩn cấp' :
+                               fb.priority === 'high' ? 'Cao' :
+                               fb.priority === 'medium' ? 'TB' : 'Thấp'}
+                            </span>
+                          </td>
+                          <td>
+                            <span className={`status-badge status-${fb.status}`}>
+                              {fb.status === 'new' ? 'Mới' :
+                               fb.status === 'read' ? 'Đã đọc' :
+                               fb.status === 'in_progress' ? 'Xử lý' :
+                               fb.status === 'resolved' ? 'Xong' : 'Đóng'}
+                            </span>
+                          </td>
+                          <td className="limit-chars" style={{ maxWidth: '200px' }}>
+                            <span className="text-sm">{fb.content.slice(0, 60)}{fb.content.length > 60 ? '...' : ''}</span>
+                          </td>
+                          <td className="text-xs text-muted">
+                            {new Date(fb.createdAt).toLocaleString('vi-VN', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' })}
+                          </td>
+                          <td>
+                            <div className="actions-cell">
+                              <button className="btn-table-action blue" onClick={() => handleViewFbDetails(fb)}>Xem &amp; Xử lý</button>
+                              <button className="btn-table-action danger" onClick={() => handleDeleteFb(fb.id)}>Xóa</button>
+                            </div>
+                          </td>
+                        </tr>
+                      ))
+                    )}
+                  </tbody>
+                </table>
+              </div>
+
+              {/* Pagination */}
+              {totalFbPages > 1 && (
+                <div className="pagination-bar mt-4">
+                  <button disabled={fbPage === 1} onClick={() => setFbPage(p => p - 1)}>
+                    <ChevronLeftIcon /> <span>Trước</span>
+                  </button>
+                  <span>Trang {fbPage} / {totalFbPages}</span>
+                  <button disabled={fbPage === totalFbPages} onClick={() => setFbPage(p => p + 1)}>
+                    <span>Sau</span> <ChevronRightIcon />
+                  </button>
+                </div>
+              )}
+            </div>
+          </div>
+        )}
       </main>
+
+      {/* MODAL CHI TIẾT PHẢN HỒI */}
+      {showFbDetail && selectedFb && (
+        <div className="modal-backdrop" onClick={() => setShowFbDetail(false)}>
+          <div className="audit-detail-modal card-glass" onClick={e => e.stopPropagation()} style={{ maxWidth: '680px' }}>
+            <header className="modal-header-custom">
+              <div>
+                <h2>Chi tiết phản hồi</h2>
+                <p className="text-xs text-muted">
+                  ID: {selectedFb.id} | Gửi: {new Date(selectedFb.createdAt).toLocaleString('vi-VN')}
+                </p>
+              </div>
+              <button className="modal-close" onClick={() => setShowFbDetail(false)}>×</button>
+            </header>
+
+            <div className="audit-detail-body mt-4">
+              {/* Meta info */}
+              <div className="flex-meta-header" style={{ flexWrap: 'wrap', gap: '10px' }}>
+                <div>
+                  <strong>Người gửi:</strong>{' '}
+                  {selectedFb.isAnonymous ? 'Khách ẩn danh' : (selectedFb.user?.name || selectedFb.userName)}
+                </div>
+                {!selectedFb.isAnonymous && (
+                  <div><strong>Email:</strong> {selectedFb.user?.email || selectedFb.userEmail || '—'}</div>
+                )}
+                <div>
+                  <span className={`category-badge category-${selectedFb.category}`}>
+                    {selectedFb.category === 'help' ? 'Trợ giúp' :
+                     selectedFb.category === 'bug' ? 'Báo lỗi' :
+                     selectedFb.category === 'feature' ? 'Tính năng' :
+                     selectedFb.category === 'question' ? 'Câu hỏi' :
+                     selectedFb.category === 'complaint' ? 'Khiếu nại' : 'Khác'}
+                  </span>
+                </div>
+                <div>
+                  <span className={`priority-badge priority-${selectedFb.priority}`}>
+                    {selectedFb.priority === 'urgent' ? 'Khẩn cấp' :
+                     selectedFb.priority === 'high' ? 'Cao' :
+                     selectedFb.priority === 'medium' ? 'Trung bình' : 'Thấp'}
+                  </span>
+                </div>
+                {selectedFb.adminReply && (
+                  <div className="flagged-banner" style={{ background: 'rgba(14, 165, 233, 0.08)', borderColor: '#0ea5e9', color: '#0ea5e9' }}>
+                    Đã phản hồi bởi {selectedFb.replierName || 'Admin'} ({new Date(selectedFb.repliedAt).toLocaleString('vi-VN')})
+                  </div>
+                )}
+              </div>
+
+              {/* Nội dung phản hồi */}
+              <div style={{ marginTop: '16px' }}>
+                <h4 style={{ fontSize: '13px', fontWeight: 600, color: 'var(--text-muted)', marginBottom: '8px' }}>NỘI DUNG PHẢN HỒI</h4>
+                <div className="card-box" style={{ padding: '14px' }}>
+                  <p style={{ whiteSpace: 'pre-wrap', lineHeight: 1.6, margin: 0 }}>{selectedFb.content}</p>
+                </div>
+              </div>
+
+              {/* Admin reply (nếu có) */}
+              {selectedFb.adminReply && (
+                <div style={{ marginTop: '14px' }}>
+                  <h4 style={{ fontSize: '13px', fontWeight: 600, color: '#0ea5e9', marginBottom: '8px' }}>PHẢN HỒI CỦA ADMIN</h4>
+                  <div style={{
+                    padding: '12px 14px',
+                    background: 'rgba(14, 165, 233, 0.08)',
+                    borderLeft: '3px solid #0ea5e9',
+                    borderRadius: '0 8px 8px 0',
+                    fontSize: '13px',
+                    whiteSpace: 'pre-wrap',
+                    lineHeight: 1.6,
+                  }}>
+                    {selectedFb.adminReply}
+                  </div>
+                </div>
+              )}
+
+              {/* Admin reply form (chỉ cho loại help) */}
+              <div style={{ marginTop: '20px', paddingTop: '16px', borderTop: '1px solid var(--border-subtle)' }}>
+                <h4 style={{ fontSize: '13px', fontWeight: 600, color: 'var(--text-muted)', marginBottom: '12px' }}>
+                  XỬ LÝ BỞI ADMIN
+                </h4>
+
+                <div style={{ display: 'grid', gap: '12px' }}>
+                  <div>
+                    <label style={{ fontSize: '12px', color: 'var(--text-muted)', display: 'block', marginBottom: '4px' }}>Trạng thái</label>
+                    <select
+                      value={fbStatusUpdate}
+                      onChange={e => setFbStatusUpdate(e.target.value)}
+                      style={{
+                        width: '100%',
+                        padding: '8px 12px',
+                        borderRadius: 'var(--radius-md)',
+                        border: '1px solid var(--border-subtle)',
+                        background: 'var(--bg-surface-hover)',
+                        color: 'var(--text-primary)',
+                        fontSize: '13px',
+                        fontFamily: 'inherit',
+                      }}
+                    >
+                      <option value="new">Mới</option>
+                      <option value="read">Đã đọc</option>
+                      <option value="in_progress">Đang xử lý</option>
+                      <option value="resolved">Đã giải quyết</option>
+                      <option value="closed">Đã đóng</option>
+                    </select>
+                  </div>
+
+                  <div>
+                    <label style={{ fontSize: '12px', color: 'var(--text-muted)', display: 'block', marginBottom: '4px' }}>
+                      Ghi chú nội bộ (không hiển thị cho user)
+                    </label>
+                    <textarea
+                      value={fbNotesText}
+                      onChange={e => setFbNotesText(e.target.value)}
+                      rows={2}
+                      placeholder="Ghi chú riêng của admin..."
+                      style={{
+                        width: '100%',
+                        padding: '8px 12px',
+                        borderRadius: 'var(--radius-md)',
+                        border: '1px solid var(--border-subtle)',
+                        background: 'var(--bg-surface-hover)',
+                        color: 'var(--text-primary)',
+                        fontSize: '13px',
+                        fontFamily: 'inherit',
+                        resize: 'vertical',
+                      }}
+                    />
+                  </div>
+
+                  <div>
+                    <label style={{ fontSize: '12px', color: 'var(--text-muted)', display: 'block', marginBottom: '4px' }}>
+                      Phản hồi cho user {selectedFb.category !== 'help' && <span style={{ fontStyle: 'italic' }}>(chỉ gửi khi cần)</span>}
+                    </label>
+                    <textarea
+                      value={fbReplyText}
+                      onChange={e => setFbReplyText(e.target.value)}
+                      rows={3}
+                      placeholder="Nhập phản hồi để gửi cho user..."
+                      style={{
+                        width: '100%',
+                        padding: '8px 12px',
+                        borderRadius: 'var(--radius-md)',
+                        border: '1px solid var(--border-subtle)',
+                        background: 'var(--bg-surface-hover)',
+                        color: 'var(--text-primary)',
+                        fontSize: '13px',
+                        fontFamily: 'inherit',
+                        resize: 'vertical',
+                      }}
+                    />
+                  </div>
+                </div>
+
+                <div style={{ marginTop: '12px', display: 'flex', gap: '10px' }}>
+                  <button
+                    className="btn btn--primary btn--sm"
+                    onClick={handleSaveFbUpdate}
+                    disabled={fbSaving}
+                  >
+                    {fbSaving ? 'Đang lưu...' : 'Lưu cập nhật'}
+                  </button>
+                  <button
+                    className="btn btn--outline btn--sm"
+                    onClick={() => setShowFbDetail(false)}
+                  >
+                    Đóng
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* MODAL XEM CHI TIẾT HỘI THOẠI & AUDIT */}
       {showDetailModal && selectedConv && (
