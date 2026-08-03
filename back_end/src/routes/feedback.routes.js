@@ -35,7 +35,6 @@ router.post(
 
     const doAnonymous = isAnonymous === true
     const feedback = new FeedbackModel({
-      id: `fb_${Date.now()}_${randomUUID().slice(0, 8)}`,
       userId: req.userId,
       userName: doAnonymous ? 'Khách ẩn danh' : (user.name || user.email || 'Người dùng'),
       userEmail: doAnonymous ? null : (user.email || null),
@@ -49,6 +48,7 @@ router.post(
         userAgent: req.get('User-Agent') || null,
       },
     })
+    feedback.id = feedback._id.toString()
 
     await feedback.save()
 

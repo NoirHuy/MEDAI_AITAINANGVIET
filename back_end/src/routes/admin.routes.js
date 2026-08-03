@@ -434,7 +434,7 @@ router.get(
     const userMap = new Map(users.map(u => [u.id, u]))
 
     const finalizedList = list.map(f => {
-      const fbId = f.id || f._id?.toString()
+      const fbId = f._id ? f._id.toString() : (f.id || '')
       return {
         ...f,
         id: fbId,
