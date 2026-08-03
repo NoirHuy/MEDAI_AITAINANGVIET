@@ -1208,7 +1208,7 @@ export default function DashboardView({ account, onBack, onSignOut, lang, initia
                     ) : (
                       feedbacks.map(fb => (
                         <tr key={fb.id} className={fb.status === 'new' ? 'row-new-feedback' : ''}>
-                          <td className="font-mono text-sm text-muted">{fb.id.slice(0, 10)}...</td>
+                          <td className="font-mono text-sm text-muted">{(fb.id || '').slice(0, 10)}...</td>
                           <td>
                             <strong>{fb.isAnonymous ? 'Khách ẩn danh' : (fb.user?.name || fb.userName)}</strong>
                             <br />
