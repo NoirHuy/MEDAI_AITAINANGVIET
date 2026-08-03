@@ -7,7 +7,7 @@ const __dirname = dirname(__filename)
 
 // Minimal in-process test app that mirrors server.js routes
 // without MongoDB/Neo4j dependencies for pure HTTP tests.
-function createTestApp() {
+async function createTestApp() {
   const express = await import('express').then(m => m.default)
   const cookieParser = await import('cookie-parser').then(m => m.default)
   const app = express()

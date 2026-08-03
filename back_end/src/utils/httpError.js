@@ -1,6 +1,15 @@
 export class HttpError extends Error {
   constructor(status, message) {
-    super(message)
-    this.status = status
+    if (typeof status === 'string') {
+      super(status)
+    } else {
+      super(message)
+    }
+    Object.defineProperty(this, 'status', {
+      value: typeof status === 'string' ? 500 : status,
+      enumerable: false,
+      writable: true,
+      configurable: true,
+    })
   }
 }
