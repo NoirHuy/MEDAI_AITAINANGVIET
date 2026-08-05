@@ -371,7 +371,7 @@ export default function DashboardView({ account, onSignOut, initialTab }) {
     const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(reportData, null, 2))
     const downloadAnchor = document.createElement('a')
     downloadAnchor.setAttribute("href", dataStr)
-    downloadAnchor.setAttribute("download", `MedChat_Periodic_Report_${type}.json`)
+    downloadAnchor.setAttribute("download", `MedChat247_Periodic_Report_${type}.json`)
     document.body.appendChild(downloadAnchor)
     downloadAnchor.click()
     downloadAnchor.remove()
@@ -393,7 +393,7 @@ export default function DashboardView({ account, onSignOut, initialTab }) {
       <aside className="admin-side">
         <div className="admin-side__brand">
           <PulseIcon className="pulse-icon-blue" />
-          <h2>MedChat Admin</h2>
+          <h2>MedChat247 Admin</h2>
         </div>
 
         <div className="admin-side__user">
@@ -1480,7 +1480,7 @@ export default function DashboardView({ account, onSignOut, initialTab }) {
                 {selectedConv.messages.map((m, idx) => (
                   <div className={`timeline-bubble bubble-${m.role}`} key={idx}>
                     <div className="bubble-header-label">
-                      <strong>{m.role === 'user' ? 'Người bệnh (User)' : 'Bác sĩ ảo MedChat'}</strong>
+                      <strong>{m.role === 'user' ? 'Người bệnh (User)' : 'Bác sĩ ảo MedChat247'}</strong>
                       <span className="text-xs text-muted">{new Date(m.createdAt || selectedConv.createdAt).toLocaleString('vi-VN')}</span>
                     </div>
                     <div className="bubble-text-content">{m.content}</div>

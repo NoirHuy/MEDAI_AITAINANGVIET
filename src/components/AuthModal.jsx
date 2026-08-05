@@ -117,7 +117,7 @@ export default function AuthModal({
           <CloseIcon />
         </button>
 
-        <h2 className="auth-modal__title">Chào mừng đến với MedChat</h2>
+        <h2 className="auth-modal__title">Chào mừng đến với MedChat247</h2>
         <p className="auth-modal__subtitle">
           Đăng nhập để lưu lịch sử trò chuyện và quản lý gói sử dụng của bạn.
         </p>

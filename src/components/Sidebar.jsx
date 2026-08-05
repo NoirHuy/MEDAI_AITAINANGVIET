@@ -46,7 +46,7 @@ export default function Sidebar({
           {!collapsed && (
             <span className="sidebar__brand">
               <PulseIcon className="sidebar__brand-icon" />
-              MedChat
+              MedChat247
             </span>
           )}
         </div>
@@ -134,8 +134,8 @@ export default function Sidebar({
           {!collapsed && (
             <p className="sidebar__disclaimer">
               {isEn 
-                ? "MedChat is for reference only, not a replacement for a doctor's diagnosis."
-                : "MedChat chỉ mang tính tham khảo, không thay thế chẩn đoán của bác sĩ."
+                ? "MedChat247 is for reference only, not a replacement for a doctor's diagnosis."
+                : "MedChat247 chỉ mang tính tham khảo, không thay thế chẩn đoán của bác sĩ."
               }
             </p>
           )}

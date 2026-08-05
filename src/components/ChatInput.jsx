@@ -90,8 +90,8 @@ export default function ChatInput({
       </div>
       <p className="chat-input__hint">
         {isEn 
-          ? "MedChat may provide inaccurate information. This is not official medical advice — consult a physician when necessary."
-          : "MedChat có thể đưa ra thông tin chưa chính xác. Đây không phải lời khuyên y tế chính thức — hãy tham khảo bác sĩ khi cần."
+          ? "MedChat247 may provide inaccurate information. This is not official medical advice — consult a physician when necessary."
+          : "MedChat247 có thể đưa ra thông tin chưa chính xác. Đây không phải lời khuyên y tế chính thức — hãy tham khảo bác sĩ khi cần."
         }
       </p>
     </div>

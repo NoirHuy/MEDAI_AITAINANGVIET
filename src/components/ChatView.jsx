@@ -52,8 +52,8 @@ export default function ChatView({
         <AlertIcon />
         <span>
           {isEn
-            ? "MedChat provides reference information only, and does not replace professional medical diagnosis or treatment."
-            : "MedChat cung cấp thông tin tham khảo, không thay thế chẩn đoán hay điều trị của bác sĩ."
+            ? "MedChat247 provides reference information only, and does not replace professional medical diagnosis or treatment."
+            : "MedChat247 cung cấp thông tin tham khảo, không thay thế chẩn đoán hay điều trị của bác sĩ."
           }
         </span>
       </div>

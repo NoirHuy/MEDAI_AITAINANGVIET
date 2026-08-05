@@ -690,7 +690,7 @@ export default function SettingsModal({
                 ) : memories.length === 0 ? (
                   <div className="empty-memory-state">
                     <p className="empty-title">Chưa có thông tin trí nhớ y tế nào được lưu.</p>
-                    <p className="empty-desc">Khi bạn trò chuyện với MedChatAI hoặc nhập ở trên, các thông tin y tế quan trọng sẽ tự động xuất hiện tại đây.</p>
+                    <p className="empty-desc">Khi bạn trò chuyện với MedChat247 hoặc nhập ở trên, các thông tin y tế quan trọng sẽ tự động xuất hiện tại đây.</p>
                   </div>
                 ) : (
                   <div className="memory-cards-container">
