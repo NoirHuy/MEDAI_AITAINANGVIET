@@ -38,8 +38,7 @@
 }
 
 .sidebar__brand-icon {
-  color: var(--bg-accent);
-  font-size: 20px;
+  font-size: 24px;
 }
 
 .icon-btn {

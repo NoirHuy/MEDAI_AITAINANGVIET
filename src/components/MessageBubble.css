@@ -15,11 +15,10 @@
   height: 32px;
   border-radius: 50%;
   background: var(--bg-accent-soft);
-  color: var(--bg-accent);
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 17px;
+  font-size: 20px;
   margin-top: 2px;
 }
 
