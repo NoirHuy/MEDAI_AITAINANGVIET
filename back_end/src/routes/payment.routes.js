@@ -159,7 +159,7 @@ router.post(
     try {
       const order = await createPayPalOrder({
         amountUSD: '3.99',
-        description: `MedChat Pro Plan Subscription (30 Days) - User: ${user.email}`,
+        description: `MedChat247 Pro Plan Subscription (30 Days) - User: ${user.email}`,
         // Truyền userId qua custom để webhook có thể map về user khi nhận event
         custom: JSON.stringify({
           userId: user.id,

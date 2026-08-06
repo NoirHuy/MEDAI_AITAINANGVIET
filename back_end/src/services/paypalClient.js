@@ -49,7 +49,7 @@ export async function getPayPalAccessToken() {
  */
 export async function createPayPalOrder({
   amountUSD = '3.99',
-  description = 'MedChat Pro Subscription (30 Days)',
+  description = 'MedChat247 Pro Subscription (30 Days)',
   custom = null,
 } = {}) {
   const accessToken = await getPayPalAccessToken()
@@ -70,7 +70,7 @@ export async function createPayPalOrder({
     intent: 'CAPTURE',
     purchase_units: [purchaseUnit],
     application_context: {
-      brand_name: 'MedChat AI',
+      brand_name: 'MedChat247 AI',
       landing_page: 'NO_PREFERENCE',
       user_action: 'PAY_NOW',
       shipping_preference: 'NO_SHIPPING',

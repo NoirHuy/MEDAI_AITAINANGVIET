@@ -56,7 +56,7 @@ export async function getEmbeddings(texts) {
           'Authorization': `Bearer ${env.openrouterApiKey}`,
           'Content-Type': 'application/json',
           'HTTP-Referer': 'https://medchat247.com',
-          'X-Title': 'MedChat GraphRAG',
+          'X-Title': 'MedChat247 GraphRAG',
         },
         body: JSON.stringify({
           model: env.openrouterEmbeddingModel,

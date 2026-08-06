@@ -17,14 +17,14 @@ function buildMockReply(userText, specialtyId, lang = 'vi') {
 
   if (isEn) {
     return `[Demo Mode — OPENROUTER_API_KEY not configured]\n\n` +
-      `Thank you for contacting MedAI specialty **${name}**. ` +
+      `Thank you for contacting MedChat247 specialty **${name}**. ` +
       `Please add your API Key in the \`.env\` file to activate real AI ` +
       `integrated with the NLICE clinical knowledge graph.\n\n` +
       `*Instructions: Open \`medchat/back_end/.env\` and fill in \`OPENROUTER_API_KEY=...\`*`
   }
 
   return `[Chế độ demo — chưa cấu hình OPENROUTER_API_KEY]\n\n` +
-    `Cảm ơn bạn đã liên hệ với MedAI chuyên khoa **${name}**. ` +
+    `Cảm ơn bạn đã liên hệ với MedChat247 chuyên khoa **${name}**. ` +
     `Vui lòng thêm API Key vào tệp \`.env\` để kích hoạt trí tuệ nhân tạo thật sự ` +
     `tích hợp đồ thị tri thức lâm sàng NLICE.\n\n` +
     `*Hướng dẫn: Mở \`medchat/back_end/.env\` và điền vào \`OPENROUTER_API_KEY=...\`*`

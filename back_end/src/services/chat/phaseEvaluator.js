@@ -1,5 +1,5 @@
 /**
- * Single Source of Truth for Phase Determination in MedAI.
+ * Single Source of Truth for Phase Determination in MedChat247.
  */
 export function evaluatePhase({ checklistStatus, sceResult, turnCount, isSuggestionDemo = false }) {
   const hasPositiveSymptoms = sceResult?.symptoms?.some(s => s.status === 'positive') ?? false

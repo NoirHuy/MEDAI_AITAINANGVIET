@@ -1134,7 +1134,7 @@ export default function DashboardView({ account, onSignOut, initialTab }) {
                       new Date(p.createdAt).toLocaleString('vi-VN'),
                       p.status === 'success' ? 'Thành công' : (p.status === 'failed' ? 'Thất bại' : 'Chờ xử lý'),
                     ])
-                    exportToExcelCSV(`Bao_Cao_Giao_Dich_Tai_Chinh_MedAI`, headers, rows)
+                    exportToExcelCSV(`Bao_Cao_Giao_Dich_Tai_Chinh_MedChat247`, headers, rows)
                   }}
                 >
                   <FileSpreadsheetIcon /> Xuất báo cáo giao dịch Excel (.xlsx / .csv)

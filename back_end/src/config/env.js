@@ -108,7 +108,7 @@ export const env = {
     return val
   },
 
-  adminEmail: (process.env.ADMIN_EMAIL || 'admin@medchat.ai').trim(),
+  adminEmail: (process.env.ADMIN_EMAIL || 'admin@medchat247.ai').trim(),
 
   wChiefComplaint: Number(process.env.W_CHIEF_COMPLAINT) || 1.5,
   wAssociated: Number(process.env.W_ASSOCIATED) || 1.0,

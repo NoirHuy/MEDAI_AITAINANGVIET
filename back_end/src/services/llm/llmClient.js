@@ -36,7 +36,7 @@ export async function callLLM({
       'Authorization': `Bearer ${env.llmApiKey}`,
       'Content-Type': 'application/json',
       'HTTP-Referer': 'http://localhost:4000',
-      'X-Title': 'MedChat'
+      'X-Title': 'MedChat247'
     },
     body: JSON.stringify({
       model: modelName,

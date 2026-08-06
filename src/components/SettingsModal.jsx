@@ -925,7 +925,7 @@ export default function SettingsModal({
             <section className="help-section">
               <h2>Trợ giúp &amp; Phản hồi</h2>
               <p className="settings-modal__hint">
-                Gặp khó khăn khi sử dụng hoặc muốn đóng góp ý kiến nâng cấp hệ thống? Bạn có thể gửi phản hồi trực tiếp cho đội ngũ phát triển MedAI tại đây.
+                Gặp khó khăn khi sử dụng hoặc muốn đóng góp ý kiến nâng cấp hệ thống? Bạn có thể gửi phản hồi trực tiếp cho đội ngũ phát triển MedChat247 tại đây.
               </p>
 
               {/* Toggle: Gửi mới / Lịch sử */}
@@ -1065,7 +1065,7 @@ export default function SettingsModal({
                     <h3 style={{ fontSize: '15px', fontWeight: '600', marginBottom: '12px', color: 'var(--text-primary)' }}>Câu hỏi thường gặp (FAQ)</h3>
                     <div style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
                       <div>
-                        <strong style={{ fontSize: '13px', display: 'block', color: 'var(--text-primary)', marginBottom: '4px' }}>1. MedAI chẩn đoán có chính xác không?</strong>
+                        <strong style={{ fontSize: '13px', display: 'block', color: 'var(--text-primary)', marginBottom: '4px' }}>1. MedChat247 chẩn đoán có chính xác không?</strong>
                         <span style={{ fontSize: '12px', color: 'var(--text-muted)', lineHeight: '1.5' }}>Hệ thống chỉ mang tính chất sàng lọc và tư vấn ban đầu dựa trên đồ thị tri thức lâm sàng SymCAT. Kết quả không thay thế chẩn đoán của bác sĩ chuyên khoa.</span>
                       </div>
                       <div>
@@ -1117,7 +1117,7 @@ export default function SettingsModal({
                           <p className="fb-history-content">{fb.content}</p>
                           {fb.adminReply && (
                             <div className="admin-reply-box">
-                              <strong>Phản hồi từ đội ngũ MedAI:</strong>
+                              <strong>Phản hồi từ đội ngũ MedChat247:</strong>
                               <p style={{ margin: '4px 0 0' }}>{fb.adminReply}</p>
                               {fb.repliedAt && (
                                 <span className="text-xs text-muted" style={{ display: 'block', marginTop: '4px' }}>

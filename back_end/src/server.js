@@ -69,7 +69,7 @@ app.use(notFoundHandler)
 app.use(errorHandler)
 
 app.listen(env.port, '0.0.0.0', () => {
-  console.log(`MedChat backend listening on http://0.0.0.0:${env.port}`)
+  console.log(`MedChat247 backend listening on http://0.0.0.0:${env.port}`)
   startBillingScheduler()
   if (process.env.NODE_ENV === 'production') {
     console.log('[startup] Production mode — all secrets must be real values.')

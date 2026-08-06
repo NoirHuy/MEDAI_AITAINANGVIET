@@ -89,7 +89,7 @@ router.get(
     }
 
     let textContent = `=====================================================\n`
-    textContent += `   HỒ SƠ TÓM TẮT TIỀN SỬ Y TẾ CÁ NHÂN - MEDCHAT AI   \n`
+    textContent += `   HỒ SƠ TÓM TẮT TIỀN SỬ Y TẾ CÁ NHÂN - MEDCHAT247 AI   \n`
     textContent += `=====================================================\n`
     textContent += `Thời gian xuất tệp: ${new Date().toLocaleString('vi-VN')}\n`
     textContent += `Mã người dùng: ${req.userId}\n`
@@ -108,10 +108,10 @@ router.get(
     })
 
     textContent += `-----------------------------------------------------\n`
-    textContent += `⚠️ KHUYẾN CÁO: Tệp này chứa tóm tắt tiền sử y tế cá nhân được tổng hợp tự động từ các phiên tham vấn với MedChatAI. Thông tin này chỉ mang tính tham khảo cho bác sĩ chuyên khoa và KHÔNG thay thế hồ sơ bệnh án chính thức.\n`
+    textContent += `⚠️ KHUYẾN CÁO: Tệp này chứa tóm tắt tiền sử y tế cá nhân được tổng hợp tự động từ các phiên tham vấn với MedChat247. Thông tin này chỉ mang tính tham khảo cho bác sĩ chuyên khoa và KHÔNG thay thế hồ sơ bệnh án chính thức.\n`
 
     res.setHeader('Content-Type', 'text/plain; charset=utf-8')
-    res.setHeader('Content-Disposition', 'attachment; filename="Ho_So_Tri_Nho_Y_Te_MedChat.txt"')
+    res.setHeader('Content-Disposition', 'attachment; filename="Ho_So_Tri_Nho_Y_Te_MedChat247.txt"')
     res.send(textContent)
   })
 )
