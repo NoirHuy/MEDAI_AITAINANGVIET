@@ -81,6 +81,11 @@ describe('PayPal webhook order identity', () => {
         amount: { value: '3.99', currency_code: 'USD' },
         custom: JSON.stringify({ userId: 'u_owner', planId: 'pro' }),
       },
+    }, {
+      userId: 'u_owner',
+      billingToken: 'PAY-ORDER-1',
+      status: 'pending',
+      paymentGateway: 'paypal',
     })
 
     expect(res.status).toBe(200)
@@ -89,10 +94,28 @@ describe('PayPal webhook order identity', () => {
       externalId: 'PAY-ORDER-1',
     }))
     expect(mocks.paymentFindOneAndUpdate).toHaveBeenCalledWith(
-      { billingToken: 'PAY-ORDER-1' },
-      expect.objectContaining({ $setOnInsert: expect.objectContaining({ paypalCaptureId: 'CAPTURE-XYZ' }) }),
+      { paymentGateway: 'paypal', billingToken: 'PAY-ORDER-1' },
+      expect.objectContaining({ $set: expect.objectContaining({ paypalCaptureId: 'CAPTURE-XYZ' }) }),
       { upsert: true },
     )
+  })
+
+  it('rejects a completed webhook when stored payment ownership differs', async () => {
+    const res = await invokeWebhook({
+      event_type: 'PAYMENT.CAPTURE.COMPLETED',
+      resource: {
+        id: 'CAPTURE-XYZ',
+        supplementary_data: { related_ids: { order_id: 'PAY-ORDER-1' } },
+        custom: JSON.stringify({ userId: 'u_attacker', planId: 'pro' }),
+      },
+    }, {
+      userId: 'u_owner',
+      billingToken: 'PAY-ORDER-1',
+      paypalCaptureId: 'CAPTURE-XYZ',
+    })
+
+    expect(res.status).toBe(400)
+    expect(mocks.upsertSubscription).not.toHaveBeenCalled()
   })
 
   it('refund resolves ownership and canonical order from stored capture id', async () => {

@@ -118,6 +118,16 @@ export function useAccount() {
 
   const fetchUsage = useCallback(() => apiRequest('/api/account/usage'), [])
 
+  const refetchAccount = useCallback(async () => {
+    try {
+      const { user } = await apiRequest('/api/auth/me')
+      if (user) setAccount(user)
+      return user
+    } catch {
+      return null
+    }
+  }, [])
+
   return {
     account,
     signUpForm,
@@ -130,6 +140,7 @@ export function useAccount() {
     toggleAutoRenew,
     setPlan,
     updateAccountUser: (user) => setAccount(user),
+    refetchAccount,
     signOut,
     fetchUsage,
   }

@@ -16,4 +16,15 @@ const paymentSchema = new mongoose.Schema({
   versionKey: false,
 })
 
+paymentSchema.index(
+  { paymentGateway: 1, billingToken: 1 },
+  {
+    unique: true,
+    partialFilterExpression: {
+      paymentGateway: 'paypal',
+      billingToken: { $type: 'string' },
+    },
+  },
+)
+
 export const PaymentModel = mongoose.model('Payment', paymentSchema, 'payments')

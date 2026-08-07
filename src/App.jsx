@@ -25,6 +25,7 @@ function App() {
     toggleAutoRenew,
     setPlan,
     updateAccountUser,
+    refetchAccount,
     signOut,
     fetchUsage,
   } = useAccount()
@@ -218,6 +219,7 @@ function App() {
           onToggleAutoRenew={toggleAutoRenew}
           onSetPlan={handleSetPlan}
           onUpdateAccount={updateAccountUser}
+          onRefetchAccount={refetchAccount}
           onSignOut={handleSignOut}
           onFetchUsage={fetchUsage}
           showToast={showToast}

@@ -68,6 +68,7 @@ router.post(
     const paymentLookup = relatedOrderId || captureId
     const existingPayment = paymentLookup
       ? await PaymentModel.findOne({
+          paymentGateway: 'paypal',
           $or: [{ billingToken: paymentLookup }, { paypalCaptureId: paymentLookup }],
         }).lean()
       : null
@@ -83,6 +84,26 @@ router.post(
         if (!custom.userId) {
           auditLog('PAYPAL_WEBHOOK', 'Warn', `Missing userId in custom for ${orderId}`, 'warn')
           break
+        }
+
+        // Chỉ cho phép webhook hoàn tất payment đã gắn với đúng user.
+        // Nếu callback capture tạo record trước, webhook phải giữ nguyên ownership.
+        const paymentFilter = { paymentGateway: 'paypal', billingToken: orderId }
+        const payment = await PaymentModel.findOne(paymentFilter).lean()
+        if (!payment) {
+          auditLog('PAYPAL_WEBHOOK', 'Warn', `No local payment record for order ${orderId}`, 'warn')
+          return res.status(400).json({ error: 'Unknown payment order' })
+        }
+        if (payment.userId !== custom.userId) {
+          auditLog('PAYPAL_WEBHOOK', 'Error', `User mismatch for order ${orderId}`, 'error')
+          return res.status(400).json({ error: 'Payment ownership mismatch' })
+        }
+
+        const webhookAmount = resource.amount?.value || resource.amount?.total || purchaseUnit.amount?.value
+        const webhookCurrency = resource.amount?.currency_code || resource.amount?.currency || purchaseUnit.amount?.currency_code
+        if (webhookAmount !== '3.99' || webhookCurrency !== 'USD') {
+          auditLog('PAYPAL_WEBHOOK', 'Error', `Amount mismatch for order ${orderId}`, 'error')
+          return res.status(400).json({ error: 'Payment amount mismatch' })
         }
 
         // Tính expiresAt = now + 30 ngày
@@ -105,14 +126,13 @@ router.post(
           },
         })
 
-        // Update payment record nếu có
         await PaymentModel.findOneAndUpdate(
-          { billingToken: orderId },
+          paymentFilter,
           {
             $set: {
               status: 'success',
               completedAt: new Date(),
-              paymentGateway: 'paypal',
+              paypalCaptureId: captureId || payment?.paypalCaptureId || null,
             },
             $setOnInsert: {
               id: `pay_webhook_${randomUUID()}`,
@@ -121,7 +141,7 @@ router.post(
               amount: Number(resource.amount?.value || resource.amount?.total || purchaseUnit.amount?.value || 0),
               type: 'initial',
               billingToken: orderId,
-              paypalCaptureId: captureId,
+              paymentGateway: 'paypal',
             },
           },
           { upsert: true },
@@ -135,7 +155,10 @@ router.post(
       case 'CHECKOUT.ORDER.CANCELLED': {
         // Refund payloads do not consistently repeat custom metadata. Resolve
         // ownership from our canonical checkout-order payment record instead.
-        const payment = existingPayment || await PaymentModel.findOne({ billingToken: orderId }).lean()
+        const payment = existingPayment || await PaymentModel.findOne({
+          paymentGateway: 'paypal',
+          billingToken: orderId,
+        }).lean()
         const userId = custom.userId || payment?.userId
         if (!userId) {
           auditLog('PAYPAL_WEBHOOK', 'Warn', `Cannot resolve user for canceled order ${orderId}`, 'warn')
@@ -195,6 +218,23 @@ router.post(
           source: 'web',
         }),
       })
+
+      try {
+        await PaymentModel.create({
+          id: `pay_${randomUUID()}`,
+          userId: user.id,
+          planId: 'pro',
+          amount: 99000,
+          status: 'pending',
+          type: 'initial',
+          paymentGateway: 'paypal',
+          billingToken: order.id,
+        })
+      } catch (err) {
+        auditLog('PAYPAL', 'Error', `Failed to persist pending order ${order.id}: ${err.message}`, 'error')
+        throw new HttpError(500, 'Không thể khởi tạo bản ghi thanh toán.')
+      }
+
       res.json({ orderId: order.id })
     } catch (err) {
       throw new HttpError(500, `Không thể tạo đơn hàng PayPal: ${err.message}`)
@@ -218,17 +258,26 @@ router.post(
     }
 
     // 🛡️ CHỐNG TÁI SỬ DỤNG MÃ ĐƠN HÀNG (Anti-Replay Attack) & XỬ LÝ ĐỒNG BỘ NẾU WEBHOOK ĐÃ NHẬN TRƯỚC
-    const existingPayment = await PaymentModel.findOne({ billingToken: orderId })
-    if (existingPayment) {
-      if (existingPayment.status === 'success') {
-        await syncUserProStatus(user.id)
-        const updatedUser = await UserModel.findOne({ id: req.userId }).lean()
-        return res.json({
-          success: true,
-          message: 'Thanh toán PayPal đã được xác nhận thành công trước đó! Gói Pro của bạn đã sẵn sàng.',
-          user: toPublicUser(updatedUser),
-        })
-      }
+    const existingPayment = await PaymentModel.findOne({
+      paymentGateway: 'paypal',
+      billingToken: orderId,
+    })
+    if (!existingPayment) {
+      throw new HttpError(404, 'Không tìm thấy đơn hàng PayPal thuộc tài khoản hiện tại.')
+    }
+    if (existingPayment.userId !== user.id) {
+      throw new HttpError(403, 'Đơn hàng PayPal không thuộc tài khoản hiện tại.')
+    }
+    if (existingPayment.status === 'success') {
+      await syncUserProStatus(user.id)
+      const updatedUser = await UserModel.findOne({ id: req.userId }).lean()
+      return res.json({
+        success: true,
+        message: 'Thanh toán PayPal đã được xác nhận thành công trước đó! Gói Pro của bạn đã sẵn sàng.',
+        user: toPublicUser(updatedUser),
+      })
+    }
+    if (existingPayment.status !== 'pending') {
       throw new HttpError(400, 'Đơn hàng PayPal này đã được xử lý và ghi nhận trước đó.')
     }
 
@@ -250,22 +299,28 @@ router.post(
       throw new HttpError(400, `Thanh toán PayPal thất bại: ${err.message}`)
     }
 
-    const paymentRecord = new PaymentModel({
-      id: `pay_${Date.now()}_${randomUUID().slice(0, 6)}`,
-      userId: user.id,
-      planId: 'pro',
-      amount: 99000,
-      status: 'success',
-      type: 'initial',
-      paymentGateway: 'paypal',
-      billingToken: orderId,
-      paypalCaptureId: captureResult.id || null,
-      createdAt: new Date(),
-      completedAt: new Date()
-    })
-    await paymentRecord.save()
-
     const now = new Date()
+    const paymentUpdated = await PaymentModel.findOneAndUpdate(
+      {
+        paymentGateway: 'paypal',
+        billingToken: orderId,
+        userId: user.id,
+        status: 'pending',
+      },
+      {
+        $set: {
+          status: 'success',
+          paypalCaptureId: captureResult.id || null,
+          completedAt: now,
+        },
+      },
+      { new: true },
+    )
+    if (!paymentUpdated) {
+      throw new HttpError(409, 'Đơn hàng PayPal đã được xử lý đồng thời. Vui lòng tải lại trạng thái tài khoản.')
+    }
+
+
     const expiresAt = new Date(now.getTime() + 30 * 24 * 60 * 60 * 1000)
 
     // Ghi subscription record + sync plan (dùng chung với webhook)

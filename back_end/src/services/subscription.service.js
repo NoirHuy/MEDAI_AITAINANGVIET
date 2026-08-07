@@ -11,11 +11,13 @@ const PRO_PLAN_MS = PRO_PLAN_DAYS * 24 * 60 * 60 * 1000
  */
 export async function syncUserProStatus(userId) {
   const now = new Date()
+  // Thêm buffer 5 giây để chống lệch miligiây giữa clock thời gian tạo và query
+  const queryNow = new Date(now.getTime() - 5000)
 
   const activeSubs = await SubscriptionModel.find({
     userId,
     status: 'active',
-    expiresAt: { $gt: now },
+    expiresAt: { $gt: queryNow },
     canceledAt: null,
   })
 
