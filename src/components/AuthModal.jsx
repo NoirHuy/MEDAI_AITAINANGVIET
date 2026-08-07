@@ -49,6 +49,7 @@ export default function AuthModal({
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [confirmPassword, setConfirmPassword] = useState('')
+  const [termsConsent, setTermsConsent] = useState(false)
 
   function switchTab(nextTab) {
     setTab(nextTab)
@@ -63,6 +64,11 @@ export default function AuthModal({
 
     if (tab === 'signup' && password !== confirmPassword) {
       setError('Mật khẩu xác nhận không khớp.')
+      return
+    }
+
+    if (tab === 'signup' && !termsConsent) {
+      setError('Bạn cần đồng ý với Điều khoản & Chính sách bảo mật dữ liệu y tế.')
       return
     }
 
@@ -277,17 +283,32 @@ export default function AuthModal({
               </label>
 
               {tab === 'signup' && (
-                <label className="settings-field">
-                  <span>Xác nhận mật khẩu</span>
-                  <input
-                    type={showPassword ? 'text' : 'password'}
-                    value={confirmPassword}
-                    onChange={(e) => setConfirmPassword(e.target.value)}
-                    placeholder="Nhập lại mật khẩu"
-                    minLength={6}
-                    required
-                  />
-                </label>
+                <>
+                  <label className="settings-field">
+                    <span>Xác nhận mật khẩu</span>
+                    <input
+                      type={showPassword ? 'text' : 'password'}
+                      value={confirmPassword}
+                      onChange={(e) => setConfirmPassword(e.target.value)}
+                      placeholder="Nhập lại mật khẩu"
+                      minLength={6}
+                      required
+                    />
+                  </label>
+
+                  <label style={{ display: 'flex', alignItems: 'flex-start', gap: '10px', cursor: 'pointer', margin: '10px 0 14px' }}>
+                    <input
+                      type="checkbox"
+                      checked={termsConsent}
+                      onChange={(e) => setTermsConsent(e.target.checked)}
+                      required
+                      style={{ marginTop: '3px', accentColor: 'var(--bg-accent)', width: '16px', height: '16px', flexShrink: 0 }}
+                    />
+                    <span style={{ fontSize: '12px', color: 'var(--text-muted)', lineHeight: '1.45' }}>
+                      Tôi đồng ý với <strong>Điều khoản sử dụng</strong> và <strong>Chính sách bảo mật dữ liệu y tế MedChat247</strong>.
+                    </span>
+                  </label>
+                </>
               )}
 
               {error && <p className="auth-modal__error">{error}</p>}

@@ -31,7 +31,7 @@ services:
       - PORT=7860
       - MONGODB_URI=${MONGODB_URI:-mongodb://mongodb:27017/medchat}
     ports:
-      - '8080:7860'
+      - '127.0.0.1:8080:7860'
     restart: unless-stopped
 
   mongodb:
