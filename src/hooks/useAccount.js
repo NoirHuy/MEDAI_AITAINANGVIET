@@ -129,6 +129,7 @@ export function useAccount() {
     deleteCard,
     toggleAutoRenew,
     setPlan,
+    updateAccountUser: (user) => setAccount(user),
     signOut,
     fetchUsage,
   }

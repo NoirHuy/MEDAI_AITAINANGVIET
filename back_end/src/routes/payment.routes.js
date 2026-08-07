@@ -217,9 +217,18 @@ router.post(
       throw new HttpError(500, 'Hệ thống chưa cấu hình PayPal API Key.')
     }
 
-    // 🛡️ CHỐNG TÁI SỬ DỤNG MÃ ĐƠN HÀNG (Anti-Replay Attack)
+    // 🛡️ CHỐNG TÁI SỬ DỤNG MÃ ĐƠN HÀNG (Anti-Replay Attack) & XỬ LÝ ĐỒNG BỘ NẾU WEBHOOK ĐÃ NHẬN TRƯỚC
     const existingPayment = await PaymentModel.findOne({ billingToken: orderId })
     if (existingPayment) {
+      if (existingPayment.status === 'success') {
+        await syncUserProStatus(user.id)
+        const updatedUser = await UserModel.findOne({ id: req.userId }).lean()
+        return res.json({
+          success: true,
+          message: 'Thanh toán PayPal đã được xác nhận thành công trước đó! Gói Pro của bạn đã sẵn sàng.',
+          user: toPublicUser(updatedUser),
+        })
+      }
       throw new HttpError(400, 'Đơn hàng PayPal này đã được xử lý và ghi nhận trước đó.')
     }
 

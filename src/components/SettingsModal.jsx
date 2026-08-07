@@ -37,6 +37,7 @@ export default function SettingsModal({
   onChangePassword,
   onToggleAutoRenew,
   onSetPlan,
+  onUpdateAccount,
   onSignOut,
   onFetchUsage,
   showToast,
@@ -297,7 +298,7 @@ export default function SettingsModal({
             showToast?.(res.message || 'Thanh toán PayPal thành công!')
             setConfirmPaymentModal(false)
             if (res.user) {
-              onSetPlan?.('pro', res.user)
+              onUpdateAccount?.(res.user)
             }
           } catch (err) {
             showToast?.(err.message || 'Không thể hoàn tất thanh toán PayPal.')
