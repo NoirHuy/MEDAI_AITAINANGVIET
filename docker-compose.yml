@@ -13,8 +13,8 @@ services:
     volumes:
       - backend_data:/app/data
     restart: unless-stopped
-    expose:
-      - '4000'
+    ports:
+      - '127.0.0.1:4000:4000'
 
   frontend:
     build:
