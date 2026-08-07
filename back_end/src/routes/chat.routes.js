@@ -10,7 +10,8 @@ import {
 } from '../middleware/rateLimiters.js'
 import { generateReply, estimateTokens } from '../services/chat/generateReply.js'
 import { generateSmartTitle } from '../services/chat/generateSmartTitle.js'
-import { incrementUsage } from '../db/usersRepo.js'
+import { incrementUsage, reserveUsage, findUserById } from '../db/usersRepo.js'
+import { getPlan } from '../config/plans.js'
 import { ConversationModel } from '../db/conversation.model.js'
 import { SystemLogModel } from '../db/systemLog.model.js'
 import { runMemoryExtractionPass } from '../services/memory/memoryExtractor.js'
@@ -19,6 +20,7 @@ const router = Router()
 const MAX_MESSAGES = 40
 const MAX_MESSAGE_LENGTH = 6000
 const MAX_CONVERSATION_CHARACTERS = 24000
+const MAX_OUTPUT_TOKENS = 2500
 
 export function validateMessages(messages) {
   if (!Array.isArray(messages) || messages.length === 0) {
@@ -41,6 +43,24 @@ export function validateMessages(messages) {
   if (totalLength > MAX_CONVERSATION_CHARACTERS) {
     throw new HttpError(400, 'Conversation content exceeds the allowed limit.')
   }
+}
+
+export async function reserveChatQuota(userId, messages) {
+  if (!userId) return null
+
+  const user = await findUserById(userId)
+  if (!user) throw new HttpError(401, 'Phiên đăng nhập không còn hợp lệ.')
+
+  const plan = getPlan(user.planId)
+  const inputTokens = estimateTokens(messages.map((message) => message.content).join('')) + 3200
+  const reservedTokens = inputTokens + MAX_OUTPUT_TOKENS
+  const updatedUser = await reserveUsage(userId, plan.tokenLimit, reservedTokens)
+
+  if (!updatedUser) {
+    throw new HttpError(429, 'Bạn đã sử dụng hết hạn mức AI của gói hiện tại. Vui lòng nâng cấp hoặc chờ chu kỳ tiếp theo.')
+  }
+
+  return { inputTokens, reservedTokens }
 }
 
 // Endpoint tự động tạo tiêu đề ChatGPT (2-4 từ súc tích) dựa trên ý chính câu thoại
@@ -72,6 +92,8 @@ router.post(
       throw new HttpError(400, 'Thiếu specialtyId.')
     }
 
+    const quotaReservation = await reserveChatQuota(req.userId, messages)
+
     const controller = new AbortController()
     res.on('close', () => {
       if (!res.writableEnded) controller.abort()
@@ -87,6 +109,7 @@ router.post(
 
     let full = ''
     let memoriesUsed = []
+    let chatCompleted = false
     const start = performance.now()
     try {
       const replyRes = await generateReply({
@@ -102,6 +125,7 @@ router.post(
 
       full = replyRes.fullReplyText || ''
       memoriesUsed = replyRes.memoriesUsed || []
+      chatCompleted = true
 
       if (memoriesUsed.length > 0) {
         res.write(`\n__MEMORIES_USED__:${JSON.stringify(memoriesUsed)}\n`)
@@ -110,7 +134,7 @@ router.post(
       const durationMs = Math.round(performance.now() - start)
       
       const messagesText = messages.reduce((acc, m) => acc + (m.content || ''), '')
-      const inputTokens = estimateTokens(messagesText) + 3200
+      const inputTokens = quotaReservation?.inputTokens ?? estimateTokens(messagesText) + 3200
       const outputTokens = estimateTokens(full)
       const totalTokens = inputTokens + outputTokens
       const costUsd = (inputTokens * 0.000075 / 1000) + (outputTokens * 0.0003 / 1000)
@@ -156,10 +180,17 @@ router.post(
 
     if (req.userId) {
       const lastUserMessage = [...messages].reverse().find((m) => m.role === 'user')
-      const tokens = estimateTokens(lastUserMessage?.content ?? '') + estimateTokens(full)
-      await incrementUsage(req.userId, tokens)
+      const tokens = quotaReservation
+        ? quotaReservation.inputTokens + estimateTokens(full)
+        : estimateTokens(lastUserMessage?.content ?? '') + estimateTokens(full)
+      if (quotaReservation) {
+        const finalUsage = chatCompleted ? tokens : 0
+        await incrementUsage(req.userId, finalUsage - quotaReservation.reservedTokens)
+      } else if (chatCompleted) {
+        await incrementUsage(req.userId, tokens)
+      }
 
-      if (!sessionMemoryPaused && full) {
+      if (chatCompleted && !sessionMemoryPaused && full) {
         setImmediate(async () => {
           try {
             await runMemoryExtractionPass({

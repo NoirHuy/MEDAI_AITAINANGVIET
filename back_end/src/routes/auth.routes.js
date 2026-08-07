@@ -121,24 +121,17 @@ router.post(
   '/google',
   authGoogleLimiter,
   asyncHandler(async (req, res) => {
-    let verifiedEmail
-    let verifiedName
-    let verifiedPicture
-
-    if (env.googleClientId) {
-      const { credential } = req.body ?? {}
-      const payload = await verifyGoogleCredential(credential)
-      verifiedEmail = payload.email
-      verifiedName = payload.name
-      verifiedPicture = payload.picture
-    } else {
-      const { email, name, picture } = req.body ?? {}
-      const trimmedEmail = (email ?? '').trim().toLowerCase()
-      if (!EMAIL_RE.test(trimmedEmail)) throw new HttpError(400, 'Email không hợp lệ.')
-      verifiedEmail = trimmedEmail
-      verifiedName = name
-      verifiedPicture = picture
+    // Never trust client-supplied identity fields. In particular, accepting
+    // an arbitrary email here would allow impersonation of the admin user.
+    if (!env.googleClientId) {
+      throw new HttpError(503, 'Đăng nhập Google hiện chưa được cấu hình. Vui lòng dùng email và mật khẩu.')
     }
+
+    const { credential } = req.body ?? {}
+    const payload = await verifyGoogleCredential(credential)
+    const verifiedEmail = payload.email
+    const verifiedName = payload.name
+    const verifiedPicture = payload.picture
 
     const defaultAvatarUrl = `https://ui-avatars.com/api/?name=${encodeURIComponent(verifiedName || verifiedEmail.split('@')[0])}&background=1a73e8&color=ffffff&bold=true`
     const finalPicture = verifiedPicture || defaultAvatarUrl

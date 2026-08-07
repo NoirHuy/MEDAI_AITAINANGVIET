@@ -44,6 +44,24 @@ export async function incrementUsage(id, tokens) {
   ).lean()
 }
 
+// Reserves usage before an LLM request. The conditional update makes the
+// quota check atomic across concurrent requests from the same account.
+export async function reserveUsage(id, tokenLimit, tokens) {
+  return await UserModel.findOneAndUpdate(
+    {
+      id,
+      $expr: {
+        $lte: [
+          { $add: [{ $ifNull: ['$tokensUsed', 0] }, tokens] },
+          tokenLimit,
+        ],
+      },
+    },
+    { $inc: { tokensUsed: tokens } },
+    { new: true },
+  ).lean()
+}
+
 export function toPublicUser(user) {
   if (!user) return null
   const { passwordHash: _passwordHash, _id, ...publicFields } = user

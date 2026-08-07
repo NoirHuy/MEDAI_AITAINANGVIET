@@ -55,8 +55,23 @@ router.post(
 
     const eventType = event.event_type
     const resource = event.resource || {}
-    const custom = parsePayPalCustom(resource.custom || resource.custom_id)
-    const orderId = resource.id || resource.billing_agreement_id
+    const purchaseUnit = resource.purchase_units?.[0] || {}
+    const custom = parsePayPalCustom(
+      resource.custom || resource.custom_id || purchaseUnit.custom || purchaseUnit.custom_id,
+    )
+    // A completed capture has its own resource.id. Preserve the checkout order
+    // ID as the canonical subscription/payment key so refunds can revoke it.
+    const relatedOrderId = resource.supplementary_data?.related_ids?.order_id
+      || resource.invoice_id
+      || resource.billing_agreement_id
+    const captureId = resource.id || null
+    const paymentLookup = relatedOrderId || captureId
+    const existingPayment = paymentLookup
+      ? await PaymentModel.findOne({
+          $or: [{ billingToken: paymentLookup }, { paypalCaptureId: paymentLookup }],
+        }).lean()
+      : null
+    const orderId = existingPayment?.billingToken || relatedOrderId || resource.id
 
     auditLog('PAYPAL_WEBHOOK', 'Info', `Received ${eventType} for order ${orderId}`, 'info')
 
@@ -99,7 +114,17 @@ router.post(
               completedAt: new Date(),
               paymentGateway: 'paypal',
             },
+            $setOnInsert: {
+              id: `pay_webhook_${randomUUID()}`,
+              userId: custom.userId,
+              planId: custom.planId || 'pro',
+              amount: Number(resource.amount?.value || resource.amount?.total || purchaseUnit.amount?.value || 0),
+              type: 'initial',
+              billingToken: orderId,
+              paypalCaptureId: captureId,
+            },
           },
+          { upsert: true },
         )
 
         auditLog('PAYPAL_WEBHOOK', 'Info', `Upgraded user ${custom.userId} to Pro via PayPal`, 'info')
@@ -108,14 +133,17 @@ router.post(
 
       case 'PAYMENT.CAPTURE.REFUNDED':
       case 'CHECKOUT.ORDER.CANCELLED': {
-        // User refund hoặc cancel
-        if (!custom.userId) {
-          auditLog('PAYPAL_WEBHOOK', 'Warn', `Missing userId in custom for ${orderId}`, 'warn')
+        // Refund payloads do not consistently repeat custom metadata. Resolve
+        // ownership from our canonical checkout-order payment record instead.
+        const payment = existingPayment || await PaymentModel.findOne({ billingToken: orderId }).lean()
+        const userId = custom.userId || payment?.userId
+        if (!userId) {
+          auditLog('PAYPAL_WEBHOOK', 'Warn', `Cannot resolve user for canceled order ${orderId}`, 'warn')
           break
         }
 
         await cancelSubscriptionAndSync({
-          userId: custom.userId,
+          userId,
           platform: 'paypal',
           externalId: orderId,
         })
@@ -130,7 +158,7 @@ router.post(
           },
         )
 
-        auditLog('PAYPAL_WEBHOOK', 'Info', `Canceled PayPal subscription for user ${custom.userId}`, 'info')
+        auditLog('PAYPAL_WEBHOOK', 'Info', `Canceled PayPal subscription for user ${userId}`, 'info')
         break
       }
 
@@ -222,6 +250,7 @@ router.post(
       type: 'initial',
       paymentGateway: 'paypal',
       billingToken: orderId,
+      paypalCaptureId: captureResult.id || null,
       createdAt: new Date(),
       completedAt: new Date()
     })
