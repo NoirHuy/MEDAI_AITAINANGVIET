@@ -114,6 +114,10 @@ body {
   overflow: hidden;
 }
 
+#root:has(.legal-shell) {
+  overflow: visible;
+}
+
 button,
 textarea,
 input,
