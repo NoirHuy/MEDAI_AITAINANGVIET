@@ -332,9 +332,9 @@ export default function AuthModal({
                     />
                     <span style={{ fontSize: '12px', color: 'var(--text-muted)', lineHeight: '1.45' }}>
                       {isEn ? (
-                        <>I agree to the <strong>Terms of Service</strong> and <strong>Medical Data Privacy Policy of MedChat247</strong>.</>
+                        <>I agree to the <a href="/terms" target="_blank" rel="noreferrer"><strong>Terms of Service</strong></a> and <a href="/privacy-policy" target="_blank" rel="noreferrer"><strong>Medical Data Privacy Policy</strong></a> of MedChat247.</>
                       ) : (
-                        <>Tôi đồng ý với <strong>Điều khoản sử dụng</strong> và <strong>Chính sách bảo mật dữ liệu y tế MedChat247</strong>.</>
+                        <>Tôi đồng ý với <a href="/terms" target="_blank" rel="noreferrer"><strong>Điều khoản sử dụng</strong></a> và <a href="/privacy-policy" target="_blank" rel="noreferrer"><strong>Chính sách bảo mật dữ liệu y tế</strong></a> MedChat247.</>
                       )}
                     </span>
                   </label>

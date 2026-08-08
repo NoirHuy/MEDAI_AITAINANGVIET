@@ -112,6 +112,15 @@ export function useAccount() {
     return user
   }, [])
 
+  const deleteAccount = useCallback(async () => {
+    const result = await apiRequest('/api/account/delete', {
+      method: 'DELETE',
+      body: JSON.stringify({ confirmation: 'DELETE' }),
+    })
+    setAccount(null)
+    return result
+  }, [])
+
   const signOut = useCallback(async () => {
     await apiRequest('/api/auth/signout', { method: 'POST' }).catch(() => {})
     setAccount(null)
@@ -141,6 +150,7 @@ export function useAccount() {
     toggleAutoRenew,
     setPlan,
     updateAccountUser: (user) => setAccount(user),
+    deleteAccount,
     refetchAccount,
     signOut,
     fetchUsage,

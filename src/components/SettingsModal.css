@@ -95,6 +95,23 @@
   color: var(--text-primary);
 }
 
+.settings-modal__legal-links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 14px;
+  margin-top: 14px;
+  font-size: 12px;
+}
+
+.settings-modal__legal-links a {
+  color: var(--bg-accent);
+  text-decoration: underline;
+}
+
+.settings-section-box--danger {
+  border-color: color-mix(in srgb, var(--danger, #c0392b) 35%, var(--border-subtle));
+}
+
 .settings-modal__hint {
   font-size: 12.5px;
   color: var(--text-muted);

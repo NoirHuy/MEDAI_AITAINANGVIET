@@ -10,9 +10,18 @@ import { useTheme } from './hooks/useTheme'
 import { useAccount } from './hooks/useAccount'
 import { useToast } from './hooks/useToast'
 import { DEFAULT_SPECIALTY_ID } from './data/specialties'
+import LegalPage from './components/LegalPage'
 import './App.css'
 
 function App() {
+  const legalPath = window.location.pathname
+  if (legalPath === '/privacy-policy' || legalPath === '/terms') {
+    return <LegalPage type={legalPath === '/terms' ? 'terms' : 'privacy'} />
+  }
+  return <AppContent />
+}
+
+function AppContent() {
   const {
     account,
     signUpForm,
@@ -25,6 +34,7 @@ function App() {
     toggleAutoRenew,
     setPlan,
     updateAccountUser,
+    deleteAccount,
     refetchAccount,
     signOut,
     fetchUsage,
@@ -221,6 +231,7 @@ function App() {
           onUpdateAccount={updateAccountUser}
           onRefetchAccount={refetchAccount}
           onSignOut={handleSignOut}
+          onDeleteAccount={deleteAccount}
           onFetchUsage={fetchUsage}
           showToast={showToast}
         />

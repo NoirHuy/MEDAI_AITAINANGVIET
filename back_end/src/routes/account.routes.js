@@ -8,10 +8,51 @@ import {
 } from '../middleware/rateLimiters.js'
 import { getPlan, isValidPlanId } from '../config/plans.js'
 import { findUserById, updateUser, toPublicUser } from '../db/usersRepo.js'
+import { UserModel } from '../db/user.model.js'
+import { ConversationModel } from '../db/conversation.model.js'
+import { SubscriptionModel } from '../db/subscription.model.js'
+import { FeedbackModel } from '../db/feedback.model.js'
+import { UserMemoryModel } from '../db/user_memory.model.js'
+import { UserMemorySettingsModel } from '../db/user_memory_settings.model.js'
+import { MemoryAuditModel } from '../db/memory_audit.model.js'
+import { MobileRefreshTokenModel } from '../db/mobile_refresh_token.model.js'
+import { PaymentModel } from '../db/payment.model.js'
+import { AUTH_COOKIE_NAME } from '../utils/jwt.js'
 
 const router = Router()
 
 router.use(requireAuth)
+
+router.delete(
+  '/delete',
+  accountPasswordLimiter,
+  asyncHandler(async (req, res) => {
+    const confirmation = req.body?.confirmation
+    if (confirmation !== 'DELETE') {
+      throw new HttpError(400, 'Vui lòng nhập chính xác DELETE để xác nhận xóa tài khoản.')
+    }
+
+    const user = await findUserById(req.userId)
+    if (!user) throw new HttpError(404, 'Không tìm thấy tài khoản.')
+
+    // Remove user-owned personal data. Payment records remain for financial
+    // reconciliation, but their direct user reference is anonymized.
+    await Promise.all([
+      ConversationModel.deleteMany({ userId: req.userId }),
+      FeedbackModel.deleteMany({ userId: req.userId }),
+      UserMemoryModel.deleteMany({ userId: req.userId }),
+      UserMemorySettingsModel.deleteOne({ userId: req.userId }),
+      MemoryAuditModel.deleteMany({ userId: req.userId }),
+      SubscriptionModel.deleteMany({ userId: req.userId }),
+      MobileRefreshTokenModel.deleteMany({ userId: req.userId }),
+      PaymentModel.updateMany({ userId: req.userId }, { $set: { userId: 'deleted' } }),
+      UserModel.deleteOne({ id: req.userId }),
+    ])
+
+    res.clearCookie(AUTH_COOKIE_NAME)
+    res.json({ success: true, message: 'Tài khoản và dữ liệu cá nhân đã được xóa.' })
+  }),
+)
 
 router.patch(
   '/name',

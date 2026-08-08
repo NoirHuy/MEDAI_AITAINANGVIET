@@ -40,6 +40,7 @@ export default function SettingsModal({
   onUpdateAccount,
   onRefetchAccount,
   onSignOut,
+  onDeleteAccount,
   onFetchUsage,
   showToast,
 }) {
@@ -53,6 +54,7 @@ export default function SettingsModal({
   const [confirmPassword, setConfirmPassword] = useState('')
   const [passwordStatus, setPasswordStatus] = useState(null)
   const [passwordLoading, setPasswordLoading] = useState(false)
+  const [deleteLoading, setDeleteLoading] = useState(false)
 
   // State cho Thẻ Thanh Toán
 
@@ -460,6 +462,10 @@ export default function SettingsModal({
                   <span>Email</span>
                   <input value={account.email} disabled />
                 </label>
+                <div className="settings-modal__legal-links">
+                  <a href="/privacy-policy" target="_blank" rel="noreferrer">Chính sách bảo mật</a>
+                  <a href="/terms" target="_blank" rel="noreferrer">Điều khoản sử dụng</a>
+                </div>
                 <div className="settings-modal__actions" style={{ marginTop: '12px' }}>
                   <button className="btn btn--primary" onClick={() => onUpdateName(nameDraft)}>
                     Lưu thay đổi tên
@@ -468,6 +474,35 @@ export default function SettingsModal({
                     Đăng xuất
                   </button>
                 </div>
+              </div>
+
+              <div className="settings-divider" />
+
+              <div className="settings-section-box settings-section-box--danger">
+                <h3 className="settings-subheading">Xóa tài khoản</h3>
+                <p className="settings-modal__hint">
+                  Xóa vĩnh viễn hồ sơ, hội thoại, trí nhớ cá nhân và phản hồi. Thao tác này không thể hoàn tác.
+                </p>
+                <button
+                  className="btn btn--danger-outline"
+                  disabled={deleteLoading}
+                  onClick={async () => {
+                    const confirmed = window.prompt('Nhập DELETE để xác nhận xóa vĩnh viễn tài khoản và dữ liệu:')
+                    if (confirmed !== 'DELETE') return
+                    setDeleteLoading(true)
+                    try {
+                      await onDeleteAccount?.()
+                      onClose()
+                      showToast?.('Tài khoản và dữ liệu cá nhân đã được xóa.')
+                    } catch (err) {
+                      showToast?.(err.message || 'Không thể xóa tài khoản.')
+                    } finally {
+                      setDeleteLoading(false)
+                    }
+                  }}
+                >
+                  <TrashIcon /> {deleteLoading ? 'Đang xóa...' : 'Xóa tài khoản vĩnh viễn'}
+                </button>
               </div>
 
               <div className="settings-divider" />
