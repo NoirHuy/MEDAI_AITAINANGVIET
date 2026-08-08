@@ -41,22 +41,12 @@ export default function ChatView({
 
       <button
         type="button"
-        className="lang-target-toggle-btn"
+        className="lang-single-btn"
         onClick={onToggleLang}
-        title={isEn ? "Chuyển sang Tiếng Việt" : "Switch to English"}
+        title={isEn ? "Switch to Vietnamese" : "Switch to English"}
         aria-label="Toggle language"
       >
-        {isEn ? (
-          <>
-            <span className="lang-flag">🇻🇳</span>
-            <span>Tiếng Việt</span>
-          </>
-        ) : (
-          <>
-            <span className="lang-flag">🇺🇸</span>
-            <span>English</span>
-          </>
-        )}
+        {isEn ? "Vietnamese" : "English"}
       </button>
 
       <div className="chat-disclaimer">

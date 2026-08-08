@@ -28,36 +28,30 @@
   left: 16px;
 }
 
-.lang-target-toggle-btn {
-  display: flex;
+.lang-single-btn {
+  display: inline-flex;
   align-items: center;
-  gap: 6px;
-  padding: 6px 14px;
-  border-radius: var(--radius-pill);
+  justify-content: center;
+  padding: 8px 18px;
+  border-radius: var(--radius-sm);
   border: 1px solid var(--border-light);
   background: var(--bg-surface);
   color: var(--text-primary);
-  font-size: 13px;
-  font-weight: 600;
+  font-size: 14px;
+  font-weight: 500;
   cursor: pointer;
-  transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+  transition: all 0.2s ease;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.08);
   position: absolute;
-  top: 12px;
+  top: 14px;
   right: 24px;
   z-index: 20;
 }
 
-.lang-target-toggle-btn:hover {
+.lang-single-btn:hover {
   background: var(--bg-surface-hover);
-  border-color: rgba(0, 132, 255, 0.4);
-  color: var(--bg-accent);
-  transform: translateY(-1px);
-  box-shadow: 0 4px 14px rgba(0, 132, 255, 0.15);
-}
-
-.lang-flag {
-  font-size: 14px;
+  border-color: var(--text-muted);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.12);
 }
 
 .chat-disclaimer {
