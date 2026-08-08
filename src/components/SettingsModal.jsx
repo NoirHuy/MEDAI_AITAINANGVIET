@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { CloseIcon, UserCircleIcon, GaugeIcon, CreditCardIcon, CheckIcon, HelpCircleIcon, SparklesIcon, LockIcon, TrashIcon, BrainIcon } from './Icons'
+import { CloseIcon, UserCircleIcon, GaugeIcon, CreditCardIcon, CheckIcon, HelpCircleIcon, SparklesIcon, LockIcon, TrashIcon, BrainIcon, ShieldCheckIcon, FileTextIcon } from './Icons'
 import { PLANS, getPlan } from '../data/account'
 import './SettingsModal.css'
 
@@ -19,15 +19,6 @@ async function apiRequest(path, options = {}) {
   return data
 }
 
-const TABS = [
-  { id: 'account', label: 'Tài khoản', Icon: UserCircleIcon },
-  { id: 'memory', label: 'Trí nhớ cá nhân', Icon: BrainIcon },
-  { id: 'usage', label: 'Mức sử dụng', Icon: GaugeIcon },
-  { id: 'subscription', label: 'Gói thuê bao', Icon: SparklesIcon },
-  { id: 'payment', label: 'Thanh toán', Icon: CreditCardIcon },
-  { id: 'help', label: 'Trợ giúp & Phản hồi', Icon: HelpCircleIcon },
-]
-
 export default function SettingsModal({
   activeTab,
   onClose,
@@ -43,7 +34,19 @@ export default function SettingsModal({
   onDeleteAccount,
   onFetchUsage,
   showToast,
+  lang = 'vi',
 }) {
+  const isEn = lang === 'en'
+
+  const TABS = [
+    { id: 'account', label: isEn ? 'Account' : 'Tài khoản', Icon: UserCircleIcon },
+    { id: 'memory', label: isEn ? 'Personal Memory' : 'Trí nhớ cá nhân', Icon: BrainIcon },
+    { id: 'usage', label: isEn ? 'Usage Stats' : 'Mức sử dụng', Icon: GaugeIcon },
+    { id: 'subscription', label: isEn ? 'Subscription' : 'Gói thuê bao', Icon: SparklesIcon },
+    { id: 'payment', label: isEn ? 'Payment' : 'Thanh toán', Icon: CreditCardIcon },
+    { id: 'help', label: isEn ? 'Help & Support' : 'Trợ giúp & Phản hồi', Icon: HelpCircleIcon },
+  ]
+
   const [nameDraft, setNameDraft] = useState(account?.name || '')
   const [usage, setUsage] = useState(null)
   const [usageError, setUsageError] = useState(null)
@@ -55,8 +58,6 @@ export default function SettingsModal({
   const [passwordStatus, setPasswordStatus] = useState(null)
   const [passwordLoading, setPasswordLoading] = useState(false)
   const [deleteLoading, setDeleteLoading] = useState(false)
-
-  // State cho Thẻ Thanh Toán
 
   // State cho Nâng Cấp Gói & Thanh Toán PayPal
   const [confirmPaymentModal, setConfirmPaymentModal] = useState(false)
@@ -122,10 +123,10 @@ export default function SettingsModal({
       if (res?.settings) {
         setMemorySettings(res.settings)
       }
-      showToast?.('Đã cập nhật cài đặt trí nhớ.')
+      showToast?.(isEn ? 'Memory settings updated.' : 'Đã cập nhật cài đặt trí nhớ.')
     } catch (err) {
       setMemorySettings((prev) => ({ ...prev, [key]: !val }))
-      showToast?.(err.message || 'Không thể lưu cài đặt.')
+      showToast?.(err.message || (isEn ? 'Could not save settings.' : 'Không thể lưu cài đặt.'))
     }
   }
 
@@ -146,9 +147,9 @@ export default function SettingsModal({
       })
       setMemories((prev) => [memory, ...prev])
       setNewMemoryContent('')
-      showToast?.('Đã thêm mục trí nhớ mới.')
+      showToast?.(isEn ? 'Added new memory entry.' : 'Đã thêm mục trí nhớ mới.')
     } catch (err) {
-      showToast?.(err.message || 'Không thể thêm trí nhớ.')
+      showToast?.(err.message || (isEn ? 'Could not add memory.' : 'Không thể thêm trí nhớ.'))
     }
   }
 
@@ -160,31 +161,36 @@ export default function SettingsModal({
         body: JSON.stringify({ isLocked: nextLock })
       })
       setMemories((prev) => prev.map((m) => m.id === id ? { ...m, isLocked: nextLock } : m))
-      showToast?.(nextLock ? 'Đã khóa ký ức (AI không được tự ý ghi đè).' : 'Đã mở khóa ký ức.')
+      showToast?.(nextLock 
+        ? (isEn ? 'Memory record locked.' : 'Đã khóa ký ức (AI không được tự ý ghi đè).')
+        : (isEn ? 'Memory record unlocked.' : 'Đã mở khóa ký ức.')
+      )
     } catch (err) {
-      showToast?.(err.message || 'Không thể thay đổi trạng thái khóa.')
+      showToast?.(err.message || (isEn ? 'Could not change lock status.' : 'Không thể thay đổi trạng thái khóa.'))
     }
   }
 
   async function handleDeleteSingleMemory(id) {
-    if (!window.confirm('Bạn có chắc chắn muốn xóa mục trí nhớ này khỏi hồ sơ?')) return
+    const confirmMsg = isEn ? 'Are you sure you want to delete this memory entry?' : 'Bạn có chắc chắn muốn xóa mục trí nhớ này khỏi hồ sơ?'
+    if (!window.confirm(confirmMsg)) return
     try {
       await apiRequest(`/api/memories/${id}`, { method: 'DELETE' })
       setMemories((prev) => prev.filter((m) => m.id !== id))
-      showToast?.('Đã xóa mục trí nhớ.')
+      showToast?.(isEn ? 'Memory entry deleted.' : 'Đã xóa mục trí nhớ.')
     } catch (err) {
-      showToast?.(err.message || 'Không thể xóa mục trí nhớ.')
+      showToast?.(err.message || (isEn ? 'Could not delete memory entry.' : 'Không thể xóa mục trí nhớ.'))
     }
   }
 
   async function handleClearAllMemoriesClick() {
-    if (!window.confirm('CẢNH BÁO: Hành động này sẽ XÓA MỀM toàn bộ hồ sơ trí nhớ y tế của bạn. Bạn có chắc chắn không?')) return
+    const confirmMsg = isEn ? 'WARNING: This will clear your entire medical memory profile. Are you sure?' : 'CẢNH BÁO: Hành động này sẽ XÓA MỀM toàn bộ hồ sơ trí nhớ y tế của bạn. Bạn có chắc chắn không?'
+    if (!window.confirm(confirmMsg)) return
     try {
       await apiRequest('/api/memories', { method: 'DELETE' })
       setMemories([])
-      showToast?.('Đã xóa toàn bộ hồ sơ trí nhớ.')
+      showToast?.(isEn ? 'All memories cleared.' : 'Đã xóa toàn bộ hồ sơ trí nhớ.')
     } catch (err) {
-      showToast?.(err.message || 'Không thể xóa toàn bộ.')
+      showToast?.(err.message || (isEn ? 'Could not clear memories.' : 'Không thể xóa toàn bộ.'))
     }
   }
 
@@ -228,14 +234,14 @@ export default function SettingsModal({
           isAnonymous: feedbackAnonymous,
         }),
       })
-      showToast?.('Gửi phản hồi thành công! Cảm ơn bạn đã đóng góp ý kiến.')
+      showToast?.(isEn ? 'Feedback submitted successfully! Thank you.' : 'Gửi phản hồi thành công! Cảm ơn bạn đã đóng góp ý kiến.')
       setFeedbackContent('')
       setFeedbackAnonymous(false)
       setFeedbackPriority('medium')
       setShowFeedbackHistory(true)
       loadMyFeedbacks()
     } catch (err) {
-      showToast?.(err.message || 'Không thể gửi phản hồi.')
+      showToast?.(err.message || (isEn ? 'Could not submit feedback.' : 'Không thể gửi phản hồi.'))
     } finally {
       setFeedbackSubmitting(false)
     }
@@ -287,7 +293,7 @@ export default function SettingsModal({
             const res = await apiRequest('/api/payments/paypal/create-order', { method: 'POST' })
             return res.orderId
           } catch (err) {
-            showToast?.(err.message || 'Không thể tạo đơn hàng PayPal.')
+            showToast?.(err.message || (isEn ? 'Could not create PayPal order.' : 'Không thể tạo đơn hàng PayPal.'))
             setPlanLoading(false)
             throw err
           }
@@ -298,11 +304,9 @@ export default function SettingsModal({
               method: 'POST',
               body: JSON.stringify({ orderId: data.orderID }),
             })
-            showToast?.(res.message || 'Thanh toán PayPal thành công!')
+            showToast?.(res.message || (isEn ? 'PayPal payment successful!' : 'Thanh toán PayPal thành công!'))
             setConfirmPaymentModal(false)
 
-            // Capture response is authoritative. Refetch first for any fields
-            // not returned by capture, then apply the confirmed Pro user last.
             if (onRefetchAccount) {
               await onRefetchAccount()
             }
@@ -310,21 +314,21 @@ export default function SettingsModal({
               onUpdateAccount?.(res.user)
             }
           } catch (err) {
-            showToast?.(err.message || 'Không thể hoàn tất thanh toán PayPal.')
+            showToast?.(err.message || (isEn ? 'Could not complete PayPal payment.' : 'Không thể hoàn tất thanh toán PayPal.'))
           } finally {
             setPlanLoading(false)
           }
         },
         onError: (err) => {
           console.error('[PayPal Error]', err)
-          showToast?.('Xảy ra lỗi trong quá trình thanh toán PayPal.')
+          showToast?.(isEn ? 'An error occurred during PayPal payment.' : 'Xảy ra lỗi trong quá trình thanh toán PayPal.')
           setPlanLoading(false)
         },
       }).render('#paypal-button-container')
     } catch (e) {
       console.error('[PayPal Render Error]', e)
     }
-  }, [paypalSdkLoaded, activeTab, confirmPaymentModal, showToast, onSetPlan])
+  }, [paypalSdkLoaded, activeTab, confirmPaymentModal, showToast, onSetPlan, isEn])
 
   // Xử lý bấm Chuyển Gói
   function handleSelectPlanClick(targetPlanId) {
@@ -332,7 +336,8 @@ export default function SettingsModal({
     if (targetPlanId === 'pro') {
       setConfirmPaymentModal(true)
     } else {
-      if (window.confirm('Bạn có chắc chắn muốn chuyển về gói Miễn phí?')) {
+      const confirmMsg = isEn ? 'Are you sure you want to switch to the Free plan?' : 'Bạn có chắc chắn muốn chuyển về gói Miễn phí?'
+      if (window.confirm(confirmMsg)) {
         processPlanChange('free')
       }
     }
@@ -344,9 +349,9 @@ export default function SettingsModal({
       setPlanLoading(true)
       await onSetPlan(planId)
       setConfirmPaymentModal(false)
-      showToast?.('Đã chuyển về gói Miễn phí.')
+      showToast?.(isEn ? 'Switched to Free plan.' : 'Đã chuyển về gói Miễn phí.')
     } catch (err) {
-      showToast?.(err.message || 'Không thể thay đổi gói.')
+      showToast?.(err.message || (isEn ? 'Could not change plan.' : 'Không thể thay đổi gói.'))
     } finally {
       setPlanLoading(false)
     }
@@ -396,24 +401,24 @@ export default function SettingsModal({
     setPasswordStatus(null)
 
     if (newPassword.length < 6) {
-      setPasswordStatus({ type: 'error', text: 'Mật khẩu mới phải có ít nhất 6 ký tự.' })
+      setPasswordStatus({ type: 'error', text: isEn ? 'New password must be at least 6 characters.' : 'Mật khẩu mới phải có ít nhất 6 ký tự.' })
       return
     }
     if (newPassword !== confirmPassword) {
-      setPasswordStatus({ type: 'error', text: 'Mật khẩu xác nhận không trùng khớp.' })
+      setPasswordStatus({ type: 'error', text: isEn ? 'Confirm password does not match.' : 'Mật khẩu xác nhận không trùng khớp.' })
       return
     }
 
     try {
       setPasswordLoading(true)
       await onChangePassword({ oldPassword, newPassword })
-      setPasswordStatus({ type: 'success', text: 'Đổi mật khẩu thành công!' })
+      setPasswordStatus({ type: 'success', text: isEn ? 'Password changed successfully!' : 'Đổi mật khẩu thành công!' })
       setOldPassword('')
       setNewPassword('')
       setConfirmPassword('')
-      showToast?.('Đổi mật khẩu thành công!')
+      showToast?.(isEn ? 'Password changed successfully!' : 'Đổi mật khẩu thành công!')
     } catch (err) {
-      setPasswordStatus({ type: 'error', text: err.message || 'Không thể đổi mật khẩu.' })
+      setPasswordStatus({ type: 'error', text: err.message || (isEn ? 'Could not change password.' : 'Không thể đổi mật khẩu.') })
     } finally {
       setPasswordLoading(false)
     }
@@ -427,7 +432,7 @@ export default function SettingsModal({
         aria-modal="true"
         onClick={(e) => e.stopPropagation()}
       >
-        <button className="settings-modal__close" onClick={onClose} aria-label="Đóng">
+        <button className="settings-modal__close" onClick={onClose} aria-label={isEn ? "Close" : "Đóng"}>
           <CloseIcon />
         </button>
 
@@ -445,78 +450,54 @@ export default function SettingsModal({
         </nav>
 
         <div className="settings-modal__content">
-          {/* TAB 1: TÀI KHOẢN (HỒ SƠ & ĐỔI MẬT KHẨU) */}
+          {/* TAB 1: TÀI KHOẢN (HỒ SƠ, ĐỔI MẬT KHẨU, VÀ XÓA TÀI KHOẢN Ở CUỐI TRANG) */}
           {activeTab === 'account' && (
             <section>
-              <h2>Hồ sơ tài khoản</h2>
+              <h2>{isEn ? 'Account Profile' : 'Hồ sơ tài khoản'}</h2>
               <p className="settings-modal__hint">
-                Thông tin tài khoản cá nhân được lưu trữ an toàn trên cơ sở dữ liệu hệ thống.
+                {isEn 
+                  ? 'Your personal profile information is securely stored on system databases.'
+                  : 'Thông tin tài khoản cá nhân được lưu trữ an toàn trên cơ sở dữ liệu hệ thống.'
+                }
               </p>
 
+              {/* CARD 1: HỒ SƠ CÁ NHÂN */}
               <div className="settings-section-box">
                 <label className="settings-field">
-                  <span>Tên hiển thị</span>
+                  <span>{isEn ? 'Display Name' : 'Tên hiển thị'}</span>
                   <input value={nameDraft} onChange={(e) => setNameDraft(e.target.value)} />
                 </label>
                 <label className="settings-field">
                   <span>Email</span>
                   <input value={account.email} disabled />
                 </label>
-                <div className="settings-modal__legal-links">
-                  <a href="/privacy-policy" target="_blank" rel="noreferrer">Chính sách bảo mật</a>
-                  <a href="/terms" target="_blank" rel="noreferrer">Điều khoản sử dụng</a>
-                </div>
                 <div className="settings-modal__actions" style={{ marginTop: '12px' }}>
                   <button className="btn btn--primary" onClick={() => onUpdateName(nameDraft)}>
-                    Lưu thay đổi tên
+                    {isEn ? 'Save Profile Name' : 'Lưu thay đổi tên'}
                   </button>
                   <button className="btn btn--danger-outline" onClick={onSignOut}>
-                    Đăng xuất
+                    {isEn ? 'Log Out' : 'Đăng xuất'}
                   </button>
                 </div>
               </div>
 
               <div className="settings-divider" />
 
-              <div className="settings-section-box settings-section-box--danger">
-                <h3 className="settings-subheading">Xóa tài khoản</h3>
-                <p className="settings-modal__hint">
-                  Xóa vĩnh viễn hồ sơ, hội thoại, trí nhớ cá nhân và phản hồi. Thao tác này không thể hoàn tác.
-                </p>
-                <button
-                  className="btn btn--danger-outline"
-                  disabled={deleteLoading}
-                  onClick={async () => {
-                    const confirmed = window.prompt('Nhập DELETE để xác nhận xóa vĩnh viễn tài khoản và dữ liệu:')
-                    if (confirmed !== 'DELETE') return
-                    setDeleteLoading(true)
-                    try {
-                      await onDeleteAccount?.()
-                      onClose()
-                      showToast?.('Tài khoản và dữ liệu cá nhân đã được xóa.')
-                    } catch (err) {
-                      showToast?.(err.message || 'Không thể xóa tài khoản.')
-                    } finally {
-                      setDeleteLoading(false)
-                    }
-                  }}
-                >
-                  <TrashIcon /> {deleteLoading ? 'Đang xóa...' : 'Xóa tài khoản vĩnh viễn'}
-                </button>
-              </div>
-
-              <div className="settings-divider" />
-
-              {/* MỤC ĐỔI MẬT KHẨU */}
+              {/* CARD 2: MỤC ĐỔI MẬT KHẨU */}
               <div className="settings-section-box">
                 <h3 className="settings-subheading">
-                  <LockIcon /> Đổi mật khẩu
+                  <LockIcon /> {isEn ? 'Change Password' : 'Đổi mật khẩu'}
                 </h3>
 
                 {isGoogleAccount ? (
                   <div className="settings-info-badge">
                     <span>🔒</span>
-                    <p>Tài khoản của bạn đăng nhập bằng <strong>Google OAuth</strong> nên không sử dụng mật khẩu riêng.</p>
+                    <p>
+                      {isEn 
+                        ? 'Your account uses Google OAuth login, so a separate password is not set.'
+                        : 'Tài khoản của bạn đăng nhập bằng Google OAuth nên không sử dụng mật khẩu riêng.'
+                      }
+                    </p>
                   </div>
                 ) : (
                   <form onSubmit={handleChangePasswordSubmit} className="change-password-form">
@@ -526,29 +507,29 @@ export default function SettingsModal({
                       </div>
                     )}
                     <label className="settings-field">
-                      <span>Mật khẩu hiện tại</span>
+                      <span>{isEn ? 'Current Password' : 'Mật khẩu hiện tại'}</span>
                       <input
                         type="password"
-                        placeholder="Nhập mật khẩu hiện tại..."
+                        placeholder={isEn ? "Enter current password..." : "Nhập mật khẩu hiện tại..."}
                         value={oldPassword}
                         onChange={(e) => setOldPassword(e.target.value)}
                       />
                     </label>
                     <label className="settings-field">
-                      <span>Mật khẩu mới</span>
+                      <span>{isEn ? 'New Password' : 'Mật khẩu mới'}</span>
                       <input
                         type="password"
-                        placeholder="Tối thiểu 6 ký tự..."
+                        placeholder={isEn ? "At least 6 characters..." : "Tối thiểu 6 ký tự..."}
                         value={newPassword}
                         onChange={(e) => setNewPassword(e.target.value)}
                         required
                       />
                     </label>
                     <label className="settings-field">
-                      <span>Xác nhận mật khẩu mới</span>
+                      <span>{isEn ? 'Confirm New Password' : 'Xác nhận mật khẩu mới'}</span>
                       <input
                         type="password"
-                        placeholder="Nhập lại mật khẩu mới..."
+                        placeholder={isEn ? "Re-enter new password..." : "Nhập lại mật khẩu mới..."}
                         value={confirmPassword}
                         onChange={(e) => setConfirmPassword(e.target.value)}
                         required
@@ -556,11 +537,47 @@ export default function SettingsModal({
                     </label>
                     <div style={{ marginTop: '14px' }}>
                       <button type="submit" className="btn btn--primary" disabled={passwordLoading}>
-                        {passwordLoading ? 'Đang cập nhật...' : 'Cập nhật mật khẩu'}
+                        {passwordLoading ? (isEn ? 'Updating...' : 'Đang cập nhật...') : (isEn ? 'Update Password' : 'Cập nhật mật khẩu')}
                       </button>
                     </div>
                   </form>
                 )}
+              </div>
+
+              <div className="settings-divider" />
+
+              {/* CARD 3: XÓA TÀI KHOẢN (ĐÃ DỜI XUỐNG CUỐI CÙNG TRANG TÀI KHOẢN) */}
+              <div className="settings-section-box settings-section-box--danger">
+                <h3 className="settings-subheading">{isEn ? 'Delete Account' : 'Xóa tài khoản'}</h3>
+                <p className="settings-modal__hint">
+                  {isEn
+                    ? 'Permanently delete your profile, conversations, memories, and feedback history. This action cannot be undone.'
+                    : 'Xóa vĩnh viễn hồ sơ, hội thoại, trí nhớ cá nhân và phản hồi. Thao tác này không thể hoàn tác.'
+                  }
+                </p>
+                <button
+                  className="btn btn--danger-outline"
+                  disabled={deleteLoading}
+                  onClick={async () => {
+                    const promptMsg = isEn 
+                      ? 'Type DELETE to confirm permanent account deletion:' 
+                      : 'Nhập DELETE để xác nhận xóa vĩnh viễn tài khoản và dữ liệu:'
+                    const confirmed = window.prompt(promptMsg)
+                    if (confirmed !== 'DELETE') return
+                    setDeleteLoading(true)
+                    try {
+                      await onDeleteAccount?.()
+                      onClose()
+                      showToast?.(isEn ? 'Account and data permanently deleted.' : 'Tài khoản và dữ liệu cá nhân đã được xóa.')
+                    } catch (err) {
+                      showToast?.(err.message || (isEn ? 'Could not delete account.' : 'Không thể xóa tài khoản.'))
+                    } finally {
+                      setDeleteLoading(false)
+                    }
+                  }}
+                >
+                  <TrashIcon /> {deleteLoading ? (isEn ? 'Deleting...' : 'Đang xóa...') : (isEn ? 'Permanently Delete Account' : 'Xóa tài khoản vĩnh viễn')}
+                </button>
               </div>
             </section>
           )}
@@ -570,33 +587,37 @@ export default function SettingsModal({
             <section>
               <div className="memory-tab-header">
                 <div>
-                  <h2>Trí nhớ thông minh cá nhân</h2>
+                  <h2>{isEn ? 'Personal Smart AI Memory' : 'Trí nhớ thông minh cá nhân'}</h2>
                   <p className="settings-modal__hint">
-                    Hệ thống tự động ghi nhớ và cá nhân hóa trải nghiệm tham vấn dựa trên tiền sử y tế của bạn. Tất cả dữ liệu được mã hóa <strong>AES-256-GCM</strong> bảo mật tuyệt đối.
+                    {isEn
+                      ? 'System automatically remembers medical history to personalize consultations. All data encrypted with AES-256-GCM.'
+                      : 'Hệ thống tự động ghi nhớ và cá nhân hóa trải nghiệm tham vấn dựa trên tiền sử y tế của bạn. Tất cả dữ liệu được mã hóa AES-256-GCM bảo mật tuyệt đối.'
+                    }
                   </p>
                 </div>
                 <button
                   className="btn btn--outline btn--sm"
                   onClick={handleExportMemoryProfileClick}
-                  title="Tải về tóm tắt tiền sử y tế cá nhân dạng tệp văn bản"
+                  title={isEn ? "Export personal medical history profile" : "Tải về tóm tắt tiền sử y tế cá nhân dạng tệp văn bản"}
                 >
-                  📄 Xuất hồ sơ (.txt)
+                  📄 {isEn ? 'Export Profile (.txt)' : 'Xuất hồ sơ (.txt)'}
                 </button>
               </div>
 
-              {/* TÙY CHỈNH TỰ ĐỘNG GHI NHỚ (SỬ DỤNG STYLE ĐỒNG BỘ AUTO-RENEW) */}
+              {/* TÙY CHỈNH TỰ ĐỘNG GHI NHỚ */}
               <div className="settings-section-box">
                 <h3 className="settings-subheading">
-                  <BrainIcon /> Cấu hình Tự động Ghi nhớ
+                  <BrainIcon /> {isEn ? 'Automatic Memory Settings' : 'Cấu hình Tự động Ghi nhớ'}
                 </h3>
 
                 <div className="auto-renew-row">
                   <div className="auto-renew-text">
-                    <strong>Bật tính năng Trí nhớ thông minh</strong>
+                    <strong>{isEn ? 'Enable Smart Medical Memory' : 'Bật tính năng Trí nhớ thông minh'}</strong>
                     <p className="auto-renew-hint">
                       {memorySettings?.memoryEnabled
-                        ? 'Đang BẬT. Cho phép AI tham khảo và tự động trích xuất tiền sử y tế của bạn.'
-                        : 'Đang TẮT. AI sẽ không tham khảo hoặc trích xuất dữ liệu trí nhớ cá nhân.'}
+                        ? (isEn ? 'ACTIVE. Allows AI to reference and auto-extract medical history.' : 'Đang BẬT. Cho phép AI tham khảo và tự động trích xuất tiền sử y tế của bạn.')
+                        : (isEn ? 'OFF. AI will not reference or extract personal memory records.' : 'Đang TẮT. AI sẽ không tham khảo hoặc trích xuất dữ liệu trí nhớ cá nhân.')
+                      }
                     </p>
                   </div>
                   <label className="toggle-switch">
@@ -611,7 +632,7 @@ export default function SettingsModal({
 
                 {memorySettings.memoryEnabled !== false && (
                   <div className="memory-category-toggles">
-                    <span className="memory-toggles-title">Ghi nhớ theo từng danh mục:</span>
+                    <span className="memory-toggles-title">{isEn ? 'Category-based auto-remember:' : 'Ghi nhớ theo từng danh mục:'}</span>
                     <div className="memory-toggles-grid">
                       <label className="memory-checkbox-item">
                         <input
@@ -619,7 +640,7 @@ export default function SettingsModal({
                           checked={memorySettings.autoRememberAllergies !== false}
                           onChange={(e) => handleToggleMemorySetting('autoRememberAllergies', e.target.checked)}
                         />
-                        <span>🚨 Dị ứng thuốc & thức ăn</span>
+                        <span>🚨 {isEn ? 'Drug & food allergies' : 'Dị ứng thuốc & thức ăn'}</span>
                       </label>
                       <label className="memory-checkbox-item">
                         <input
@@ -627,7 +648,7 @@ export default function SettingsModal({
                           checked={memorySettings.autoRememberChronic !== false}
                           onChange={(e) => handleToggleMemorySetting('autoRememberChronic', e.target.checked)}
                         />
-                        <span>🏥 Bệnh nền mãn tính</span>
+                        <span>🏥 {isEn ? 'Chronic conditions' : 'Bệnh nền mãn tính'}</span>
                       </label>
                       <label className="memory-checkbox-item">
                         <input
@@ -635,7 +656,7 @@ export default function SettingsModal({
                           checked={memorySettings.autoRememberMedications !== false}
                           onChange={(e) => handleToggleMemorySetting('autoRememberMedications', e.target.checked)}
                         />
-                        <span>💊 Thuốc đang sử dụng</span>
+                        <span>💊 {isEn ? 'Active medications' : 'Thuốc đang sử dụng'}</span>
                       </label>
                       <label className="memory-checkbox-item">
                         <input
@@ -643,7 +664,7 @@ export default function SettingsModal({
                           checked={memorySettings.autoRememberEpisodes !== false}
                           onChange={(e) => handleToggleMemorySetting('autoRememberEpisodes', e.target.checked)}
                         />
-                        <span>📋 Đợt bệnh ngắn hạn (90 ngày)</span>
+                        <span>📋 {isEn ? 'Short-term episodes (90 days)' : 'Đợt bệnh ngắn hạn (90 ngày)'}</span>
                       </label>
                     </div>
                   </div>
@@ -655,47 +676,47 @@ export default function SettingsModal({
               {/* FORM THÊM TRÍ NHỚ THỦ CÔNG */}
               <div className="settings-section-box">
                 <h3 className="settings-subheading">
-                  ➕ Thêm tiền sử y tế thủ công
+                  ➕ {isEn ? 'Add Manual Medical History Record' : 'Thêm tiền sử y tế thủ công'}
                 </h3>
 
                 <form onSubmit={handleAddMemorySubmit} className="memory-add-form-box">
                   <div className="memory-form-row">
                     <label className="settings-field">
-                      <span>Danh mục</span>
+                      <span>{isEn ? 'Category' : 'Danh mục'}</span>
                       <select
                         className="memory-select-input"
                         value={newMemoryCategory}
                         onChange={(e) => setNewMemoryCategory(e.target.value)}
                       >
-                        <option value="allergy">🚨 Dị ứng (Allergy)</option>
-                        <option value="chronic_condition">🏥 Bệnh nền (Chronic)</option>
-                        <option value="medication">💊 Thuốc đang dùng (Medication)</option>
-                        <option value="blood_type">🩸 Nhóm máu (Blood Type)</option>
-                        <option value="pregnancy">👶 Thai kỳ (Pregnancy)</option>
-                        <option value="past_episode">📋 Đợt bệnh trước (Past Episode)</option>
-                        <option value="lifestyle">🏃 Lối sống (Lifestyle)</option>
-                        <option value="display_preference">⚙️ Hiển thị (Preference)</option>
+                        <option value="allergy">🚨 {isEn ? 'Allergy' : 'Dị ứng (Allergy)'}</option>
+                        <option value="chronic_condition">🏥 {isEn ? 'Chronic Condition' : 'Bệnh nền (Chronic)'}</option>
+                        <option value="medication">💊 {isEn ? 'Medication' : 'Thuốc đang dùng (Medication)'}</option>
+                        <option value="blood_type">🩸 {isEn ? 'Blood Type' : 'Nhóm máu (Blood Type)'}</option>
+                        <option value="pregnancy">👶 {isEn ? 'Pregnancy' : 'Thai kỳ (Pregnancy)'}</option>
+                        <option value="past_episode">📋 {isEn ? 'Past Episode' : 'Đợt bệnh trước (Past Episode)'}</option>
+                        <option value="lifestyle">🏃 {isEn ? 'Lifestyle' : 'Lối sống (Lifestyle)'}</option>
+                        <option value="display_preference">⚙️ {isEn ? 'Display Preference' : 'Hiển thị (Preference)'}</option>
                       </select>
                     </label>
 
                     <label className="settings-field">
-                      <span>Chủ thể</span>
+                      <span>{isEn ? 'Subject' : 'Chủ thể'}</span>
                       <select
                         className="memory-select-input"
                         value={newMemorySubject}
                         onChange={(e) => setNewMemorySubject(e.target.value)}
                       >
-                        <option value="self">👤 Bản thân tôi</option>
-                        <option value="family">👨‍👩‍👧 Tiền sử gia đình</option>
+                        <option value="self">👤 {isEn ? 'Myself' : 'Bản thân tôi'}</option>
+                        <option value="family">👨‍👩‍👧 {isEn ? 'Family History' : 'Tiền sử gia đình'}</option>
                       </select>
                     </label>
                   </div>
 
                   <label className="settings-field">
-                    <span>Nội dung tiền sử y tế</span>
+                    <span>{isEn ? 'Medical Record Description' : 'Nội dung tiền sử y tế'}</span>
                     <input
                       type="text"
-                      placeholder="Nhập thông tin (ví dụ: Dị ứng Penicillin nặng, Đái tháo đường Tuýp 2...)"
+                      placeholder={isEn ? "e.g., Severe Penicillin Allergy, Type 2 Diabetes..." : "Nhập thông tin (ví dụ: Dị ứng Penicillin nặng, Đái tháo đường Tuýp 2...)"}
                       value={newMemoryContent}
                       onChange={(e) => setNewMemoryContent(e.target.value)}
                       required
@@ -704,7 +725,7 @@ export default function SettingsModal({
 
                   <div className="memory-form-actions">
                     <button type="submit" className="btn btn--primary btn--sm" disabled={!newMemoryContent.trim()}>
-                      Thêm vào hồ sơ
+                      {isEn ? 'Add to Memory' : 'Thêm vào hồ sơ'}
                     </button>
                   </div>
                 </form>
@@ -716,24 +737,26 @@ export default function SettingsModal({
               <div className="settings-section-box">
                 <div className="memory-list-header">
                   <h3 className="settings-subheading" style={{ margin: 0 }}>
-                    <BrainIcon /> Hồ sơ Trí nhớ cá nhân ({memories.length} mục)
+                    <BrainIcon /> {isEn ? `Personal Memory Profile (${memories.length} entries)` : `Hồ sơ Trí nhớ cá nhân (${memories.length} mục)`}
                   </h3>
                   {memories.length > 0 && (
                     <button
                       className="btn btn--danger-outline btn--sm"
                       onClick={handleClearAllMemoriesClick}
                     >
-                      <TrashIcon /> Xóa toàn bộ
+                      <TrashIcon /> {isEn ? 'Clear All' : 'Xóa toàn bộ'}
                     </button>
                   )}
                 </div>
 
                 {memoryLoading ? (
-                  <p className="settings-modal__hint text-center" style={{ padding: '16px 0' }}>Đang tải dữ liệu trí nhớ mã hóa...</p>
+                  <p className="settings-modal__hint text-center" style={{ padding: '16px 0' }}>
+                    {isEn ? 'Loading encrypted memory profile...' : 'Đang tải dữ liệu trí nhớ mã hóa...'}
+                  </p>
                 ) : memories.length === 0 ? (
                   <div className="empty-memory-state">
-                    <p className="empty-title">Chưa có thông tin trí nhớ y tế nào được lưu.</p>
-                    <p className="empty-desc">Khi bạn trò chuyện với MedChat247 hoặc nhập ở trên, các thông tin y tế quan trọng sẽ tự động xuất hiện tại đây.</p>
+                    <p className="empty-title">{isEn ? 'No medical memory entries stored yet.' : 'Chưa có thông tin trí nhớ y tế nào được lưu.'}</p>
+                    <p className="empty-desc">{isEn ? 'As you chat with MedChat247 or enter data above, important medical history will appear here.' : 'Khi bạn trò chuyện với MedChat247 hoặc nhập ở trên, các thông tin y tế quan trọng sẽ tự động xuất hiện tại đây.'}</p>
                   </div>
                 ) : (
                   <div className="memory-cards-container">
@@ -742,24 +765,24 @@ export default function SettingsModal({
                         <div className="memory-item-top">
                           <div className="memory-tags-group">
                             <span className={`status-pill status-pill--${mem.category === 'allergy' ? 'free' : 'active'}`}>
-                              {mem.category === 'allergy' && '🚨 Dị ứng'}
-                              {mem.category === 'chronic_condition' && '🏥 Bệnh nền'}
-                              {mem.category === 'medication' && '💊 Thuốc dùng'}
-                              {mem.category === 'blood_type' && '🩸 Nhóm máu'}
-                              {mem.category === 'pregnancy' && '👶 Thai kỳ'}
-                              {mem.category === 'past_episode' && '📋 Đợt bệnh'}
-                              {mem.category === 'lifestyle' && '🏃 Lối sống'}
-                              {mem.category === 'display_preference' && '⚙️ Hiển thị'}
+                              {mem.category === 'allergy' && (isEn ? '🚨 Allergy' : '🚨 Dị ứng')}
+                              {mem.category === 'chronic_condition' && (isEn ? '🏥 Chronic' : '🏥 Bệnh nền')}
+                              {mem.category === 'medication' && (isEn ? '💊 Medication' : '💊 Thuốc dùng')}
+                              {mem.category === 'blood_type' && (isEn ? '🩸 Blood Type' : '🩸 Nhóm máu')}
+                              {mem.category === 'pregnancy' && (isEn ? '👶 Pregnancy' : '👶 Thai kỳ')}
+                              {mem.category === 'past_episode' && (isEn ? '📋 Episode' : '📋 Đợt bệnh')}
+                              {mem.category === 'lifestyle' && (isEn ? '🏃 Lifestyle' : '🏃 Lối sống')}
+                              {mem.category === 'display_preference' && (isEn ? '⚙️ Display' : '⚙️ Hiển thị')}
                             </span>
                             <span className="memory-subject-tag">
-                              {mem.subject === 'family' ? '👨‍👩‍👧 Gia đình' : '👤 Bản thân'}
+                              {mem.subject === 'family' ? (isEn ? '👨‍👩‍👧 Family' : '👨‍👩‍👧 Gia đình') : (isEn ? '👤 Self' : '👤 Bản thân')}
                             </span>
                             {mem.isLocked && (
-                              <span className="memory-locked-tag">🔒 Khóa thủ công</span>
+                              <span className="memory-locked-tag">🔒 {isEn ? 'Locked' : 'Khóa thủ công'}</span>
                             )}
                           </div>
                           <span className="memory-source-meta">
-                            {mem.source === 'manual' ? 'Thủ công' : 'AI Trích xuất'} (v{mem.version || 1})
+                            {mem.source === 'manual' ? (isEn ? 'Manual' : 'Thủ công') : (isEn ? 'AI Extracted' : 'AI Trích xuất')} (v{mem.version || 1})
                           </span>
                         </div>
 
@@ -767,20 +790,20 @@ export default function SettingsModal({
 
                         <div className="memory-item-bottom">
                           <span className="memory-item-date">
-                            Cập nhật: {new Date(mem.updatedAt || mem.createdAt).toLocaleDateString('vi-VN')}
+                            {isEn ? 'Updated: ' : 'Cập nhật: '}{new Date(mem.updatedAt || mem.createdAt).toLocaleDateString(isEn ? 'en-US' : 'vi-VN')}
                           </span>
                           <div className="memory-item-actions">
                             <button
                               className={`btn-icon-action ${mem.isLocked ? 'btn-icon-action--active' : ''}`}
                               onClick={() => handleToggleLockSingleMemory(mem.id, mem.isLocked)}
-                              title={mem.isLocked ? 'Mở khóa (Cho phép AI cập nhật)' : 'Khóa (Khống chế không cho AI ghi đè)'}
+                              title={mem.isLocked ? (isEn ? 'Unlock (Allow AI updates)' : 'Mở khóa (Cho phép AI cập nhật)') : (isEn ? 'Lock (Prevent AI overwrite)' : 'Khóa (Khống chế không cho AI ghi đè)')}
                             >
                               <LockIcon />
                             </button>
                             <button
                               className="btn-icon-action btn-icon-action--danger"
                               onClick={() => handleDeleteSingleMemory(mem.id)}
-                              title="Xóa mục trí nhớ này"
+                              title={isEn ? "Delete entry" : "Xóa mục trí nhớ này"}
                             >
                               <TrashIcon />
                             </button>
@@ -792,11 +815,14 @@ export default function SettingsModal({
                 )}
               </div>
 
-              {/* HỘP CẢNH BÁO PHÁP LÝ DÙNG STYLE ĐỒNG BỘ SETTINGS-INFO-BADGE */}
+              {/* HỘP CẢNH BÁO PHÁP LÝ */}
               <div className="settings-info-badge" style={{ marginTop: '16px', background: 'rgba(245, 158, 11, 0.08)', borderColor: 'rgba(245, 158, 11, 0.25)' }}>
                 <span>⚠️</span>
                 <p>
-                  <strong>Khuyến cáo pháp lý Y tế:</strong> Thông tin trong Trí nhớ cá nhân được sử dụng nhằm mục đích cá nhân hóa các gợi ý tham khảo y tế, không phải là Hồ sơ bệnh án y tế chính thức và không thay thế chẩn đoán lâm sàng của bác sĩ chuyên khoa.
+                  <strong>{isEn ? 'Medical Disclaimer:' : 'Khuyến cáo pháp lý Y tế:'}</strong> {isEn 
+                    ? 'Information stored in Personal Memory is used solely to personalize medical reference suggestions, does not constitute an official medical record, and does not replace clinical physician diagnosis.'
+                    : 'Thông tin trong Trí nhớ cá nhân được sử dụng nhằm mục đích cá nhân hóa các gợi ý tham khảo y tế, không phải là Hồ sơ bệnh án y tế chính thức và không thay thế chẩn đoán lâm sàng của bác sĩ chuyên khoa.'
+                  }
                 </p>
               </div>
             </section>
@@ -805,46 +831,47 @@ export default function SettingsModal({
           {/* TAB 3: MỨC SỬ DỤNG */}
           {activeTab === 'usage' && (
             <section>
-              <h2>Mức sử dụng &amp; Token</h2>
+              <h2>{isEn ? 'Usage & Token Limit' : 'Mức sử dụng & Token'}</h2>
               <p className="settings-modal__hint">
-                Số liệu do máy chủ backend ghi nhận sau mỗi lần bạn nhắn tin (ước tính ~4 ký
-                tự/token). Tổng token sẽ tiếp tục cộng dồn cho đến khi có tính năng làm mới theo
-                chu kỳ hàng tháng.
+                {isEn
+                  ? 'Recorded token usage per conversation (~4 chars/token). Accumulated towards your monthly limit.'
+                  : 'Số liệu do máy chủ backend ghi nhận sau mỗi lần bạn nhắn tin (ước tính ~4 ký tự/token).'
+                }
               </p>
               {usageError && <p className="auth-modal__error">{usageError}</p>}
-              {!usage && !usageError && <p className="settings-modal__hint">Đang tải...</p>}
+              {!usage && !usageError && <p className="settings-modal__hint">{isEn ? 'Loading...' : 'Đang tải...'}</p>}
               {usage && (
                 <div className="usage-card">
                   <div className="usage-card__row">
-                    <span>Gói hiện tại</span>
+                    <span>{isEn ? 'Current Plan' : 'Gói hiện tại'}</span>
                     <strong>{plan.name}</strong>
                   </div>
                   <div className="usage-card__row">
-                    <span>Đã dùng</span>
+                    <span>{isEn ? 'Tokens Used' : 'Đã dùng'}</span>
                     <strong>
-                      {usage.tokensUsed.toLocaleString('vi-VN')} /{' '}
-                      {usage.tokenLimit.toLocaleString('vi-VN')} token
+                      {usage.tokensUsed.toLocaleString(isEn ? 'en-US' : 'vi-VN')} /{' '}
+                      {usage.tokenLimit.toLocaleString(isEn ? 'en-US' : 'vi-VN')} tokens
                     </strong>
                   </div>
                   <div className="usage-bar">
                     <div className="usage-bar__fill" style={{ width: `${usagePercent}%` }} />
                   </div>
-                  <p className="usage-card__note">{usagePercent}% hạn mức đã sử dụng.</p>
+                  <p className="usage-card__note">{usagePercent}% {isEn ? 'limit used.' : 'hạn mức đã sử dụng.'}</p>
                 </div>
               )}
             </section>
           )}
 
-          {/* TAB 3: GÓI THUÊ BAO */}
+          {/* TAB 4: GÓI THUÊ BAO */}
           {activeTab === 'subscription' && (
             <section>
-              <h2>Gói thuê bao</h2>
+              <h2>{isEn ? 'Subscription Plans' : 'Gói thuê bao'}</h2>
               <div className="plans-grid">
                 {PLANS.map((p) => {
                   const isCurrent = p.id === account.planId
                   return (
                     <div key={p.id} className={`plan-card ${isCurrent ? 'plan-card--current' : ''}`}>
-                      {isCurrent && <span className="plan-card__badge">Đang sử dụng</span>}
+                      {isCurrent && <span className="plan-card__badge">{isEn ? 'Active Plan' : 'Đang sử dụng'}</span>}
                       <h3>{p.name}</h3>
                       <p className="plan-card__price">
                         {p.price}
@@ -862,49 +889,49 @@ export default function SettingsModal({
                         disabled={isCurrent || (p.id === 'free' && account.planId === 'pro')}
                         onClick={() => handleSelectPlanClick(p.id)}
                       >
-                        {isCurrent ? 'Gói hiện tại' : (p.id === 'free' && account.planId === 'pro' ? 'Gói cơ bản' : `Chuyển sang ${p.name}`)}
+                        {isCurrent ? (isEn ? 'Active Plan' : 'Gói hiện tại') : (p.id === 'free' && account.planId === 'pro' ? (isEn ? 'Basic Plan' : 'Gói cơ bản') : (isEn ? `Upgrade to ${p.name}` : `Chuyển sang ${p.name}`))}
                       </button>
                     </div>
                   )
                 })}
               </div>
               <p className="settings-modal__hint">
-                Chuyển đổi gói trải nghiệm linh hoạt giữa gói Miễn phí và Pro y tế cao cấp.
+                {isEn ? 'Flexible plan switching between Free and Pro Medical AI.' : 'Chuyển đổi gói trải nghiệm linh hoạt giữa gói Miễn phí và Pro y tế cao cấp.'}
               </p>
             </section>
           )}
 
-          {/* TAB 4: THANH TOÁN (PAYPAL CHECKOUT) */}
+          {/* TAB 5: THANH TOÁN (PAYPAL CHECKOUT) */}
           {activeTab === 'payment' && (
             <section>
-              <h2>Thanh toán &amp; Cổng PayPal</h2>
+              <h2>{isEn ? 'Payment & PayPal Checkout' : 'Thanh toán & Cổng PayPal'}</h2>
               <p className="settings-modal__hint">
-                Thanh toán an toàn quốc tế qua **PayPal Checkout** để nâng cấp gói Pro Chuyên Gia (99.000đ ≈ $3.99 USD / 30 ngày).
+                {isEn ? 'Secure international payment via PayPal Checkout to upgrade to Pro (99,000đ ≈ $3.99 USD / 30 days).' : 'Thanh toán an toàn quốc tế qua PayPal Checkout để nâng cấp gói Pro Chuyên Gia (99.000đ ≈ $3.99 USD / 30 ngày).'}
               </p>
 
               {/* THÔNG TIN HẠN SỬ DỤNG GÓI */}
               <div className="subscription-status-box">
                 <div className="status-header">
                   <div>
-                    <span className="status-label">Trạng thái gói dịch vụ</span>
+                    <span className="status-label">{isEn ? 'Subscription Status' : 'Trạng thái gói dịch vụ'}</span>
                     <h3 className="status-title">
-                      {account.planId === 'pro' ? 'Gói Pro Chuyên Gia (Active)' : 'Gói Miễn Phí (Free)'}
+                      {account.planId === 'pro' ? (isEn ? 'Pro Specialist (Active)' : 'Gói Pro Chuyên Gia (Active)') : (isEn ? 'Free Plan' : 'Gói Miễn Phí (Free)')}
                     </h3>
                   </div>
                   <span className={`status-pill status-pill--${account.planId === 'pro' ? 'active' : 'free'}`}>
-                    {account.planId === 'pro' ? 'Đang hoạt động' : 'Miễn phí'}
+                    {account.planId === 'pro' ? (isEn ? 'Active' : 'Đang hoạt động') : (isEn ? 'Free' : 'Miễn phí')}
                   </span>
                 </div>
 
                 {account.planId === 'pro' && (
                   <div className="date-info-grid">
                     <div className="date-item">
-                      <span>Phương thức thanh toán</span>
-                      <strong>PayPal ({account.billingDetails?.paypalEmail || 'Tài khoản PayPal'})</strong>
+                      <span>{isEn ? 'Payment Method' : 'Phương thức thanh toán'}</span>
+                      <strong>PayPal ({account.billingDetails?.paypalEmail || (isEn ? 'PayPal Account' : 'Tài khoản PayPal')})</strong>
                     </div>
                     <div className="date-item">
-                      <span>Ngày hết hạn</span>
-                      <strong>{account.subscriptionExpiresAt ? new Date(account.subscriptionExpiresAt).toLocaleDateString('vi-VN') : '30 ngày kể từ ngày thanh toán'}</strong>
+                      <span>{isEn ? 'Expiration Date' : 'Ngày hết hạn'}</span>
+                      <strong>{account.subscriptionExpiresAt ? new Date(account.subscriptionExpiresAt).toLocaleDateString(isEn ? 'en-US' : 'vi-VN') : (isEn ? '30 days from payment' : '30 ngày kể từ ngày thanh toán')}</strong>
                     </div>
                   </div>
                 )}
@@ -912,11 +939,12 @@ export default function SettingsModal({
                 {/* CÔNG TẮC GIA HẠN TỰ ĐỘNG */}
                 <div className="auto-renew-row">
                   <div className="auto-renew-text">
-                    <strong>Tự động nhắc gia hạn</strong>
+                    <strong>{isEn ? 'Auto-Renewal Reminders' : 'Tự động nhắc gia hạn'}</strong>
                     <p className="auto-renew-hint">
                       {isAutoRenewOn
-                        ? 'Đang BẬT. Hệ thống sẽ nhắc bạn gia hạn gói Pro khi sắp hết hạn.'
-                        : 'Đang TẮT. Gói Pro sẽ tự động chuyển về Miễn phí sau ngày hết hạn.'}
+                        ? (isEn ? 'ACTIVE. System will remind you before your Pro plan expires.' : 'Đang BẬT. Hệ thống sẽ nhắc bạn gia hạn gói Pro khi sắp hết hạn.')
+                        : (isEn ? 'OFF. Pro plan will automatically revert to Free upon expiration.' : 'Đang TẮT. Gói Pro sẽ tự động chuyển về Miễn phí sau ngày hết hạn.')
+                      }
                     </p>
                   </div>
                   <label className="toggle-switch">
@@ -935,15 +963,15 @@ export default function SettingsModal({
               {/* MỤC NÂNG CẤP QUA PAYPAL CHECKOUT */}
               <div className="settings-section-box">
                 <h3 className="settings-subheading">
-                  <CreditCardIcon /> Nâng cấp gói Pro bằng PayPal (99.000đ / $3.99 USD)
+                  <CreditCardIcon /> {isEn ? 'Upgrade Pro via PayPal (99,000đ / $3.99 USD)' : 'Nâng cấp gói Pro bằng PayPal (99.000đ / $3.99 USD)'}
                 </h3>
 
                 {account.planId === 'pro' ? (
                   <div className="settings-alert settings-alert--success" style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
                     <CheckIcon />
                     <div>
-                      <strong>Tài khoản đang ở gói Pro Chuyên Gia!</strong>
-                      <p style={{ margin: 0, fontSize: '12px' }}>Bạn có thể thanh toán thêm lượt để gia hạn 30 ngày tiếp theo bất kỳ lúc nào.</p>
+                      <strong>{isEn ? 'Your account is on the Pro Plan!' : 'Tài khoản đang ở gói Pro Chuyên Gia!'}</strong>
+                      <p style={{ margin: 0, fontSize: '12px' }}>{isEn ? 'You can renew for another 30 days at any time.' : 'Bạn có thể thanh toán thêm lượt để gia hạn 30 ngày tiếp theo bất kỳ lúc nào.'}</p>
                     </div>
                   </div>
                 ) : null}
@@ -951,25 +979,63 @@ export default function SettingsModal({
                 <div style={{ marginTop: '16px' }}>
                   {!paypalSdkLoaded && (
                     <p className="settings-modal__hint" style={{ textAlign: 'center', padding: '12px' }}>
-                      Đang tải cổng thanh toán bảo mật PayPal...
+                      {isEn ? 'Loading secure PayPal checkout gateway...' : 'Đang tải cổng thanh toán bảo mật PayPal...'}
                     </p>
                   )}
                   <div id="paypal-button-container" style={{ maxWidth: '400px', margin: '0 auto', minHeight: '120px' }} />
                   <p className="settings-modal__hint" style={{ marginTop: '10px', textAlign: 'center', fontSize: '12px' }}>
-                    💡 <strong>Mẹo khi thanh toán Thẻ (Visa/Mastercard):</strong> Nếu PayPal yêu cầu nhập Mã bưu chính (ZIP code), vui lòng điền <strong>6 chữ số</strong> (Ví dụ: TP.HCM: <code>700000</code>, Hà Nội: <code>100000</code>, Cần Thơ: <code>900000</code>).
+                    💡 <strong>{isEn ? 'Credit Card Tip (Visa/Mastercard):' : 'Mẹo khi thanh toán Thẻ (Visa/Mastercard):'}</strong> {isEn ? 'If PayPal asks for a ZIP code, enter 6 digits (e.g. 700000 or 100000).' : 'Nếu PayPal yêu cầu nhập Mã bưu chính (ZIP code), vui lòng điền 6 chữ số (Ví dụ: TP.HCM: 700000, Hà Nội: 100000).'}
                   </p>
                 </div>
               </div>
             </section>
           )}
 
-          {/* TAB 5: TRỢ GIÚP & PHẢN HỒI */}
+          {/* TAB 6: TRỢ GIÚP, PHẢN HỒI & PHÁP LÝ (ĐÃ CHUYỂN DỜI CÁC LIÊN KẾT PHÁP LÝ SANG ĐÂY) */}
           {activeTab === 'help' && (
             <section className="help-section">
-              <h2>Trợ giúp &amp; Phản hồi</h2>
+              <h2>{isEn ? 'Help, Support & Legal' : 'Trợ giúp & Phản hồi'}</h2>
               <p className="settings-modal__hint">
-                Gặp khó khăn khi sử dụng hoặc muốn đóng góp ý kiến nâng cấp hệ thống? Bạn có thể gửi phản hồi trực tiếp cho đội ngũ phát triển MedChat247 tại đây.
+                {isEn 
+                  ? 'Have questions, need support, or wish to review legal documents? Reach out to the MedChat247 development team below.'
+                  : 'Gặp khó khăn khi sử dụng hoặc muốn đóng góp ý kiến nâng cấp hệ thống? Bạn có thể gửi phản hồi trực tiếp cho đội ngũ phát triển MedChat247 tại đây.'
+                }
               </p>
+
+              {/* CARD MỚI: VĂN BẢN PHÁP LÝ & QUYỀN RIÊNG TƯ (DỜI TỪ TAB TÀI KHOẢN SANG ĐÂY) */}
+              <div className="settings-section-box">
+                <h3 className="settings-subheading">
+                  <ShieldCheckIcon /> {isEn ? 'Legal & Privacy Documentation' : 'Văn bản Pháp lý & Quyền riêng tư'}
+                </h3>
+                <p className="settings-modal__hint" style={{ marginBottom: '14px' }}>
+                  {isEn
+                    ? 'Read our official terms of service and medical data confidentiality commitments.'
+                    : 'Xem các văn bản pháp lý chính thức và cam kết bảo vệ dữ liệu y tế của MedChat247.'
+                  }
+                </p>
+                <div style={{ display: 'flex', gap: '12px', flexWrap: 'wrap' }}>
+                  <a
+                    href="/privacy-policy"
+                    target="_blank"
+                    rel="noreferrer"
+                    className="btn btn--outline btn--sm"
+                    style={{ textDecoration: 'none', display: 'inline-flex', alignItems: 'center', gap: '6px' }}
+                  >
+                    <ShieldCheckIcon /> {isEn ? 'Privacy Policy' : 'Chính sách bảo mật'}
+                  </a>
+                  <a
+                    href="/terms"
+                    target="_blank"
+                    rel="noreferrer"
+                    className="btn btn--outline btn--sm"
+                    style={{ textDecoration: 'none', display: 'inline-flex', alignItems: 'center', gap: '6px' }}
+                  >
+                    <FileTextIcon /> {isEn ? 'Terms of Service' : 'Điều khoản sử dụng'}
+                  </a>
+                </div>
+              </div>
+
+              <div className="settings-divider" />
 
               {/* Toggle: Gửi mới / Lịch sử */}
               <div className="help-tabs-toggle">
@@ -977,14 +1043,14 @@ export default function SettingsModal({
                   className={`help-tab-btn ${!showFeedbackHistory ? 'active' : ''}`}
                   onClick={() => setShowFeedbackHistory(false)}
                 >
-                  Gửi phản hồi mới
+                  {isEn ? 'Submit New Feedback' : 'Gửi phản hồi mới'}
                 </button>
                 {isLoggedIn && (
                   <button
                     className={`help-tab-btn ${showFeedbackHistory ? 'active' : ''}`}
                     onClick={() => { setShowFeedbackHistory(true); loadMyFeedbacks(); }}
                   >
-                    Lịch sử phản hồi ({myFeedbacks.length})
+                    {isEn ? `Feedback History (${myFeedbacks.length})` : `Lịch sử phản hồi (${myFeedbacks.length})`}
                   </button>
                 )}
               </div>
@@ -995,7 +1061,7 @@ export default function SettingsModal({
                   <form onSubmit={handleSubmitFeedback} style={{ marginTop: '16px' }}>
 
                     <label className="settings-field">
-                      <span>Loại phản hồi</span>
+                      <span>{isEn ? 'Feedback Type' : 'Loại phản hồi'}</span>
                       <select
                         value={feedbackCategory}
                         onChange={e => setFeedbackCategory(e.target.value)}
@@ -1010,17 +1076,17 @@ export default function SettingsModal({
                           fontFamily: 'inherit',
                         }}
                       >
-                        <option value="help">Trợ giúp (cần phản hồi)</option>
-                        <option value="bug">Báo lỗi (Bug)</option>
-                        <option value="feature">Yêu cầu tính năng mới</option>
-                        <option value="question">Câu hỏi</option>
-                        <option value="complaint">Khiếu nại</option>
-                        <option value="other">Khác</option>
+                        <option value="help">{isEn ? 'Help (Request reply)' : 'Trợ giúp (cần phản hồi)'}</option>
+                        <option value="bug">{isEn ? 'Bug Report' : 'Báo lỗi (Bug)'}</option>
+                        <option value="feature">{isEn ? 'Feature Request' : 'Yêu cầu tính năng mới'}</option>
+                        <option value="question">{isEn ? 'Question' : 'Câu hỏi'}</option>
+                        <option value="complaint">{isEn ? 'Complaint' : 'Khiếu nại'}</option>
+                        <option value="other">{isEn ? 'Other' : 'Khác'}</option>
                       </select>
                     </label>
 
                     <label className="settings-field">
-                      <span>Mức độ ưu tiên</span>
+                      <span>{isEn ? 'Priority Level' : 'Mức độ ưu tiên'}</span>
                       <select
                         value={feedbackPriority}
                         onChange={e => setFeedbackPriority(e.target.value)}
@@ -1035,18 +1101,18 @@ export default function SettingsModal({
                           fontFamily: 'inherit',
                         }}
                       >
-                        <option value="low">Thấp</option>
-                        <option value="medium">Trung bình</option>
-                        <option value="high">Cao</option>
-                        <option value="urgent">Khẩn cấp</option>
+                        <option value="low">{isEn ? 'Low' : 'Thấp'}</option>
+                        <option value="medium">{isEn ? 'Medium' : 'Trung bình'}</option>
+                        <option value="high">{isEn ? 'High' : 'Cao'}</option>
+                        <option value="urgent">{isEn ? 'Urgent' : 'Khẩn cấp'}</option>
                       </select>
                     </label>
 
                     <label className="settings-field" style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
-                      <span>Nội dung phản hồi</span>
+                      <span>{isEn ? 'Feedback Content' : 'Nội dung phản hồi'}</span>
                       <textarea
                         name="feedback"
-                        placeholder="Mô tả chi tiết câu hỏi hoặc vấn đề bạn gặp phải..."
+                        placeholder={isEn ? "Describe your question or issue in detail..." : "Mô tả chi tiết câu hỏi hoặc vấn đề bạn gặp phải..."}
                         rows={5}
                         required
                         value={feedbackContent}
@@ -1069,11 +1135,12 @@ export default function SettingsModal({
                     {/* Toggle gửi ẩn danh */}
                     <div className="auto-renew-row" style={{ marginTop: '4px' }}>
                       <div className="auto-renew-text">
-                        <strong>Gửi ẩn danh</strong>
+                        <strong>{isEn ? 'Submit Anonymously' : 'Gửi ẩn danh'}</strong>
                         <p className="auto-renew-hint">
                           {feedbackAnonymous
-                            ? 'Tên và email của bạn sẽ bị ẩn với admin.'
-                            : 'Admin sẽ thấy tên và email tài khoản của bạn.'}
+                            ? (isEn ? 'Your name and email will be hidden.' : 'Tên và email của bạn sẽ bị ẩn với admin.')
+                            : (isEn ? 'Admin will see your account name and email.' : 'Admin sẽ thấy tên và email tài khoản của bạn.')
+                          }
                         </p>
                       </div>
                       <label className={`toggle-switch ${feedbackCategory === 'help' ? 'toggle-switch--disabled' : ''}`}>
@@ -1086,34 +1153,38 @@ export default function SettingsModal({
                         <span className="toggle-slider" />
                       </label>
                     </div>
-                    {feedbackCategory === 'help' && (
-                      <p className="settings-modal__hint" style={{ fontSize: '12px', marginTop: '4px', color: 'var(--text-muted)' }}>
-                        Khi chọn "Trợ giúp (cần phản hồi)", tài khoản của bạn sẽ được gửi kèm để đội ngũ hỗ trợ liên hệ lại.
-                      </p>
-                    )}
 
                     <div style={{ marginTop: '14px', display: 'flex', gap: '10px', alignItems: 'center' }}>
                       <button type="submit" className="btn btn--primary" disabled={feedbackSubmitting || !feedbackContent.trim()}>
-                        {feedbackSubmitting ? 'Đang gửi...' : 'Gửi phản hồi'}
+                        {feedbackSubmitting ? (isEn ? 'Submitting...' : 'Đang gửi...') : (isEn ? 'Submit Feedback' : 'Gửi phản hồi')}
                       </button>
-                      {feedbackCategory === 'help' && (
-                        <span className="settings-modal__hint" style={{ fontSize: '12px', margin: 0 }}>
-                          Đội ngũ sẽ phản hồi qua tài khoản của bạn.
-                        </span>
-                      )}
                     </div>
                   </form>
 
                   <div className="faq-box" style={{ marginTop: '24px', paddingTop: '16px', borderTop: '1px solid var(--border-subtle)' }}>
-                    <h3 style={{ fontSize: '15px', fontWeight: '600', marginBottom: '12px', color: 'var(--text-primary)' }}>Câu hỏi thường gặp (FAQ)</h3>
+                    <h3 style={{ fontSize: '15px', fontWeight: '600', marginBottom: '12px', color: 'var(--text-primary)' }}>{isEn ? 'Frequently Asked Questions (FAQ)' : 'Câu hỏi thường gặp (FAQ)'}</h3>
                     <div style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
                       <div>
-                        <strong style={{ fontSize: '13px', display: 'block', color: 'var(--text-primary)', marginBottom: '4px' }}>1. MedChat247 chẩn đoán có chính xác không?</strong>
-                        <span style={{ fontSize: '12px', color: 'var(--text-muted)', lineHeight: '1.5' }}>Hệ thống chỉ mang tính chất sàng lọc và tư vấn ban đầu dựa trên đồ thị tri thức lâm sàng SymCAT. Kết quả không thay thế chẩn đoán của bác sĩ chuyên khoa.</span>
+                        <strong style={{ fontSize: '13px', display: 'block', color: 'var(--text-primary)', marginBottom: '4px' }}>
+                          {isEn ? '1. Is MedChat247 medical diagnosis accurate?' : '1. MedChat247 chẩn đoán có chính xác không?'}
+                        </strong>
+                        <span style={{ fontSize: '12px', color: 'var(--text-muted)', lineHeight: '1.5' }}>
+                          {isEn 
+                            ? 'The system provides preliminary reference and symptom screening based on clinical knowledge graphs. Results do not replace professional physician diagnosis.'
+                            : 'Hệ thống chỉ mang tính chất sàng lọc và tư vấn ban đầu dựa trên đồ thị tri thức lâm sàng SymCAT. Kết quả không thay thế chẩn đoán của bác sĩ chuyên khoa.'
+                          }
+                        </span>
                       </div>
                       <div>
-                        <strong style={{ fontSize: '13px', display: 'block', color: 'var(--text-primary)', marginBottom: '4px' }}>2. Tại sao số lượng câu hỏi lại thay đổi giữa các lượt?</strong>
-                        <span style={{ fontSize: '12px', color: 'var(--text-muted)', lineHeight: '1.5' }}>Hệ thống tự động phân tích độ phủ và tầm quan trọng của các triệu chứng phân biệt còn lại để đưa ra từ 3 đến 5 câu hỏi tối ưu nhất.</span>
+                        <strong style={{ fontSize: '13px', display: 'block', color: 'var(--text-primary)', marginBottom: '4px' }}>
+                          {isEn ? '2. Why do question counts vary between turns?' : '2. Tại sao số lượng câu hỏi lại thay đổi giữa các lượt?'}
+                        </strong>
+                        <span style={{ fontSize: '12px', color: 'var(--text-muted)', lineHeight: '1.5' }}>
+                          {isEn
+                            ? 'The AI automatically calculates differential symptom coverage to output 3 to 5 optimal follow-up questions.'
+                            : 'Hệ thống tự động phân tích độ phủ và tầm quan trọng của các triệu chứng phân biệt còn lại để đưa ra từ 3 đến 5 câu hỏi tối ưu nhất.'
+                          }
+                        </span>
                       </div>
                     </div>
                   </div>
@@ -1122,11 +1193,11 @@ export default function SettingsModal({
                 /* Lịch sử phản hồi của user */
                 <div style={{ marginTop: '16px' }}>
                   {myFeedbacksLoading ? (
-                    <p className="settings-modal__hint">Đang tải lịch sử...</p>
+                    <p className="settings-modal__hint">{isEn ? 'Loading history...' : 'Đang tải lịch sử...'}</p>
                   ) : myFeedbacks.length === 0 ? (
                     <div className="empty-memory-state">
-                      <p className="empty-title">Chưa có phản hồi nào.</p>
-                      <p className="empty-desc">Các phản hồi bạn gửi sẽ hiển thị tại đây.</p>
+                      <p className="empty-title">{isEn ? 'No feedback submitted yet.' : 'Chưa có phản hồi nào.'}</p>
+                      <p className="empty-desc">{isEn ? 'Your submitted feedback will appear here.' : 'Các phản hồi bạn gửi sẽ hiển thị tại đây.'}</p>
                     </div>
                   ) : (
                     <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
@@ -1135,36 +1206,36 @@ export default function SettingsModal({
                           <div className="fb-history-header">
                             <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
                               <span className={`priority-badge priority-${fb.priority}`}>
-                                {fb.priority === 'urgent' ? 'Khẩn cấp' :
-                                 fb.priority === 'high' ? 'Cao' :
-                                 fb.priority === 'medium' ? 'TB' : 'Thấp'}
+                                {fb.priority === 'urgent' ? (isEn ? 'Urgent' : 'Khẩn cấp') :
+                                 fb.priority === 'high' ? (isEn ? 'High' : 'Cao') :
+                                 fb.priority === 'medium' ? (isEn ? 'Medium' : 'TB') : (isEn ? 'Low' : 'Thấp')}
                               </span>
                               <span className={`category-badge category-${fb.category}`}>
-                                {fb.category === 'help' ? 'Trợ giúp' :
-                                 fb.category === 'bug' ? 'Báo lỗi' :
-                                 fb.category === 'feature' ? 'Tính năng' :
-                                 fb.category === 'question' ? 'Câu hỏi' :
-                                 fb.category === 'complaint' ? 'Khiếu nại' : 'Khác'}
+                                {fb.category === 'help' ? (isEn ? 'Help' : 'Trợ giúp') :
+                                 fb.category === 'bug' ? (isEn ? 'Bug' : 'Báo lỗi') :
+                                 fb.category === 'feature' ? (isEn ? 'Feature' : 'Tính năng') :
+                                 fb.category === 'question' ? (isEn ? 'Question' : 'Câu hỏi') :
+                                 fb.category === 'complaint' ? (isEn ? 'Complaint' : 'Khiếu nại') : (isEn ? 'Other' : 'Khác')}
                               </span>
                               <span className={`status-badge status-${fb.status}`}>
-                                {fb.status === 'new' ? 'Mới' :
-                                 fb.status === 'read' ? 'Đã đọc' :
-                                 fb.status === 'in_progress' ? 'Đang xử lý' :
-                                 fb.status === 'resolved' ? 'Đã giải quyết' : 'Đã đóng'}
+                                {fb.status === 'new' ? (isEn ? 'New' : 'Mới') :
+                                 fb.status === 'read' ? (isEn ? 'Read' : 'Đã đọc') :
+                                 fb.status === 'in_progress' ? (isEn ? 'In Progress' : 'Đang xử lý') :
+                                 fb.status === 'resolved' ? (isEn ? 'Resolved' : 'Đã giải quyết') : (isEn ? 'Closed' : 'Đã đóng')}
                               </span>
                             </div>
                             <span className="text-xs text-muted">
-                              {new Date(fb.createdAt).toLocaleString('vi-VN')}
+                              {new Date(fb.createdAt).toLocaleString(isEn ? 'en-US' : 'vi-VN')}
                             </span>
                           </div>
                           <p className="fb-history-content">{fb.content}</p>
                           {fb.adminReply && (
                             <div className="admin-reply-box">
-                              <strong>Phản hồi từ đội ngũ MedChat247:</strong>
+                              <strong>{isEn ? 'MedChat247 Support Reply:' : 'Phản hồi từ đội ngũ MedChat247:'}</strong>
                               <p style={{ margin: '4px 0 0' }}>{fb.adminReply}</p>
                               {fb.repliedAt && (
                                 <span className="text-xs text-muted" style={{ display: 'block', marginTop: '4px' }}>
-                                  {new Date(fb.repliedAt).toLocaleString('vi-VN')}
+                                  {new Date(fb.repliedAt).toLocaleString(isEn ? 'en-US' : 'vi-VN')}
                                 </span>
                               )}
                             </div>
@@ -1186,10 +1257,13 @@ export default function SettingsModal({
           <div className="confirm-payment-modal" onClick={(e) => e.stopPropagation()}>
             <div className="confirm-payment-header">
               <SparklesIcon />
-              <h3>Nâng cấp gói Pro Chuyên Gia (PayPal)</h3>
+              <h3>{isEn ? 'Upgrade to Pro Specialist (PayPal)' : 'Nâng cấp gói Pro Chuyên Gia (PayPal)'}</h3>
             </div>
             <p className="confirm-payment-desc">
-              Hoàn tất thanh toán <strong>99.000đ (~$3.99 USD)</strong> qua cổng PayPal để nâng cấp 30 ngày sử dụng gói Pro Chuyên Gia:
+              {isEn
+                ? 'Complete payment of 99,000đ (~$3.99 USD) via PayPal for 30 days of Pro features:'
+                : 'Hoàn tất thanh toán 99.000đ (~$3.99 USD) qua cổng PayPal để nâng cấp 30 ngày sử dụng gói Pro Chuyên Gia:'
+              }
             </p>
             <div style={{ padding: '16px 0', minHeight: '120px' }}>
               <div id="paypal-button-container" />
@@ -1199,7 +1273,7 @@ export default function SettingsModal({
                 className="btn btn--outline"
                 onClick={() => setConfirmPaymentModal(false)}
               >
-                Đóng / Hủy
+                {isEn ? 'Close / Cancel' : 'Đóng / Hủy'}
               </button>
             </div>
           </div>
