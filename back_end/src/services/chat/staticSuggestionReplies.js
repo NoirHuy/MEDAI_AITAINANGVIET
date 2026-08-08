@@ -1,10 +1,10 @@
 const REPLIES = {
   disease_1: {
-    vi: `🩺 Chào bạn, cảm ơn bạn đã chia sẻ chi tiết tình trạng sức khỏe của mình. Với các triệu chứng **sốt**, **đau rát họng**, **khó nuốt** và **sưng họng** kéo dài 2 ngày ở độ tuổi 28, dưới đây là báo cáo sàng lọc dựa trên thông tin lâm sàng của bạn:
+    vi: `Chào bạn, cảm ơn bạn đã chia sẻ chi tiết tình trạng sức khỏe của mình. Với các triệu chứng **sốt**, **đau rát họng**, **khó nuốt** và **sưng họng** kéo dài 2 ngày ở độ tuổi 28, dưới đây là báo cáo sàng lọc dựa trên thông tin lâm sàng của bạn:
 
 🩺 **Bệnh lý nghi ngờ:**
 
-1. Viêm họng cấp: 36% xác suất
+1. Viêm họng: 36% xác suất
 
 📋 **Dẫn chứng:** Tình trạng **sốt** kết hợp với **đau họng** và **khó nuốt** là những biểu hiện kinh điển của viêm họng cấp. Các triệu chứng này hoàn toàn phù hợp với mô tả của bạn.
 🔍 **Lý giải phân biệt:** Đây là nguyên nhân phổ biến nhất gây đau họng. Khác với các dạng áp-xe, viêm họng thường gây sưng viêm lan tỏa vùng niêm mạc họng thay vì khu trú tại một ổ mủ.
@@ -13,7 +13,8 @@ const REPLIES = {
 2. Áp-xe quanh amidan: 15% xác suất
 
 📋 **Dẫn chứng:** Bạn mô tả cảm giác **đau rát dữ dội khi nuốt** và **họng sưng tấy** – đây là những dấu hiệu gợi ý tình trạng viêm nhiễm khu trú sâu hơn ở vùng mô quanh amidan.
-🔍 **Lý giải phân biệt:** Bệnh này thường gây đau một bên họng dữ dội hơn, khiến việc nuốt trở nên vô cùng khó khăn. Nếu bạn cảm thấy giọng nói bị thay đổi (giọng như ngâm sỏi), cần chú ý kiểm tra.
+🔍 **Lý giải phân biệt:** Bệnh này thường gây đau một bên họng dữ dội hơn, khiến việc nuốt trở nên vô cùng khó khăn. Nếu bạn cảm thấy giọng nói bị thay đổi (giọng như ngậm hạt thị), đây là chỉ dấu quan trọng để phân biệt với viêm họng thông thường.
+⚠️ **Dấu hiệu cần chú ý:** Cần lưu ý nếu bạn gặp khó khăn khi há miệng hoặc sưng vùng cổ ngoài, vì đây có thể là dấu hiệu khối áp-xe đang phát triển.
 
 3. Áp-xe họng: 11% xác suất
 
@@ -29,7 +30,7 @@ const REPLIES = {
 🩺 **Thời gian:** Nên thực hiện thăm khám trong vòng **24 giờ tới** do mức độ đau dữ dội khi nuốt có thể ảnh hưởng đến khả năng ăn uống và thể trạng của bạn.
 🩺 **Xử lý tạm thời:** Uống nhiều nước ấm, súc họng bằng nước muối sinh lý, và sử dụng thuốc hạ sốt (như Paracetamol) nếu sốt trên 38.5°C. Tuyệt đối không tự ý dùng thuốc kháng sinh nếu chưa có chỉ định của bác sĩ sau khi thăm khám trực tiếp.
 🩺 **Lưu ý:** Báo cáo này chỉ mang tính chất sàng lọc dựa trên dữ liệu, không thay thế cho chẩn đoán trực tiếp từ bác sĩ chuyên khoa.*`,
-    en: `🩺 Hello, thank you for sharing your health details. Based on your symptoms of **fever**, **sore throat**, **difficulty swallowing**, and **throat swelling** lasting 2 days at age 28, here is your clinical screening report:
+    en: `Hello, thank you for sharing your health details. Based on your symptoms of **fever**, **sore throat**, **difficulty swallowing**, and **throat swelling** lasting 2 days at age 28, here is your clinical screening report:
 
 🩺 **SUSPECTED CONDITIONS:**
 
@@ -43,6 +44,7 @@ const REPLIES = {
 
 📋 **Evidence:** Severe pain upon swallowing and swollen throat tissue suggest localized deeper tissue inflammation around the tonsils.
 🔍 **Differential Reasoning:** This condition often causes severe unilateral throat pain and marked dysphagia. Note if your voice sounds muffled ('hot potato' voice).
+⚠️ **Watch for:** Pay attention if you experience difficulty opening your mouth or neck swelling.
 
 3. Retropharyngeal Abscess: 11% probability
 
@@ -60,178 +62,190 @@ const REPLIES = {
 🩺 **Note:** This report is for screening reference only and does not replace direct physician evaluation.*`,
   },
   disease_2: {
-    vi: `🩺 Chào bạn, cảm ơn bạn đã chia sẻ chi tiết tình trạng sức khỏe của mình. Với các triệu chứng **ợ chua**, **đau rát sau xương ức**, **đắng miệng** và **trào ngược khi nằm** sau khi ăn, dưới đây là báo cáo sàng lọc dựa trên thông tin lâm sàng của bạn:
+    vi: `Chào bạn, cảm ơn bạn đã chia sẻ chi tiết tình trạng của mình. Dựa trên những thông tin bạn cung cấp, dưới đây là báo cáo sàng lọc sơ bộ về các khả năng có thể liên quan đến các triệu chứng của bạn:
 
 🩺 **Bệnh lý nghi ngờ:**
 
-1. Trào ngược dạ dày-thực quản (GERD): 42% xác suất
+1. Bệnh trào ngược dạ dày thực quản (GERD): 46% xác suất
 
-📋 **Dẫn chứng:** Cảm giác **ợ chua**, **nóng rát vùng ngực** lan lên cổ họng xuất hiện sau bữa ăn hoặc khi nằm là biểu hiện đặc trưng của dịch vị dạ dày trào ngược lên thực quản.
-🔍 **Lý giải phân biệt:** Đây là nguyên nhân phổ biến nhất gây đau rát ngực không do tim. Khác với cơn đau thắt ngực, đau do GERD thường liên quan trực tiếp đến bữa ăn và tư thế nằm.
-⚠️ **Dấu hiệu cần chú ý:** Theo dõi nếu xuất hiện tình trạng **nuốt nghẹn**, **thức ăn mắc kẹt ở cổ** hoặc sút cân không rõ nguyên nhân.
+📋 **Dẫn chứng:** Các triệu chứng điển hình như **ợ chua**, **trào ngược axit** gây **đau rát xương ức** đặc biệt sau khi ăn no hoặc khi nằm ngửa là những dấu hiệu rất đặc trưng của GERD, nơi axit dạ dày trào ngược lên thực quản. Cảm giác buồn nôn và đắng miệng cũng thường gặp ở bệnh nhân có trào ngược mãn tính.
+🔍 **Lý giải phân biệt:** So với các bệnh lý khác, GERD là nguyên nhân phổ biến nhất gây ra cảm giác bỏng rát sau xương ức. Các triệu chứng của bạn tập trung vào vùng thực quản và họng nhiều hơn là các cơn đau khu trú sâu trong vùng thượng vị như viêm loét dạ dày.
+⚠️ **Dấu hiệu cần chú ý:** Khó nuốt, nuốt đau, hoặc cảm giác nghẹn ở cổ họng; sụt cân không rõ nguyên nhân.
 
-2. Viêm dạ dày-tá tràng: 22% xác suất
+2. Khó tiêu (Indigestion): 13% xác suất
 
-📋 **Dẫn chứng:** Cảm giác đau rát, đầy bụng và đắng miệng cũng gặp phổ biến trong viêm niêm mạc dạ dày.
-🔍 **Lý giải phân biệt:** Viêm dạ dày thường đau tập trung vùng thượng vị (trên rốn) nhiều hơn là cảm giác nóng rát trào ngược ngược lên ngực.
+📋 **Dẫn chứng:** Tình trạng khó tiêu thường đi kèm với cảm giác buồn nôn và ợ nóng sau ăn. Các triệu chứng này có thể trùng lặp với trào ngược, khiến bạn cảm thấy đầy bụng và khó chịu vùng trên dạ dày.
+🔍 **Lý giải phân biệt:** Khó tiêu thường bao gồm cảm giác đầy bụng, no sớm và đau thượng vị nhiều hơn là triệu chứng ợ nóng điển hình của GERD. Tuy nhiên, hai tình trạng này thường tồn tại song song.
+⚠️ **Dấu hiệu cần chú ý:** Nôn ra máu hoặc có màu bã cà phê; phân đen.
 
-3. Co thắt thực quản: 12% xác suất
+3. Liệt dạ dày (Gastroparesis): 12% xác suất
 
-📋 **Dẫn chứng:** Cảm giác đau tức ngực và nghẹn khó nuốt có thể do rối loạn co bóp cơ thực quản.
-🔍 **Lý giải phân biệt:** Đau co thắt thực quản có thể kéo dài và đau thắt đột ngột, ít phụ thuộc vào nồng độ axit hơn GERD.
+📋 **Dẫn chứng:** Tình trạng này khiến dạ dày rỗng chậm hơn bình thường, dẫn đến cảm giác buồn nôn dai dẳng và ợ nóng do thức ăn tồn đọng lâu trong dạ dày.
+🔍 **Lý giải phân biệt:** Điểm khác biệt quan trọng là tình trạng này thường gây buồn nôn nghiêm trọng và kéo dài. Nếu bạn cảm thấy nhanh no bất thường và nôn sau khi ăn một lượng nhỏ, đây là dấu hiệu gợi ý cao hơn cho liệt dạ dày.
+⚠️ **Dấu hiệu cần chú ý:** Nôn mửa kéo dài không kiểm soát; mất nước do không nạp đủ dinh dưỡng.
 
-⚠️ **Cảnh báo:** Các triệu chứng nguy hiểm bạn cần đặc biệt theo dõi: **đau ngực dữ dội đè nặng**, **đau lan ra tay trái hoặc hàm**, **khó thở**, **vã mồ hôi cold sweat**, **nôn ra máu hoặc đi ngoài phân đen**. Nếu có các dấu hiệu này, hãy đi cấp cứu ngay vì cần loại trừ bệnh lý tim mạch cấp tính.
+⚠️ **Cảnh báo:** Bạn cần đến cơ sở y tế ngay nếu xuất hiện các triệu chứng nguy hiểm như: đau ngực dữ dội lan ra cánh tay hoặc hàm (cần loại trừ nguyên nhân tim mạch), nôn ra máu, đi ngoài phân đen, hoặc sụt cân nhanh chóng không chủ đích.
 
 📋 **Khuyến nghị:**
 
-🩺 **Chuyên khoa:** Bạn nên đến khám chuyên khoa **Tiêu hóa** để bác sĩ cân nhắc chỉ định nội soi dạ dày-thực quản.
-🩺 **Thời gian:** Nên thăm khám trong vòng **3-5 ngày tới** nếu triệu chứng tái diễn thường xuyên.
-🩺 **Xử lý tạm thời:** Chia nhỏ bữa ăn, không nằm trong vòng 2-3 giờ sau ăn, kê cao đầu giường 15-20cm, hạn chế đồ cay nóng, cà phê và đồ có gas.
-🩺 **Lưu ý:** Báo cáo này chỉ mang tính chất sàng lọc dựa trên dữ liệu, không thay thế cho chẩn đoán trực tiếp từ bác sĩ chuyên khoa.*`,
-    en: `🩺 Hello, thank you for sharing your health details. Based on your symptoms of **heartburn**, **chest burning**, **bitter taste**, and **acid regurgitation when lying down**, here is your clinical screening report:
+🩺 **Khám chuyên khoa:** Bạn nên đến gặp bác sĩ Tiêu hóa để được thăm khám lâm sàng. Bác sĩ có thể chỉ định nội soi dạ dày thực quản để quan sát niêm mạc trực tiếp.
+📌 **Điều chỉnh lối sống:** Chia nhỏ bữa ăn, tránh ăn quá no và không nằm ngay sau khi ăn (nên đợi ít nhất 2–3 giờ). Kê cao đầu giường khi ngủ để giảm tình trạng trào ngược vào ban đêm. Hạn chế thực phẩm gây kích ứng như đồ cay nóng, caffeine, chocolate và rượu bia.
+⚠️ **Thời gian:** Nếu các triệu chứng không thuyên giảm sau 1–2 tuần thay đổi lối sống hoặc có dấu hiệu nặng hơn, bạn nên đặt lịch hẹn khám chuyên khoa sớm.
+🩺 **Lưu ý:** Đây chỉ là báo cáo sàng lọc dựa trên thông tin bạn cung cấp, không thay thế cho chẩn đoán y khoa chính thức. Hãy thăm khám với bác sĩ để có phác đồ điều trị phù hợp.*`,
+    en: `Hello, thank you for sharing your details. Based on the information provided, here is a preliminary screening report regarding your symptoms:
 
 🩺 **SUSPECTED CONDITIONS:**
 
-1. Gastroesophageal Reflux Disease (GERD): 42% probability
+1. Gastroesophageal Reflux Disease (GERD): 46% probability
 
-📋 **Evidence:** **Heartburn** and **retrosternal burning** worsening after meals or lying down are cardinal signs of gastric acid refluxing into the esophagus.
-🔍 **Differential Reasoning:** Most frequent cause of non-cardiac chest pain. Unlike angina, GERD pain is directly related to meals and posture.
-⚠️ **Watch for:** Monitor for **dysphagia (food sticking in throat)**, **painful swallowing**, or unexplained weight loss.
+📋 **Evidence:** Typical symptoms such as **heartburn**, **acid regurgitation**, and **retrosternal burning** especially after full meals or lying down are cardinal signs of GERD. Nausea and bitter taste are also common in chronic reflux.
+🔍 **Differential Reasoning:** GERD is the most common cause of non-cardiac chest burning. Symptoms focus on esophagus and throat rather than epigastric pain.
+⚠️ **Watch for:** Difficulty swallowing, painful swallowing, sensation of food sticking in throat, or unexplained weight loss.
 
-2. Gastritis / Peptic Ulcer: 22% probability
+2. Indigestion (Dyspepsia): 13% probability
 
-📋 **Evidence:** Upper abdominal burning, bloating, and bitter taste are also common in gastric mucosal inflammation.
-🔍 **Differential Reasoning:** Gastritis pain centers in the epigastrium rather than ascending into the chest cavity as acid reflux.
+📋 **Evidence:** Indigestion often accompanies postprandial nausea and heartburn. Symptoms overlap with reflux, causing upper abdominal fullness.
+🔍 **Differential Reasoning:** Dyspepsia features early satiety and epigastric pain more than isolated heartburn, though both often coexist.
+⚠️ **Watch for:** Vomiting blood, coffee-ground vomitus, or black stools.
 
-3. Esophageal Spasm: 12% probability
+3. Gastroparesis: 12% probability
 
-📋 **Evidence:** Chest tightness and swallowing sensation can be caused by esophageal motility dysfunction.
-🔍 **Differential Reasoning:** Esophageal spasms often cause sudden squeezing pain independent of acid secretion.
+📋 **Evidence:** Delayed gastric emptying leads to persistent nausea and heartburn from retained stomach contents.
+🔍 **Differential Reasoning:** Key distinction is persistent severe nausea and early satiety after small meals.
+⚠️ **Watch for:** Uncontrolled persistent vomiting or severe dehydration.
 
-⚠️ **Emergency Warning:** Dangerous symptoms requiring immediate emergency evaluation: **crushing chest pain**, **pain radiating to left arm or jaw**, **shortness of breath**, **diaphoresis (cold sweats)**, **vomiting blood**, or **black tarry stools**.
+⚠️ **Emergency Warning:** Seek immediate emergency medical care for: severe chest pain radiating to arm/jaw, vomiting blood, black stools, or rapid unexplained weight loss.
 
 📋 **RECOMMENDATIONS:**
 
-🩺 **Specialty:** Consult a **Gastroenterology** specialist for upper GI endoscopy evaluation.
-🩺 **Timeframe:** Arrange a visit within **3-5 days** if symptoms recur frequently.
-🩺 **Temporary Care:** Eat smaller meals, avoid lying down for 2-3 hours after eating, elevate the head of your bed 15-20cm, and limit spicy foods, coffee, and carbonated drinks.
-🩺 **Note:** This report is for screening reference only and does not replace direct physician evaluation.*`,
+🩺 **Specialty:** Consult a **Gastroenterologist** for clinical evaluation and upper GI endoscopy.
+📌 **Lifestyle Changes:** Eat smaller meals, avoid lying down for 2-3 hours after eating, elevate head of bed, and limit spicy food, caffeine, and alcohol.
+⚠️ **Timeframe:** Arrange a visit within **1-2 weeks** if symptoms do not improve with lifestyle modifications.
+🩺 **Note:** This report is for screening reference only and does not replace formal medical diagnosis.*`,
   },
   disease_3: {
-    vi: `🩺 Chào bạn, cảm ơn bạn đã chia sẻ chi tiết tình trạng sức khỏe của mình. Với các triệu chứng **nghẹt mũi**, **đau tức vùng trán và gò má**, **dịch mũi vàng xanh** và **giảm khứu giác**, dưới đây là báo cáo sàng lọc dựa trên thông tin lâm sàng của bạn:
+    vi: `Chào bạn, dựa trên những chia sẻ rất chi tiết của bạn về tình trạng đau nhức vùng trán, gò má và các triệu chứng mũi họng kéo dài 5 ngày qua, tôi xin gửi đến bạn báo cáo sàng lọc sơ bộ như sau:
 
 🩺 **Bệnh lý nghi ngờ:**
 
-1. Viêm mũi xoang cấp: 45% xác suất
+1. Viêm xoang cấp tính: 71% xác suất
 
-📋 **Dẫn chứng:** Đau nhức vùng trán/gò má tăng lên khi cúi đầu xuống kèm theo nghẹt mũi và dịch mũi đục là biểu hiện đặc trưng của tình trạng viêm phù nề niêm mạc các xoang.
-🔍 **Lý giải phân biệt:** Đây là nguyên nhân hàng đầu gây đau đầu vùng mặt. Khác với cảm cúm thông thường, viêm xoang gây đau nhức tập trung tại các điểm ấn xoang trên mặt.
-⚠️ **Dấu hiệu cần chú ý:** Theo dõi nếu xuất hiện tình trạng **sưng đỏ quanh hốc mắt**, **nhìn đôi (song thị)** hoặc giảm thị lực.
+📋 **Dẫn chứng:** Các triệu chứng bạn mô tả như **đau nhức vùng trán và gò má** tăng lên khi cúi đầu, cùng với **nghẹt mũi** và **dịch mũi đặc màu vàng xanh** là những dấu hiệu điển hình của viêm xoang cấp. Việc khởi phát triệu chứng trong 5 ngày phù hợp với diễn tiến của một đợt nhiễm trùng cấp tính tại các xoang cạnh mũi.
+🔍 **Lý giải phân biệt:** So với viêm xoang mãn tính thường kéo dài trên 12 tuần, tình trạng của bạn mới chỉ 5 ngày, hướng nhiều đến bệnh cảnh cấp tính. Ngoài ra, việc giảm khứu giác cũng rất phổ biến trong viêm xoang cấp do niêm mạc mũi bị sưng nề che lấp vùng khứu giác.
+⚠️ **Dấu hiệu cần chú ý:** Sốt cao không hạ, đau dữ dội một bên mặt kèm sưng nề vùng mắt, hoặc xuất hiện tình trạng nhìn đôi/mờ mắt.
 
-2. Viêm mũi dị ứng: 20% xác suất
+2. Viêm xoang mãn tính: 13% xác suất
 
-📋 **Dẫn chứng:** Nghẹt mũi, chảy nước mũi và giảm khứu giác cũng xuất hiện trong cơn dị ứng đường hô hấp trên.
-🔍 **Lý giải phân biệt:** Viêm mũi dị ứng thường kèm ngứa mũi, hắt hơi thành tràng và dịch mũi trong suốt chứ không gây đau nhức sâu vùng xương mặt hay dịch đục.
+📋 **Dẫn chứng:** Dù triệu chứng của bạn tương đồng với viêm xoang, nhưng thời gian 5 ngày là khá ngắn để khẳng định là mãn tính. Tuy nhiên, nếu bạn từng bị viêm xoang tái đi tái lại nhiều lần trong năm trước đó, đây vẫn là một khả năng cần cân nhắc.
+🔍 **Lý giải phân biệt:** Khác với viêm xoang cấp, viêm xoang mãn tính thường ít khi gây đau nhức dữ dội tức thời mà tập trung vào cảm giác nghẹt mũi dai dẳng và nặng đầu.
+⚠️ **Dấu hiệu cần chú ý:** Nghẹt mũi hoàn toàn không đáp ứng với thuốc xịt thông thường, đau đầu kéo dài không thuyên giảm.
 
-3. Đau đầu căng thẳng: 10% xác suất
+3. Polyp mũi: 8% xác suất
 
-📋 **Dẫn chứng:** Cảm giác đau nặng đầu vùng trán có thể nhầm lẫn với đau đầu do căng thẳng cơ.
-🔍 **Lý giải phân biệt:** Đau đầu căng thẳng không kèm theo triệu chứng nghẹt mũi hay chảy dịch mũi.
+📋 **Dẫn chứng:** Polyp mũi có thể gây giảm khứu giác và nghẹt mũi mãn tính do các khối u lành tính phát triển trong hốc mũi.
+🔍 **Lý giải phân biệt:** Polyp thường diễn tiến âm thầm và ít gây đau nhức vùng trán/gò má trừ khi có kèm theo viêm xoang bội nhiễm. Triệu chứng đau khi cúi đầu của bạn thiên về bệnh lý viêm xoang hơn là bản chất của polyp.
+⚠️ **Dấu hiệu cần chú ý:** Khó thở bằng mũi hoàn toàn, chảy máu cam tái phát, hoặc thay đổi giọng nói (giọng mũi).
 
-⚠️ **Cảnh báo:** Các triệu chứng nguy hiểm bạn cần đặc biệt theo dõi: **sưng nề hoặc đỏ quanh mắt**, **nhìn mờ/nhìn đôi**, **đau đầu dữ dội bất thường**, **cứng cổ**, **sốt cao liên tục** hoặc **lơ mơ**. Nếu có các dấu hiệu này, hãy đi khám cấp cứu ngay lập tức.
+⚠️ **Cảnh báo:** Bạn cần đến cơ sở y tế ngay lập tức nếu xuất hiện các triệu chứng sau: sốt cao trên 39°C không đáp ứng với thuốc hạ sốt thông thường, sưng đỏ hoặc phù nề quanh hốc mắt, cứng cổ, hoặc cảm giác nhìn đôi/nhìn mờ.
 
 📋 **Khuyến nghị:**
 
-🩺 **Chuyên khoa:** Bạn nên đến khám chuyên khoa **Tai Mũi Họng** để bác sĩ nội soi mũi xoang và chỉ định chụp X-quang/CT nếu cần.
-🩺 **Thời gian:** Nên thăm khám trong vòng **2-3 ngày tới** nếu triệu chứng kéo dài trên 7 ngày.
-🩺 **Xử lý tạm thời:** Rửa mũi bằng nước muối sinh lý vô khuẩn 2-3 lần/ngày, xông hơi nước ấm, uống đủ nước và tránh khói thuốc lá.
-🩺 **Lưu ý:** Báo cáo này chỉ mang tính chất sàng lọc dựa trên dữ liệu, không thay thế cho chẩn đoán trực tiếp từ bác sĩ chuyên khoa.*`,
-    en: `🩺 Hello, thank you for sharing your health details. Based on your symptoms of **nasal congestion**, **facial pressure over forehead and cheeks**, **yellow-green nasal discharge**, and **reduced smell**, here is your clinical screening report:
+📌 **Chăm sóc tại nhà:** Bạn có thể thực hiện rửa mũi bằng nước muối sinh lý (0.9%) 2-3 lần mỗi ngày để làm sạch dịch nhầy. Có thể chườm ấm vùng trán và gò má để giảm đau.
+🩺 **Thăm khám:** Bạn nên sắp xếp gặp bác sĩ Chuyên khoa Tai Mũi Họng trong vòng 2-3 ngày tới để được nội soi mũi xoang. Bác sĩ có thể cần đánh giá xem bạn có cần dùng kháng sinh, thuốc xịt corticosteroid mũi hay không.
+📌 **Lưu ý:** Tránh tự ý sử dụng thuốc co mạch (thuốc xịt mũi làm thông mũi nhanh) quá 3-5 ngày vì có thể gây tình trạng "nhờn" thuốc và khiến nghẹt mũi nặng hơn khi ngưng sử dụng.
+🩺 **Lưu ý:** Thông tin này chỉ mang tính chất sàng lọc và hỗ trợ tư vấn, không thay thế chẩn đoán xác định từ bác sĩ lâm sàng trực tiếp thăm khám.*`,
+    en: `Hello, based on your detailed description of frontal and cheek pressure along with nasal symptoms lasting 5 days, here is your preliminary clinical screening report:
 
 🩺 **SUSPECTED CONDITIONS:**
 
-1. Acute Rhinosinusitis: 45% probability
+1. Acute Rhinosinusitis: 71% probability
 
-📋 **Evidence:** **Forehead/cheek pressure** worsening when bending forward, combined with **nasal blockage** and thick discharge, are classic signs of paranasal sinus inflammation.
-🔍 **Differential Reasoning:** Leading cause of facial headache. Unlike the common cold, sinusitis causes localized pain at specific sinus pressure points.
-⚠️ **Watch for:** Monitor for **periorbital swelling (swelling around eyes)**, **double vision**, or decreased visual acuity.
+📋 **Evidence:** **Forehead and cheek pain** worsening when bending forward, together with **nasal blockage** and **yellow-green discharge**, are classic symptoms of acute sinusitis. The 5-day duration fits an acute paranasal sinus infection.
+🔍 **Differential Reasoning:** Chronic sinusitis typically lasts over 12 weeks; your 5-day onset points to acute illness. Hyposmia is common due to mucosal edema blocking olfactory clefts.
+⚠️ **Watch for:** Persistent high fever, severe unilateral facial pain with periorbital swelling, or double/blurred vision.
 
-2. Allergic Rhinitis: 20% probability
+2. Chronic Rhinosinusitis: 13% probability
 
-📋 **Evidence:** Nasal congestion and loss of smell are also common in upper airway allergic responses.
-🔍 **Differential Reasoning:** Allergic rhinitis features prominent itching, paroxysmal sneezing, and clear watery discharge without deep facial bone tenderness.
+📋 **Evidence:** Although symptoms overlap, 5 days is short for chronic illness unless you have a history of recurrent episodes.
+🔍 **Differential Reasoning:** Unlike acute sinusitis, chronic sinusitis less commonly causes sudden severe pain, focusing instead on persistent congestion and head fullness.
+⚠️ **Watch for:** Complete nasal obstruction unresponsive to sprays, or unremitting headache.
 
-3. Tension Headache: 10% probability
+3. Nasal Polyps: 8% probability
 
-📋 **Evidence:** Frontal head tightness can sometimes mimic sinus pain.
-🔍 **Differential Reasoning:** Tension headaches occur without nasal discharge, congestion, or sinus tenderness.
+📋 **Evidence:** Nasal polyps can cause loss of smell and chronic congestion from benign mucosal growths.
+🔍 **Differential Reasoning:** Polyps develop insidiously and rarely cause acute sinus pain unless secondary infection occurs. Facial pain on bending favors sinusitis.
+⚠️ **Watch for:** Complete nasal blockage, recurrent epistaxis, or nasal voice change.
 
-⚠️ **Emergency Warning:** Dangerous symptoms requiring immediate emergency evaluation: **eye swelling or redness**, **blurred/double vision**, **unusually severe headache**, **stiff neck**, **high persistent fever**, or **confusion**.
+⚠️ **Emergency Warning:** Seek immediate emergency medical care for: fever over 39°C unresponsive to medication, periorbital swelling/redness, stiff neck, or double/blurred vision.
 
 📋 **RECOMMENDATIONS:**
 
-🩺 **Specialty:** Consult an **ENT (Otolaryngology)** specialist for nasal endoscopy and imaging if indicated.
-🩺 **Timeframe:** Arrange a visit within **2-3 days** if symptoms persist past 7 days.
-🩺 **Temporary Care:** Perform sterile saline nasal irrigation 2-3 times daily, use warm steam inhalation, drink plenty of fluids, and avoid smoke.
-🩺 **Note:** This report is for screening reference only and does not replace direct physician evaluation.*`,
+📌 **Home Care:** Perform nasal saline rinses (0.9%) 2-3 times daily to clear mucus. Apply warm compresses to forehead and cheeks.
+🩺 **Specialty Visit:** Consult an **ENT Specialist** within 2-3 days for nasal endoscopy.
+📌 **Note:** Avoid topical nasal decongestant sprays for more than 3-5 days to prevent rebound congestion (rhinitis medicamentosa).
+🩺 **Note:** This report is for screening reference only and does not replace formal medical evaluation.*`,
   },
   disease_4: {
-    vi: `🩺 Chào bạn, cảm ơn bạn đã chia sẻ chi tiết tình trạng sức khỏe của mình. Với các triệu chứng **ho khạc đờm**, **rát ngực khi ho**, **sốt nhẹ** và **khò khè nhẹ**, dưới đây là báo cáo sàng lọc dựa trên thông tin lâm sàng của bạn:
+    vi: `Chào bạn, cảm ơn bạn đã chia sẻ chi tiết tình trạng sức khỏe của mình. Dựa trên những thông tin bạn cung cấp, dưới đây là báo cáo sàng lọc sơ bộ về các khả năng có thể xảy ra:
 
 🩺 **Bệnh lý nghi ngờ:**
 
-1. Viêm phế quản cấp: 40% xác suất
+1. Co thắt phế quản cấp: 22% xác suất
 
-📋 **Dẫn chứng:** Tình trạng **ho kéo dài kèm khạc đờm** và **rát ngực khi ho** ở người có sốt nhẹ là biểu hiện đặc trưng của viêm niêm mạc phế quản (thường do virus).
-🔍 **Lý giải phân biệt:** Phổ biến hơn viêm phổi ở người trẻ. Cần phân biệt với viêm phổi qua thăm khám ống nghe phổi của bác sĩ.
-⚠️ **Dấu hiệu cần chú ý:** Theo dõi nếu xuất hiện tình trạng **ho ra máu**, **sốt cao trên 39°C** hoặc **khó thở tăng dần**.
+📋 **Dẫn chứng:** Các triệu chứng **ho kéo dài 3 ngày**, kèm theo **tiếng thở khò khè** và **cảm giác tức ngực khi ho** của bạn là những dấu hiệu khá điển hình của tình trạng phế quản bị co thắt, cản trở đường thở.
+🔍 **Lý giải phân biệt:** So với các bệnh lý khác, co thắt phế quản cấp thường gây ra tình trạng khò khè rõ rệt hơn do đường dẫn khí bị thu hẹp đột ngột, điều này khớp với mô tả của bạn.
+⚠️ **Dấu hiệu cần chú ý:** Khó thở dữ dội ngay cả khi nghỉ ngơi, hoặc cảm giác tức ngực nặng nề kéo dài không dứt.
 
-2. Viêm phổi: 25% xác suất
+2. Hen suyễn: 21% xác suất
 
-📋 **Dẫn chứng:** Ho đờm, sốt và rát ngực cũng là các triệu chứng chính của tổn thương nhu mô phổi.
-🔍 **Lý giải phân biệt:** Viêm phổi thường kèm sốt cao hơn, mệt mỏi nhiều, thở nhanh nông và đau ngực nhói rõ rệt khi hít sâu.
+📋 **Dẫn chứng:** Tình trạng ho tái diễn, kèm theo tiếng thở khò khè và đau tức ngực là những đặc điểm thường gặp trong đợt khởi phát của hen suyễn, đặc biệt khi có yếu tố viêm nhiễm đường hô hấp.
+🔍 **Lý giải phân biệt:** Hen suyễn thường có tính chất thay đổi hoặc tái phát. Tuy nhiên, sự xuất hiện của sốt nhẹ (37.8°C) gợi ý nhiều đến một tình trạng viêm nhiễm cấp tính chồng lên tình trạng viêm mạn tính của hen (nếu có).
+⚠️ **Dấu hiệu cần chú ý:** Cơn khó thở tăng dần về đêm hoặc sáng sớm, khả năng đáp ứng kém với các thuốc giãn phế quản thông thường.
 
-3. Cơn hen phế quản: 15% xác suất
+3. Viêm họng: 18% xác suất
 
-📋 **Dẫn chứng:** Cảm giác khò khè và nặng ngực có thể do phản ứng co thắt đường thở.
-🔍 **Lý giải phân biệt:** Hen phế quản thường tái diễn nhiều đợt, nghe thấy tiếng cò cử rõ khi thở ra và hay xuất hiện về đêm/sáng sớm.
+📋 **Dẫn chứng:** Triệu chứng ho và sốt nhẹ là những biểu hiện rất phổ biến của viêm họng. Tuy nhiên, cảm giác đau rát lan xuống vùng phế quản và tức ngực khi ho của bạn lại cho thấy tình trạng viêm có thể đã lan sâu hơn xuống đường hô hấp dưới.
+🔍 **Lý giải phân biệt:** Viêm họng đơn thuần thường ít khi gây ra tiếng khò khè hoặc đau tức ngực sâu như bạn mô tả; các triệu chứng này thường định hướng đến tổn thương phế quản hoặc phổi nhiều hơn.
+⚠️ **Dấu hiệu cần chú ý:** Đau khi nuốt kéo dài, khàn giọng hoặc xuất hiện các đốm trắng/mủ ở vùng họng.
 
-⚠️ **Cảnh báo:** Các triệu chứng nguy hiểm bạn cần đặc biệt theo dõi: **khó thở nhiều**, **thở gấp/rút lõm lồng ngực**, **môi hoặc đầu ngón tay tím tái**, **đau ngực dữ dội**, **lơ mơ** hoặc **chỉ số SpO2 dưới 94%**. Nếu có các dấu hiệu này, hãy đi cấp cứu ngay lập tức.
+⚠️ **Cảnh báo:** Bạn cần đến cơ sở y tế khẩn cấp nếu xuất hiện các triệu chứng sau: Khó thở nghiêm trọng (không thể nói trọn câu), sốt cao không hạ (trên 39°C), ho ra máu, hoặc cảm giác tức ngực dữ dội như có vật nặng đè lên.
 
 📋 **Khuyến nghị:**
 
-🩺 **Chuyên khoa:** Bạn nên đến khám chuyên khoa **Hô hấp / Nội tổng quát** để bác sĩ nghe phổi và chụp X-quang ngực thẳng.
-🩺 **Thời gian:** Nên thực hiện thăm khám trong vòng **24-48 giờ tới**.
-🩺 **Xử lý tạm thời:** Uống nhiều nước ấm để làm loãng đờm, nghỉ ngơi, giữ ấm cổ ngực, tuyệt đối không tự dùng thuốc ngắt ho mạnh hoặc kháng sinh khi chưa có chỉ định.
-🩺 **Lưu ý:** Báo cáo này chỉ mang tính chất sàng lọc dựa trên dữ liệu, không thay thế cho chẩn đoán trực tiếp từ bác sĩ chuyên khoa.*`,
-    en: `🩺 Hello, thank you for sharing your health details. Based on your symptoms of **productive cough**, **chest soreness when coughing**, **mild fever**, and **wheezing**, here is your clinical screening report:
+🩺 **Khám chuyên khoa:** Bạn nên đi khám Nội hô hấp trong vòng 24–48 giờ tới để được bác sĩ nghe phổi trực tiếp và chụp X-quang ngực thẳng nếu cần thiết nhằm loại trừ viêm phổi.
+🩺 **Xét nghiệm:** Bác sĩ có thể chỉ định đo chức năng hô hấp (hô hấp ký) hoặc xét nghiệm máu để kiểm tra tình trạng nhiễm trùng.
+🩺 **Xử lý tại nhà:** Trong lúc chờ đi khám, hãy giữ ấm cơ thể, uống nhiều nước ấm để làm loãng đờm, tránh xa khói thuốc và các tác nhân gây kích ứng đường thở. Không tự ý sử dụng kháng sinh khi chưa có chỉ định của bác sĩ.
+🩺 **Lưu ý:** Thông tin này chỉ có giá trị sàng lọc ban đầu và không thay thế cho chẩn đoán y khoa chính thức. Hãy thăm khám trực tiếp để được tư vấn điều trị phù hợp nhất.*`,
+    en: `Hello, thank you for sharing your health details. Based on the information provided, here is a preliminary screening report regarding your symptoms:
 
 🩺 **SUSPECTED CONDITIONS:**
 
-1. Acute Bronchitis: 40% probability
+1. Acute Bronchospasm: 22% probability
 
-📋 **Evidence:** **Persistent productive cough** and **chest soreness with coughing** accompanied by low-grade fever are characteristic of bronchial mucosal inflammation (most commonly viral).
-🔍 **Differential Reasoning:** More common than pneumonia in young adults. Auscultation and examination help differentiate from lower lung parenchyma involvement.
-⚠️ **Watch for:** Monitor for **hemoptysis (coughing up blood)**, **fever over 39°C**, or progressive shortness of breath.
+📋 **Evidence:** **Cough for 3 days**, accompanied by **wheezing** and **chest tightness during coughing**, are classic signs of airway bronchospasm.
+🔍 **Differential Reasoning:** Acute bronchospasm causes marked wheezing from sudden airway narrowing, matching your description.
+⚠️ **Watch for:** Severe dyspnea at rest, or continuous heavy chest tightness.
 
-2. Pneumonia: 25% probability
+2. Bronchial Asthma Exacerbation: 21% probability
 
-📋 **Evidence:** Cough with sputum, fever, and chest discomfort are also key features of lung parenchyma infection.
-🔍 **Differential Reasoning:** Pneumonia typically presents with higher fever, profound fatigue, rapid shallow breathing, and sharp pleuritic chest pain on deep inspiration.
+📋 **Evidence:** Recurrent cough with wheezing and chest pain are typical in asthma exacerbations triggered by respiratory infection.
+🔍 **Differential Reasoning:** Asthma is episodic. Low-grade fever (37.8°C) suggests an acute infection superimposed on underlying airway inflammation.
+⚠️ **Watch for:** Worsening dyspnea at night or early morning, poor response to bronchodilators.
 
-3. Bronchial Asthma Exacerbation: 15% probability
+3. Pharyngitis: 18% probability
 
-📋 **Evidence:** Wheezing and chest tightness can reflect airway hyperresponsiveness and bronchospasm.
-🔍 **Differential Reasoning:** Asthma exacerbations are typically recurrent, episodic, with expiratory wheezing often worse at night or early morning.
+📋 **Evidence:** Cough and mild fever are common in pharyngitis. However, burning extending down to bronchi and chest discomfort suggest lower respiratory involvement.
+🔍 **Differential Reasoning:** Uncomplicated pharyngitis rarely causes wheezing or deep chest soreness; these symptoms point toward bronchial involvement.
+⚠️ **Watch for:** Persistent odynophagia, hoarseness, or tonsillar exudates.
 
-⚠️ **Emergency Warning:** Dangerous symptoms requiring immediate emergency evaluation: **severe dyspnea (shortness of breath)**, **cyanosis (bluish lips/fingers)**, **severe chest pain**, **confusion**, or **SpO2 below 94%**.
+⚠️ **Emergency Warning:** Seek emergency medical care for: severe shortness of breath (unable to speak full sentences), high fever over 39°C, hemoptysis, or crushing chest pain.
 
 📋 **RECOMMENDATIONS:**
 
-🩺 **Specialty:** Consult a **Pulmonology / Internal Medicine** specialist for chest auscultation and chest X-ray.
-🩺 **Timeframe:** Arrange a visit within **24-48 hours**.
-🩺 **Temporary Care:** Drink warm fluids to thin mucus, rest, keep chest warm, and avoid strong cough suppressants or antibiotics without prescription.
-🩺 **Note:** This report is for screening reference only and does not replace direct physician evaluation.*`,
+🩺 **Specialty:** Consult a **Pulmonologist / Internal Medicine** physician within 24-48 hours for lung auscultation and chest X-ray.
+🩺 **Tests:** Spirometry or blood tests may be ordered to assess infection.
+🩺 **Home Care:** Keep warm, drink warm fluids, avoid smoke/irritants, and do not self-prescribe antibiotics.
+🩺 **Note:** This report is for screening reference only and does not replace formal medical diagnosis.*`,
   },
 }
 
