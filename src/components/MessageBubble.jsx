@@ -155,13 +155,13 @@ function renderMessageContent(text) {
       continue
     }
 
-    // Alert block: lines starting with ⚠️ or 🔴 → warning, 📋 → info, ✅ → success
-    if (/^(⚠️|🔴|🚨)/.test(trimmed)) {
+    // Alert block: lines starting with ⚠️ Cảnh báo or ⚠️ Emergency Warning → warning, 💡/ℹ️ → info, ✅ → success
+    if (/^⚠️\s*(\*\*|\*)?(Cảnh báo|Emergency Warning|Alert)/i.test(trimmed) || /^(🔴|🚨)/.test(trimmed)) {
       flushBuffer()
       blocks.push({ type: 'alert', variant: 'danger', text: trimmed })
       continue
     }
-    if (/^(📋|💡|ℹ️)/.test(trimmed)) {
+    if (/^(💡|ℹ️)/.test(trimmed)) {
       flushBuffer()
       blocks.push({ type: 'alert', variant: 'info', text: trimmed })
       continue
