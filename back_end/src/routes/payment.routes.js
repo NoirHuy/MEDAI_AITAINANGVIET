@@ -317,9 +317,26 @@ router.post(
       { new: true },
     )
     if (!paymentUpdated) {
-      throw new HttpError(409, 'Đơn hàng PayPal đã được xử lý đồng thời. Vui lòng tải lại trạng thái tài khoản.')
+      // Webhook can mark the order successful while the browser callback is
+      // still capturing it. Treat that verified state as an idempotent success
+      // so the client receives the refreshed Pro account immediately.
+      const completedPayment = await PaymentModel.findOne({
+        paymentGateway: 'paypal',
+        billingToken: orderId,
+        userId: user.id,
+        status: 'success',
+      })
+      if (completedPayment) {
+        await syncUserProStatus(user.id)
+        const updatedUser = await UserModel.findOne({ id: req.userId }).lean()
+        return res.json({
+          success: true,
+          message: 'Thanh toán PayPal đã được xác nhận thành công. Gói Pro của bạn đã sẵn sàng.',
+          user: toPublicUser(updatedUser),
+        })
+      }
+      throw new HttpError(409, 'Đơn hàng PayPal đang được xử lý. Vui lòng thử lại sau ít phút.')
     }
-
 
     const expiresAt = new Date(now.getTime() + 30 * 24 * 60 * 60 * 1000)
 

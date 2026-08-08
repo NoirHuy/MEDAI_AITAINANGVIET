@@ -6,6 +6,8 @@ const mocks = vi.hoisted(() => ({
   cancelSubscription: vi.fn(),
   paymentFindOne: vi.fn(),
   paymentFindOneAndUpdate: vi.fn(),
+  userFindOne: vi.fn(),
+  capturePayPalOrder: vi.fn(),
 }))
 
 vi.mock('../config/env.js', () => ({
@@ -21,7 +23,7 @@ vi.mock('../utils/auditLog.js', () => ({ auditLog: vi.fn() }))
 vi.mock('../services/paypalClient.js', () => ({
   getPayPalAccessToken: vi.fn(),
   createPayPalOrder: vi.fn(),
-  capturePayPalOrder: vi.fn(),
+  capturePayPalOrder: mocks.capturePayPalOrder,
 }))
 vi.mock('../utils/paypal-webhook.util.js', () => ({
   verifyPayPalWebhookSignature: mocks.verifyWebhook,
@@ -40,7 +42,7 @@ vi.mock('../db/payment.model.js', () => ({
     findOneAndUpdate: mocks.paymentFindOneAndUpdate,
   },
 }))
-vi.mock('../db/user.model.js', () => ({ UserModel: { findOne: vi.fn() } }))
+vi.mock('../db/user.model.js', () => ({ UserModel: { findOne: mocks.userFindOne } }))
 vi.mock('../db/usersRepo.js', () => ({ toPublicUser: (user) => user }))
 
 const { default: paymentRouter } = await import('./payment.routes.js')
