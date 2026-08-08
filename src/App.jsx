@@ -234,6 +234,7 @@ function AppContent() {
           onDeleteAccount={deleteAccount}
           onFetchUsage={fetchUsage}
           showToast={showToast}
+          lang={lang}
         />
       )}
 
