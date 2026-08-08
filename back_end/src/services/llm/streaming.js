@@ -19,14 +19,14 @@ export function randomBetween(min, max) {
   return min + Math.random() * (max - min)
 }
 
-export async function streamText(text, onChunk, signal) {
-  await wait(randomBetween(...THINKING_DELAY_RANGE), signal)
+export async function streamText(text, onChunk, signal, { thinkingDelayMs, tokenDelayMs } = {}) {
+  await wait(thinkingDelayMs ?? randomBetween(...THINKING_DELAY_RANGE), signal)
   const chunks = text.match(/[\s\S]{1,4}/g) ?? []
   let full = ''
   for (const chunk of chunks) {
     full += chunk
     onChunk?.(chunk)
-    await wait(randomBetween(...TOKEN_DELAY_RANGE), signal)
+    await wait(tokenDelayMs ?? randomBetween(...TOKEN_DELAY_RANGE), signal)
   }
   return full
 }

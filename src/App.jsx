@@ -97,11 +97,11 @@ function AppContent() {
     }
   }
 
-  function handleSend(text, isDemo = false) {
+  function handleSend(text, suggestionId = null) {
     const toSend = (text ?? '').trim() ? text : inputValue
     if (!toSend.trim() || chat.isResponding) return
     setInputValue('')
-    chat.sendMessage(toSend, specialtyId, lang, isDemo)
+    chat.sendMessage(toSend, specialtyId, lang, suggestionId)
   }
 
   function handleNewChat() {

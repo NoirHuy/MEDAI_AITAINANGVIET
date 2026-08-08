@@ -83,7 +83,7 @@ router.post(
   attachUserIfPresent,
   chatLimiter,
   asyncHandler(async (req, res) => {
-    const { messages, specialtyId, lang, isSuggestionDemo, sessionMemoryPaused, conversationId } = req.body ?? {}
+    const { messages, specialtyId, lang, isSuggestionDemo, suggestionId, sessionMemoryPaused, conversationId } = req.body ?? {}
     validateMessages(messages)
     if (!Array.isArray(messages) || messages.length === 0) {
       throw new HttpError(400, 'Thiếu nội dung hội thoại (messages).')
@@ -118,6 +118,7 @@ router.post(
         specialtyId,
         lang: lang || 'vi',
         isSuggestionDemo: !!isSuggestionDemo,
+        suggestionId: typeof suggestionId === 'string' ? suggestionId : null,
         userId: req.userId || null,
         sessionMemoryPaused: !!sessionMemoryPaused,
         conversationId: specialtyId === 'health_consultation' ? conversationId || null : null,

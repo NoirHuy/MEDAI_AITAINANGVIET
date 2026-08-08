@@ -9,6 +9,7 @@ import { extractSymptomsFromHistory } from '../graphrag/symptomExtraction.js'
 import { formatAdaptiveContext } from '../graphrag/formatContext.js'
 import { evaluatePhase } from './phaseEvaluator.js'
 import { getSCEState, mergeSCEState, setSCEState } from '../graphrag/sceStateCache.js'
+import { getStaticSuggestionReply } from './staticSuggestionReplies.js'
 
 function buildMockReply(userText, specialtyId, lang = 'vi') {
   const specialty = getSpecialty(specialtyId)
@@ -32,7 +33,7 @@ function buildMockReply(userText, specialtyId, lang = 'vi') {
 
 import { getActiveMemoryContext } from '../memory/memoryRetrieval.js'
 
-export async function generateReply({ messages, specialtyId, lang = 'vi', isSuggestionDemo = false, userId = null, sessionMemoryPaused = false, conversationId = null, onChunk, signal }) {
+export async function generateReply({ messages, specialtyId, lang = 'vi', isSuggestionDemo = false, suggestionId = null, userId = null, sessionMemoryPaused = false, conversationId = null, onChunk, signal }) {
   const isEn = lang === 'en'
   const performanceMeta = {}
   const measureStage = async (name, operation) => {
@@ -42,6 +43,17 @@ export async function generateReply({ messages, specialtyId, lang = 'vi', isSugg
     } finally {
       performanceMeta[name] = Math.round(performance.now() - startedAt)
     }
+  }
+
+  const staticSuggestionReply = specialtyId === 'health_consultation'
+    ? getStaticSuggestionReply(suggestionId, lang)
+    : null
+  if (staticSuggestionReply) {
+    const fullReplyText = await streamText(staticSuggestionReply, onChunk, signal, {
+      thinkingDelayMs: 2200,
+      tokenDelayMs: 1,
+    })
+    return { fullReplyText, memoriesUsed: [], performanceMeta: { staticSuggestionReply: true } }
   }
 
   // No API Key: hard error in production; dev-only mock via flag

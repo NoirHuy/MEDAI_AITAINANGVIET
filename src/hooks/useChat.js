@@ -135,7 +135,7 @@ export function useChat(account) {
   }, [])
 
   const sendMessage = useCallback(
-    async (text, specialtyIdForNew, lang = 'vi', isDemo = false) => {
+    async (text, specialtyIdForNew, lang = 'vi', suggestionId = null) => {
       const trimmed = text.trim()
       if (!trimmed || isResponding) return
 
@@ -234,7 +234,8 @@ export function useChat(account) {
           messages: messagesForApi,
           specialtyId,
           lang,
-          isSuggestionDemo: isDemo,
+          isSuggestionDemo: !!suggestionId,
+          suggestionId,
           conversationId: specialtyId === 'health_consultation' ? convId : undefined,
           signal: controller.signal,
           onToken: appendToken,
