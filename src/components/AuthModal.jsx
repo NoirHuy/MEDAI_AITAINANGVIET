@@ -192,7 +192,7 @@ export default function AuthModal({
               >
                 <input
                   type="email"
-                  placeholder="taikhoang@gmail.com"
+                  placeholder={isEn ? 'account@gmail.com' : 'taikhoang@gmail.com'}
                   value={customGoogleEmail}
                   onChange={(e) => setCustomGoogleEmail(e.target.value)}
                   autoFocus
@@ -258,7 +258,7 @@ export default function AuthModal({
               <span>{isEn ? 'or' : 'hoặc'}</span>
             </div>
 
-            <form className="auth-modal__form" onSubmit={handleFormSubmit}>
+            <form className="auth-modal__form" onSubmit={handleFormSubmit} autoComplete="off">
               {tab === 'signup' && (
                 <label className="settings-field">
                   <span>{isEn ? 'Full name' : 'Họ tên'}</span>
@@ -267,6 +267,7 @@ export default function AuthModal({
                     value={name}
                     onChange={(e) => setName(e.target.value)}
                     placeholder={isEn ? 'John Doe' : 'Nguyễn Văn A'}
+                    autoComplete="off"
                     required
                   />
                 </label>
@@ -278,7 +279,8 @@ export default function AuthModal({
                   type="email"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  placeholder="taikhoang@gmail.com"
+                  placeholder={isEn ? 'account@gmail.com' : 'taikhoang@gmail.com'}
+                  autoComplete="off"
                   required
                 />
               </label>
@@ -290,8 +292,9 @@ export default function AuthModal({
                     type={showPassword ? 'text' : 'password'}
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
-                    placeholder={isEn ? 'Minimum 6 characters' : 'Tối thiểu 6 ký tự'}
+                    placeholder={isEn ? 'At least 6 characters' : 'Tối thiểu 6 ký tự'}
                     minLength={6}
+                    autoComplete="new-password"
                     required
                   />
                   <button
