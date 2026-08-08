@@ -216,8 +216,8 @@ export default function AuthModal({
             </p>
             <p className="auth-modal__spam-notice">
               💡 {isEn
-                ? 'If you do not see the email in your Inbox, please check your Spam or Junk folder.'
-                : 'Nếu không thấy email trong Hộp thư đến, vui lòng kiểm tra thêm trong thư mục Thư rác (Spam).'}
+                ? 'If you do not see the email in your Inbox, please check your Spam, Junk, or Bulk folder.'
+                : 'Nếu không thấy email trong Hộp thư đến (Inbox), vui lòng kiểm tra thêm trong thư mục Spam hoặc Thư rác.'}
             </p>
             <label className="settings-field">
               <span>{isEn ? 'Verification code' : 'Mã xác minh'}</span>
