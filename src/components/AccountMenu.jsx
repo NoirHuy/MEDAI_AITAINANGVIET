@@ -21,10 +21,12 @@ export default function AccountMenu({
   onOpenDashboard,
   onSignOut,
   onHelp,
+  lang = 'vi',
 }) {
   const [open, setOpen] = useState(false)
   const [appearanceExpanded, setAppearanceExpanded] = useState(false)
   const ref = useRef(null)
+  const isEn = lang === 'en'
   const plan = getPlan(account.planId)
   const initial = account.name.trim().charAt(0).toUpperCase() || 'U'
 
@@ -38,11 +40,13 @@ export default function AccountMenu({
     document.addEventListener('mousedown', handleClickOutside)
     return () => document.removeEventListener('mousedown', handleClickOutside)
   }, [])
+
   function openDashboardTab(tab) {
     onOpenDashboard(tab)
     setOpen(false)
     setAppearanceExpanded(false)
   }
+
   return (
     <div className="account-menu" ref={ref}>
       {open && (
@@ -63,17 +67,17 @@ export default function AccountMenu({
 
           <button className="account-menu__item" onClick={() => openDashboardTab('account')}>
             <UserCircleIcon />
-            <span>Hồ sơ tài khoản</span>
+            <span>{isEn ? 'Account Profile' : 'Hồ sơ tài khoản'}</span>
           </button>
 
           <button className="account-menu__item" onClick={() => openDashboardTab('usage')}>
             <GaugeIcon />
-            <span>Mức sử dụng &amp; Token</span>
+            <span>{isEn ? 'Usage & Tokens' : 'Mức sử dụng & Token'}</span>
           </button>
 
           <button className="account-menu__item" onClick={() => openDashboardTab('subscription')}>
             <CreditCardIcon />
-            <span>Gói thuê bao</span>
+            <span>{isEn ? 'Subscription Plan' : 'Gói thuê bao'}</span>
             <span className="account-menu__badge">{plan.name}</span>
           </button>
 
@@ -84,7 +88,7 @@ export default function AccountMenu({
             onClick={() => setAppearanceExpanded((v) => !v)}
           >
             {theme === 'dark' ? <MoonIcon /> : <SunIcon />}
-            <span>Giao diện</span>
+            <span>{isEn ? 'Appearance' : 'Giao diện'}</span>
             <ChevronRightIcon
               className={`account-menu__chevron ${appearanceExpanded ? 'account-menu__chevron--open' : ''}`}
             />
@@ -96,7 +100,7 @@ export default function AccountMenu({
                 onClick={() => theme === 'dark' && onToggleTheme()}
               >
                 <SunIcon />
-                <span>Sáng</span>
+                <span>{isEn ? 'Light' : 'Sáng'}</span>
                 {theme === 'light' && <CheckIcon className="account-menu__check" />}
               </button>
               <button
@@ -104,7 +108,7 @@ export default function AccountMenu({
                 onClick={() => theme === 'light' && onToggleTheme()}
               >
                 <MoonIcon />
-                <span>Tối</span>
+                <span>{isEn ? 'Dark' : 'Tối'}</span>
                 {theme === 'dark' && <CheckIcon className="account-menu__check" />}
               </button>
             </div>
@@ -118,7 +122,7 @@ export default function AccountMenu({
             }}
           >
             <HelpCircleIcon />
-            <span>Trợ giúp &amp; phản hồi</span>
+            <span>{isEn ? 'Help & Feedback' : 'Trợ giúp & phản hồi'}</span>
           </button>
 
           <div className="account-menu__divider" />
@@ -131,7 +135,7 @@ export default function AccountMenu({
             }}
           >
             <LogOutIcon />
-            <span>Đăng xuất</span>
+            <span>{isEn ? 'Log out' : 'Đăng xuất'}</span>
           </button>
         </div>
       )}
