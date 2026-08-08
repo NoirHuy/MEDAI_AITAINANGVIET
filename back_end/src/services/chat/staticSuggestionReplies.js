@@ -89,7 +89,10 @@ const REPLIES = {
 📋 **Khuyến nghị:**
 
 🩺 **Khám chuyên khoa:** Bạn nên đến gặp bác sĩ Tiêu hóa để được thăm khám lâm sàng. Bác sĩ có thể chỉ định nội soi dạ dày thực quản để quan sát niêm mạc trực tiếp.
-📌 **Điều chỉnh lối sống (thực hiện ngay):** Chia nhỏ bữa ăn, tránh ăn quá no và không nằm ngay sau khi ăn (nên đợi ít nhất 2–3 giờ). Kê cao đầu giường khi ngủ để giảm tình trạng trào ngược vào ban đêm. Hạn chế thực phẩm gây kích ứng như đồ cay nóng, caffeine, chocolate và rượu bia.
+📌 **Điều chỉnh lối sống (thực hiện ngay):**
+📌 Chia nhỏ bữa ăn, tránh ăn quá no và không nằm ngay sau khi ăn (nên đợi ít nhất 2–3 giờ).
+📌 Kê cao đầu giường khi ngủ để giảm tình trạng trào ngược vào ban đêm.
+📌 Hạn chế thực phẩm gây kích ứng như đồ cay nóng, caffeine, chocolate và rượu bia.
 ⚠️ **Thời gian:** Nếu các triệu chứng không thuyên giảm sau 1–2 tuần thay đổi lối sống hoặc có dấu hiệu nặng hơn, bạn nên đặt lịch hẹn khám chuyên khoa sớm.
 🩺 **Lưu ý:** Đây chỉ là báo cáo sàng lọc dựa trên thông tin bạn cung cấp, không thay thế cho chẩn đoán y khoa chính thức. Hãy thăm khám với bác sĩ để có phác đồ điều trị phù hợp.`,
     en: `Hello, thank you for sharing your details. Based on the information provided, here is a preliminary screening report regarding your symptoms:
