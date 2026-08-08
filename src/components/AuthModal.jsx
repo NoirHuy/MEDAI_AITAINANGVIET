@@ -214,6 +214,11 @@ export default function AuthModal({
                 ? `We sent a 6-digit verification code to ${email}. It expires in 10 minutes.`
                 : `Chúng tôi đã gửi mã xác minh 6 số đến ${email}. Mã hết hạn sau 10 phút.`}
             </p>
+            <p className="auth-modal__spam-notice">
+              💡 {isEn
+                ? 'If you do not see the email in your Inbox, please check your Spam or Junk folder.'
+                : 'Nếu không thấy email trong Hộp thư đến, vui lòng kiểm tra thêm trong thư mục Thư rác (Spam).'}
+            </p>
             <label className="settings-field">
               <span>{isEn ? 'Verification code' : 'Mã xác minh'}</span>
               <input
