@@ -346,6 +346,7 @@ function renderBlock(block, key) {
             }
 
             // 2. Dòng chi tiết (Dẫn chứng, Lý giải phân biệt, Dấu hiệu cần chú ý, Khuyến nghị...) - Song ngữ
+            const hasIconPrefix = /^[\uFFFD\uFE0F\uFE0E\u200B\u00A0\s]*(📋|🔍|⚠️|🩺|💊|📌|[-*•])/.test(trimmed)
             const cleanBullet = trimmed
               .replace(/^[-*•]\s*/, '')
               .replace(/^[\uFFFD\uFE0F\uFE0E\u200B\u00A0\s]*(📋|🔍|⚠️|🩺|💊|📌)[\uFFFD\uFE0F\uFE0E\u200B\u00A0\s]*/g, '')
@@ -357,10 +358,10 @@ function renderBlock(block, key) {
             const isWatch = lowerContent.includes('dấu hiệu') || lowerContent.includes('cảnh báo') || lowerContent.includes('watch for') || lowerContent.includes('warning')
             const isRecommendation = lowerContent.includes('xét nghiệm') || lowerContent.includes('khám') || lowerContent.includes('chuyên khoa') || lowerContent.includes('nghỉ ngơi') || lowerContent.includes('recommendation')
 
-            const isBulletedLine = trimmed.startsWith('-') || trimmed.startsWith('*') || trimmed.startsWith('•')
+            const isDetailLine = hasIconPrefix || isEvidence || isReasoning || isWatch || isRecommendation
 
-            // Nếu là dòng Dẫn chứng, Lý giải, Dấu hiệu, Khuyến nghị hoặc có gạch đầu dòng
-            if (isEvidence || isReasoning || isWatch || isRecommendation || isBulletedLine) {
+            // Nếu là dòng Dẫn chứng, Lý giải, Dấu hiệu, Khuyến nghị hoặc có gạch đầu dòng / icon
+            if (isDetailLine) {
               const isQuestion = cleanBullet.includes('?')
 
               // Nếu thực sự là câu hỏi lẻ ở Phase 1 (có dấu ?) -> Dùng Thẻ Question Card
@@ -377,9 +378,12 @@ function renderBlock(block, key) {
 
               // Ngược lại (Dẫn chứng, Lý giải, Dấu hiệu, Khuyến nghị) -> Dùng giao diện dòng chi tiết với icon y tế chuẩn
               let icon = '📌'
-              if (isEvidence) icon = '📋'
-              else if (isReasoning) icon = '🔍'
-              else if (isWatch) icon = '⚠️'
+              if (trimmed.includes('📋') || isEvidence) icon = '📋'
+              else if (trimmed.includes('🔍') || isReasoning) icon = '🔍'
+              else if (trimmed.includes('⚠️') || isWatch) icon = '⚠️'
+              else if (trimmed.includes('🩺')) icon = '🩺'
+              else if (trimmed.includes('💊')) icon = '💊'
+              else if (trimmed.includes('📌')) icon = '📌'
               else if (lowerContent.includes('xét nghiệm') || lowerContent.includes('khám') || lowerContent.includes('chuyên khoa')) icon = '🩺'
               else if (lowerContent.includes('nghỉ ngơi') || lowerContent.includes('uống nước')) icon = '💊'
 
