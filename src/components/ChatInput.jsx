@@ -13,6 +13,7 @@ export default function ChatInput({
   specialtyId,
   onSpecialtyChange,
   lang = 'vi',
+  isWelcome = false,
 }) {
   const textareaRef = useRef(null)
   const isEn = lang === 'en'
@@ -32,7 +33,7 @@ export default function ChatInput({
   }
 
   return (
-    <div className="chat-input">
+    <div className={`chat-input ${isWelcome ? 'chat-input--welcome' : ''}`}>
       <div className="chat-input__box">
         <button
           type="button"

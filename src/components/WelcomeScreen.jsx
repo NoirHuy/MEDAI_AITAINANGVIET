@@ -6,16 +6,26 @@ export default function WelcomeScreen({ onPick, lang = 'vi' }) {
   const isEn = lang === 'en'
   return (
     <div className="welcome">
-      <PulseIcon className="welcome__icon" />
+      <div className="welcome__badge">
+        <PulseIcon className="welcome__badge-icon" />
+        <span>MedChat247 AI</span>
+      </div>
+
       <h1 className="welcome__title">
-        {isEn ? "Hello, how can I help with your health today?" : "Chào bạn, tôi có thể giúp gì cho sức khỏe của bạn?"}
+        {isEn ? (
+          <>What health questions can <span className="welcome__title-gradient">MedChat247</span> explore for you today?</>
+        ) : (
+          <>Bạn có thắc mắc sức khỏe nào muốn tìm hiểu cùng <span className="welcome__title-gradient">MedChat247</span> không?</>
+        )}
       </h1>
+
       <p className="welcome__subtitle">
         {isEn 
-          ? "Describe your symptoms or ask a medical question — or try a suggestion below."
-          : "Mô tả triệu chứng hoặc đặt câu hỏi về y tế — hoặc thử một gợi ý bên dưới."
+          ? "Describe symptoms or ask any medical question — or select a prompt below."
+          : "Mô tả triệu chứng hoặc đặt bất kỳ câu hỏi y tế nào — hoặc chọn gợi ý bên dưới."
         }
       </p>
+
       <div className="welcome__grid">
         {SUGGESTIONS.map((s) => {
           const title = typeof s.title === 'object' ? (s.title[lang] || s.title.vi) : s.title
