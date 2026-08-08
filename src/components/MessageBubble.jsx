@@ -346,7 +346,11 @@ function renderBlock(block, key) {
             }
 
             // 2. Dòng chi tiết (Dẫn chứng, Lý giải phân biệt, Dấu hiệu cần chú ý, Khuyến nghị...) - Song ngữ
-            const cleanBullet = trimmed.replace(/^[-*•]\s*/, '').replace(/^(📋|🔍|⚠️|🩺|💊|📌)\s*/, '').trim()
+            const cleanBullet = trimmed
+              .replace(/^[-*•]\s*/, '')
+              .replace(/^[\uFFFD\uFE0F\uFE0E\u200B\u00A0\s]*(📋|🔍|⚠️|🩺|💊|📌)[\uFFFD\uFE0F\uFE0E\u200B\u00A0\s]*/g, '')
+              .replace(/^[\uFFFD\uFE0F\uFE0E\u200B\u00A0]+/, '')
+              .trim()
             const lowerContent = cleanBullet.toLowerCase()
             const isEvidence = lowerContent.includes('dẫn chứng') || lowerContent.includes('bằng chứng') || lowerContent.includes('evidence')
             const isReasoning = lowerContent.includes('lý giải') || lowerContent.includes('differential') || lowerContent.includes('reasoning')
@@ -415,7 +419,13 @@ function renderBlock(block, key) {
 
 // ─── INLINE RENDERER (bold, italic, code) ────────────────────────────────────
 function renderInline(text, keyPrefix) {
-  return text
+  // Lọc sạch mọi ký tự Unicode hỏng (\uFFFD), variation selectors đứng một mình (\uFE0F, \uFE0E) và zero-width spaces (\u200B)
+  const sanitizedText = (text || '')
+    .replace(/[\uFFFD\uFE0F\uFE0E\u200B]/g, '')
+    .replace(/\u00A0/g, ' ')
+    .trim()
+
+  return sanitizedText
     .split(/(\*\*[^*]+\*\*|_[^_]+_|`[^`]+`)/g)
     .filter(part => part.length > 0)
     .map((part, i) => {
