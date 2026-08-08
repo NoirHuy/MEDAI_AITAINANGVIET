@@ -7,6 +7,7 @@ const API_URL = (envApiUrl && envApiUrl !== 'http://localhost:4000')
 
 async function apiRequest(path, options = {}) {
   const res = await fetch(`${API_URL}${path}`, {
+    cache: 'no-store',
     credentials: 'include',
     headers: { 'Content-Type': 'application/json' },
     ...options,

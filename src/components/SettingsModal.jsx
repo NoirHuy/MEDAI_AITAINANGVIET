@@ -298,11 +298,14 @@ export default function SettingsModal({
             })
             showToast?.(res.message || 'Thanh toán PayPal thành công!')
             setConfirmPaymentModal(false)
-            if (res.user) {
-              onUpdateAccount?.(res.user)
-            }
+
+            // Capture response is authoritative. Refetch first for any fields
+            // not returned by capture, then apply the confirmed Pro user last.
             if (onRefetchAccount) {
               await onRefetchAccount()
+            }
+            if (res.user) {
+              onUpdateAccount?.(res.user)
             }
           } catch (err) {
             showToast?.(err.message || 'Không thể hoàn tất thanh toán PayPal.')
