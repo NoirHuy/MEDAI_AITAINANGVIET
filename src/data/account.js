@@ -9,30 +9,51 @@ export const PLANS = [
   {
     id: 'free',
     name: 'Free',
-    price: '0đ',
-    priceDetail: '/tháng',
+    price: { vi: '0đ', en: '$0' },
+    priceDetail: { vi: '/tháng', en: '/month' },
     tokenLimit: 50000,
-    features: [
-      'Tư vấn không giới hạn số cuộc trò chuyện',
-      '50.000 token phản hồi AI mỗi tháng',
-      'Truy cập 4 chuyên khoa cơ bản',
-    ],
+    features: {
+      vi: [
+        'Tư vấn không giới hạn số cuộc trò chuyện',
+        '50.000 token phản hồi AI mỗi tháng',
+        'Truy cập 4 chuyên khoa cơ bản',
+      ],
+      en: [
+        'Unlimited medical conversation turns',
+        '50,000 AI response tokens per month',
+        'Access to 4 essential medical specialties',
+      ],
+    },
   },
   {
     id: 'pro',
     name: 'Pro',
-    price: '99.000đ',
-    priceDetail: '/tháng',
+    price: { vi: '99.000đ', en: '$3.99' },
+    priceDetail: { vi: '/tháng', en: '/month' },
     tokenLimit: 2000000,
-    features: [
-      'Toàn bộ tính năng của gói Free',
-      '2.000.000 token phản hồi AI mỗi tháng',
-      'Ưu tiên tốc độ phản hồi',
-      'Truy cập sớm các chuyên khoa mới',
-    ],
+    features: {
+      vi: [
+        'Toàn bộ tính năng của gói Free',
+        '2.000.000 token phản hồi AI mỗi tháng',
+        'Ưu tiên tốc độ phản hồi tối đa',
+        'Truy cập sớm các chuyên khoa mới',
+      ],
+      en: [
+        'All features included in Free plan',
+        '2,000,000 AI response tokens per month',
+        'Maximum AI response speed priority',
+        'Early access to new medical specialties',
+      ],
+    },
   },
 ]
 
-export function getPlan(planId) {
-  return PLANS.find((p) => p.id === planId) ?? PLANS[0]
+export function getPlan(planId, lang = 'vi') {
+  const p = PLANS.find((item) => item.id === planId) ?? PLANS[0]
+  return {
+    ...p,
+    price: typeof p.price === 'object' ? (p.price[lang] || p.price.vi) : p.price,
+    priceDetail: typeof p.priceDetail === 'object' ? (p.priceDetail[lang] || p.priceDetail.vi) : p.priceDetail,
+    features: Array.isArray(p.features) ? p.features : (p.features[lang] || p.features.vi),
+  }
 }

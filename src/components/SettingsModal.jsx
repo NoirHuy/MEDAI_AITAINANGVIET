@@ -387,7 +387,7 @@ export default function SettingsModal({
 
   if (!activeTab || !account) return null
 
-  const plan = getPlan(account.planId)
+  const plan = getPlan(account.planId, lang)
   const usagePercent = usage
     ? Math.min(100, Math.round((usage.tokensUsed / usage.tokenLimit) * 100))
     : 0
@@ -867,7 +867,8 @@ export default function SettingsModal({
             <section>
               <h2>{isEn ? 'Subscription Plans' : 'Gói thuê bao'}</h2>
               <div className="plans-grid">
-                {PLANS.map((p) => {
+                {PLANS.map((pRaw) => {
+                  const p = getPlan(pRaw.id, lang)
                   const isCurrent = p.id === account.planId
                   return (
                     <div key={p.id} className={`plan-card ${isCurrent ? 'plan-card--current' : ''}`}>
