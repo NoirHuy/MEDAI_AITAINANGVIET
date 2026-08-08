@@ -6,9 +6,8 @@ export default function WelcomeScreen({ onPick, lang = 'vi' }) {
   const isEn = lang === 'en'
   return (
     <div className="welcome">
-      <div className="welcome__badge">
-        <PulseIcon className="welcome__badge-icon" />
-        <span>MedChat247 AI</span>
+      <div className="welcome__icon-wrapper">
+        <PulseIcon className="welcome__icon" />
       </div>
 
       <h1 className="welcome__title">
