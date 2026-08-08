@@ -50,6 +50,12 @@ export const env = {
 
   googleClientId: process.env.GOOGLE_CLIENT_ID ? process.env.GOOGLE_CLIENT_ID.trim() : null,
   cookieSecure: process.env.COOKIE_SECURE === 'true',
+  smtpHost: (process.env.SMTP_HOST || '').trim(),
+  smtpPort: Number(process.env.SMTP_PORT) || 587,
+  smtpSecure: process.env.SMTP_SECURE === 'true',
+  smtpUser: (process.env.SMTP_USER || '').trim(),
+  smtpPass: (process.env.SMTP_PASS || '').trim(),
+  smtpFrom: (process.env.SMTP_FROM || '').trim(),
 
   get neo4jUri() {
     let uri = (process.env.NEO4J_URI || '').trim()

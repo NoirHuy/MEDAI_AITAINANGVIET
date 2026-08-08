@@ -147,6 +147,35 @@
   font-size: 16px;
 }
 
+.auth-modal__step-title {
+  margin: 8px 0 8px;
+  font-size: 18px;
+  color: var(--text-primary);
+}
+
+.auth-modal__step-hint {
+  margin: 0 0 18px;
+  color: var(--text-muted);
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+.auth-modal__forgot-password {
+  display: block;
+  margin: 2px 0 14px auto;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: var(--bg-accent);
+  cursor: pointer;
+  font: inherit;
+  font-size: 13px;
+}
+
+.auth-modal__forgot-password:hover {
+  text-decoration: underline;
+}
+
 .auth-modal__switch {
   text-align: center;
   font-size: 13px;

@@ -33,6 +33,15 @@ export const authSignupLimiter = rateLimit({
 })
 
 /// Đăng nhập Google OAuth: Tối đa 10 lần / 15 phút
+/// Gui va xac minh ma OTP email: giam spam email va brute-force ma 6 chu so.
+export const authEmailCodeLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: isDev ? 100 : 5,
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: createRateLimitMessage('Ban da yeu cau hoac nhap ma qua nhieu lan. Vui long thu lai sau 15 phut.'),
+})
+
 export const authGoogleLimiter = rateLimit({
   windowMs: 15 * 60 * 1000,
   max: isDev ? 100 : 10,

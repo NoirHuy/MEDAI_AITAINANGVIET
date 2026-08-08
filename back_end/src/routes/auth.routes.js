@@ -7,6 +7,7 @@ import { requireAuth } from '../middleware/auth.js'
 import {
   authSigninLimiter,
   authSignupLimiter,
+  authEmailCodeLimiter,
   authGoogleLimiter,
   authGeneralLimiter,
 } from '../middleware/rateLimiters.js'
@@ -26,6 +27,7 @@ import {
   rotateMobileRefreshToken,
 } from '../services/mobileToken.service.js'
 import { syncUserProStatus } from '../services/subscription.service.js'
+import { issueEmailVerification, verifyEmailCode } from '../services/emailVerification.service.js'
 
 const router = Router()
 
@@ -73,26 +75,83 @@ router.post(
     const trimmedName = (name ?? '').trim()
     const trimmedEmail = (email ?? '').trim().toLowerCase()
 
-    if (!trimmedName) throw new HttpError(400, 'Vui lòng nhập họ tên.')
-    if (!EMAIL_RE.test(trimmedEmail)) throw new HttpError(400, 'Email không hợp lệ.')
+    if (!trimmedName) throw new HttpError(400, 'Vui long nhap ho ten.')
+    if (!EMAIL_RE.test(trimmedEmail)) throw new HttpError(400, 'Email khong hop le.')
     if (!password || password.length < 6) {
-      throw new HttpError(400, 'Mật khẩu cần tối thiểu 6 ký tự.')
+      throw new HttpError(400, 'Mat khau can toi thieu 6 ky tu.')
     }
-
     if (await findUserByEmail(trimmedEmail)) {
-      throw new HttpError(409, 'Email này đã được đăng ký. Vui lòng đăng nhập.')
+      throw new HttpError(409, 'Email nay da duoc dang ky. Vui long dang nhap.')
     }
 
-    const passwordHash = await bcrypt.hash(password, 10)
-    const user = await createUser({
+    await issueEmailVerification(trimmedEmail, 'signup', {
       name: trimmedName,
+      passwordHash: await bcrypt.hash(password, 10),
+    })
+    res.status(202).json({ message: 'Ma xac minh da duoc gui den email cua ban.' })
+  }),
+)
+
+router.post(
+  '/signup/verify',
+  authEmailCodeLimiter,
+  asyncHandler(async (req, res) => {
+    const { email, code } = req.body ?? {}
+    const trimmedEmail = (email ?? '').trim().toLowerCase()
+    if (!EMAIL_RE.test(trimmedEmail)) throw new HttpError(400, 'Email khong hop le.')
+
+    const verification = await verifyEmailCode(trimmedEmail, 'signup', code)
+    if (!verification.pendingName || !verification.pendingPasswordHash) {
+      throw new HttpError(400, 'Yeu cau dang ky khong hop le. Vui long dang ky lai.')
+    }
+    if (await findUserByEmail(trimmedEmail)) {
+      throw new HttpError(409, 'Email nay da duoc dang ky. Vui long dang nhap.')
+    }
+
+    const user = await createUser({
+      name: verification.pendingName,
       email: trimmedEmail,
-      passwordHash,
+      passwordHash: verification.pendingPasswordHash,
       provider: 'form',
       planId: DEFAULT_PLAN_ID,
     })
-
     await sendAuthenticated(res, req, user, 201)
+  }),
+)
+
+router.post(
+  '/password-reset/request',
+  authEmailCodeLimiter,
+  asyncHandler(async (req, res) => {
+    const trimmedEmail = (req.body?.email ?? '').trim().toLowerCase()
+    if (!EMAIL_RE.test(trimmedEmail)) throw new HttpError(400, 'Email khong hop le.')
+
+    const user = await findUserByEmail(trimmedEmail)
+    if (user?.provider === 'form') {
+      await issueEmailVerification(trimmedEmail, 'password_reset')
+    }
+    res.status(202).json({ message: 'Neu email ton tai, ma dat lai mat khau da duoc gui.' })
+  }),
+)
+
+router.post(
+  '/password-reset/confirm',
+  authEmailCodeLimiter,
+  asyncHandler(async (req, res) => {
+    const { email, code, password } = req.body ?? {}
+    const trimmedEmail = (email ?? '').trim().toLowerCase()
+    if (!EMAIL_RE.test(trimmedEmail)) throw new HttpError(400, 'Email khong hop le.')
+    if (!password || password.length < 6) {
+      throw new HttpError(400, 'Mat khau can toi thieu 6 ky tu.')
+    }
+
+    const user = await findUserByEmail(trimmedEmail)
+    if (!user || user.provider !== 'form') {
+      throw new HttpError(400, 'Khong the dat lai mat khau cho tai khoan nay.')
+    }
+    await verifyEmailCode(trimmedEmail, 'password_reset', code)
+    await updateUser(user.id, { passwordHash: await bcrypt.hash(password, 10) })
+    res.json({ message: 'Mat khau da duoc dat lai. Vui long dang nhap.' })
   }),
 )
 

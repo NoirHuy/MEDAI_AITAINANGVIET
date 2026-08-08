@@ -25,6 +25,9 @@ function AppContent() {
   const {
     account,
     signUpForm,
+    verifySignUpEmail,
+    requestPasswordReset,
+    confirmPasswordReset,
     signInForm,
     signInWithGoogle,
     updateName,
@@ -250,6 +253,9 @@ function AppContent() {
             }
           }}
           onSignUpForm={signUpForm}
+          onVerifySignUpEmail={verifySignUpEmail}
+          onRequestPasswordReset={requestPasswordReset}
+          onConfirmPasswordReset={confirmPasswordReset}
           onSignInForm={signInForm}
           onSignInWithGoogle={signInWithGoogle}
           onAuthed={handleAuthed}

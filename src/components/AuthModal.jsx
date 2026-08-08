@@ -19,6 +19,9 @@ export default function AuthModal({
   lang = 'vi',
   onClose,
   onSignUpForm,
+  onVerifySignUpEmail,
+  onRequestPasswordReset,
+  onConfirmPasswordReset,
   onSignInForm,
   onSignInWithGoogle,
   onAuthed,
@@ -52,12 +55,16 @@ export default function AuthModal({
   const [password, setPassword] = useState('')
   const [confirmPassword, setConfirmPassword] = useState('')
   const [termsConsent, setTermsConsent] = useState(false)
+  const [authStep, setAuthStep] = useState('form')
+  const [verificationCode, setVerificationCode] = useState('')
 
   function switchTab(nextTab) {
     setTab(nextTab)
     setError(null)
     setGooglePicker(false)
     setShowCustomGoogle(false)
+    setAuthStep('form')
+    setVerificationCode('')
   }
 
   async function handleFormSubmit(e) {
@@ -80,20 +87,53 @@ export default function AuthModal({
 
     setLoading(true)
     try {
-      const user =
-        tab === 'signup'
-          ? await onSignUpForm({ name, email, password })
-          : await onSignInForm({ email, password })
-      onAuthed(
-        user,
-        tab === 'signup'
-          ? isEn
-            ? 'Account created successfully!'
-            : 'Tạo tài khoản thành công!'
-          : isEn
-          ? 'Logged in successfully!'
-          : 'Đăng nhập thành công!',
-      )
+      if (tab === 'signup') {
+        await onSignUpForm({ name, email, password })
+        setAuthStep('signup-verify')
+        return
+      }
+      const user = await onSignInForm({ email, password })
+      onAuthed(user, isEn ? 'Logged in successfully!' : 'Đăng nhập thành công!')
+    } catch (err) {
+      setError(err.message)
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  async function handleVerificationSubmit(e) {
+    e.preventDefault()
+    setError(null)
+    setLoading(true)
+    try {
+      if (authStep === 'signup-verify') {
+        const user = await onVerifySignUpEmail({ email, code: verificationCode })
+        onAuthed(user, isEn ? 'Email verified. Account created successfully!' : 'Email đã được xác minh. Tạo tài khoản thành công!')
+      } else {
+        await onConfirmPasswordReset({ email, code: verificationCode, password })
+        setAuthStep('form')
+        setTab('signin')
+        setPassword('')
+        setVerificationCode('')
+        setError(isEn ? 'Password reset successful. Please sign in.' : 'Đặt lại mật khẩu thành công. Vui lòng đăng nhập.')
+      }
+    } catch (err) {
+      setError(err.message)
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  async function handleForgotPassword() {
+    setError(null)
+    if (!email.trim()) {
+      setError(isEn ? 'Enter your email first.' : 'Vui lòng nhập email trước.')
+      return
+    }
+    setLoading(true)
+    try {
+      await onRequestPasswordReset(email)
+      setAuthStep('reset-verify')
     } catch (err) {
       setError(err.message)
     } finally {
@@ -162,7 +202,53 @@ export default function AuthModal({
           </button>
         </div>
 
-        {googlePicker ? (
+        {authStep !== 'form' ? (
+          <form className="auth-modal__form" onSubmit={handleVerificationSubmit} autoComplete="off">
+            <h3 className="auth-modal__step-title">
+              {authStep === 'signup-verify'
+                ? (isEn ? 'Verify your email' : 'Xác minh email')
+                : (isEn ? 'Reset password' : 'Đặt lại mật khẩu')}
+            </h3>
+            <p className="auth-modal__step-hint">
+              {isEn
+                ? `We sent a 6-digit verification code to ${email}. It expires in 10 minutes.`
+                : `Chúng tôi đã gửi mã xác minh 6 số đến ${email}. Mã hết hạn sau 10 phút.`}
+            </p>
+            <label className="settings-field">
+              <span>{isEn ? 'Verification code' : 'Mã xác minh'}</span>
+              <input
+                type="text"
+                inputMode="numeric"
+                pattern="[0-9]{6}"
+                value={verificationCode}
+                onChange={(e) => setVerificationCode(e.target.value.replace(/\D/g, '').slice(0, 6))}
+                placeholder="123456"
+                autoComplete="one-time-code"
+                required
+              />
+            </label>
+            {authStep === 'reset-verify' && (
+              <label className="settings-field">
+                <span>{isEn ? 'New password' : 'Mật khẩu mới'}</span>
+                <input
+                  type={showPassword ? 'text' : 'password'}
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  minLength={6}
+                  autoComplete="new-password"
+                  required
+                />
+              </label>
+            )}
+            {error && <p className="auth-modal__error">{error}</p>}
+            <button className="btn btn--primary auth-modal__submit" disabled={loading || verificationCode.length !== 6}>
+              {loading ? <SpinnerIcon /> : (isEn ? 'Confirm' : 'Xác nhận')}
+            </button>
+            <button type="button" className="auth-modal__back" onClick={() => { setAuthStep('form'); setError(null) }}>
+              {isEn ? 'Back' : 'Quay lại'}
+            </button>
+          </form>
+        ) : googlePicker ? (
           <div className="google-picker">
             <p className="google-picker__hint">
               {isEn ? 'Select a Google account (simulated)' : 'Chọn một tài khoản Google (mô phỏng)'}
@@ -342,6 +428,12 @@ export default function AuthModal({
               )}
 
               {error && <p className="auth-modal__error">{error}</p>}
+
+              {tab === 'signin' && (
+                <button type="button" className="auth-modal__forgot-password" onClick={handleForgotPassword} disabled={loading}>
+                  {isEn ? 'Forgot password?' : 'Quên mật khẩu?'}
+                </button>
+              )}
 
               <button className="btn btn--primary auth-modal__submit" disabled={loading}>
                 {loading ? (

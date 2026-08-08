@@ -35,12 +35,33 @@ export function useAccount() {
   }, [])
 
   const signUpForm = useCallback(async ({ name, email, password }) => {
-    const { user } = await apiRequest('/api/auth/signup', {
+    return await apiRequest('/api/auth/signup', {
       method: 'POST',
       body: JSON.stringify({ name, email, password }),
     })
+  }, [])
+
+  const verifySignUpEmail = useCallback(async ({ email, code }) => {
+    const { user } = await apiRequest('/api/auth/signup/verify', {
+      method: 'POST',
+      body: JSON.stringify({ email, code }),
+    })
     setAccount(user)
     return user
+  }, [])
+
+  const requestPasswordReset = useCallback(async (email) => {
+    return await apiRequest('/api/auth/password-reset/request', {
+      method: 'POST',
+      body: JSON.stringify({ email }),
+    })
+  }, [])
+
+  const confirmPasswordReset = useCallback(async ({ email, code, password }) => {
+    return await apiRequest('/api/auth/password-reset/confirm', {
+      method: 'POST',
+      body: JSON.stringify({ email, code, password }),
+    })
   }, [])
 
   const signInForm = useCallback(async ({ email, password }) => {
@@ -141,6 +162,9 @@ export function useAccount() {
   return {
     account,
     signUpForm,
+    verifySignUpEmail,
+    requestPasswordReset,
+    confirmPasswordReset,
     signInForm,
     signInWithGoogle,
     updateName,
