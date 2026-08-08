@@ -7,7 +7,6 @@ import { renderSystemPrompt } from '../prompts/promptRegistry.js'
 import { computeAdaptiveContext } from '../graphrag/adaptiveContext.js'
 import { extractSymptomsFromHistory } from '../graphrag/symptomExtraction.js'
 import { formatAdaptiveContext } from '../graphrag/formatContext.js'
-import { initSymptomVectorIndex } from '../graphrag/symptomVectorIndex.js'
 import { evaluatePhase } from './phaseEvaluator.js'
 
 function buildMockReply(userText, specialtyId, lang = 'vi') {
@@ -34,6 +33,15 @@ import { getActiveMemoryContext } from '../memory/memoryRetrieval.js'
 
 export async function generateReply({ messages, specialtyId, lang = 'vi', isSuggestionDemo = false, userId = null, sessionMemoryPaused = false, onChunk, signal }) {
   const isEn = lang === 'en'
+  const performanceMeta = {}
+  const measureStage = async (name, operation) => {
+    const startedAt = performance.now()
+    try {
+      return await operation()
+    } finally {
+      performanceMeta[name] = Math.round(performance.now() - startedAt)
+    }
+  }
 
   // No API Key: hard error in production; dev-only mock via flag
   if (!env.llmApiKey) {
@@ -45,7 +53,7 @@ export async function generateReply({ messages, specialtyId, lang = 'vi', isSugg
     console.warn(msg)
     const lastUser = [...messages].reverse().find(m => m.role === 'user')
     const fullReplyText = await streamText(buildMockReply(lastUser?.content ?? '', specialtyId, lang), onChunk, signal)
-    return { fullReplyText, memoriesUsed: [] }
+    return { fullReplyText, memoriesUsed: [], performanceMeta }
   }
 
   // Active Memory Retrieval for authenticated user
@@ -55,7 +63,7 @@ export async function generateReply({ messages, specialtyId, lang = 'vi', isSugg
 
   if (userId && !sessionMemoryPaused) {
     try {
-      const memRes = await getActiveMemoryContext(userId, lastUserText)
+      const memRes = await measureStage('memoryRetrievalMs', () => getActiveMemoryContext(userId, lastUserText))
       memoryPromptBlock = memRes.promptBlock
       memoriesUsed = memRes.memoriesUsed
     } catch (e) {
@@ -68,13 +76,9 @@ export async function generateReply({ messages, specialtyId, lang = 'vi', isSugg
     let adaptiveCtx = null
     let sceResult = null
     try {
-      const firstCtx = await computeAdaptiveContext(new Set(), new Set())
-      // Initialize vector index once (no-op on subsequent calls)
-      initSymptomVectorIndex(firstCtx.allSymptoms).catch(err =>
-        auditLog('VECTOR_INDEX', 'Error', `Init error: ${err.message}`, 'error')
-      )
-      sceResult = await extractSymptomsFromHistory(messages, firstCtx.allSymptoms, lang)
-      adaptiveCtx = await computeAdaptiveContext(sceResult)
+      const firstCtx = await measureStage('loadSymptomCatalogMs', () => computeAdaptiveContext(new Set(), new Set()))
+      sceResult = await measureStage('symptomExtractionMs', () => extractSymptomsFromHistory(messages, firstCtx.allSymptoms, lang))
+      adaptiveCtx = await measureStage('graphRankingMs', () => computeAdaptiveContext(sceResult))
     } catch (err) {
       auditLog('Adaptive GraphRAG', 'Error', err.message, 'error')
       throw err
@@ -112,16 +116,16 @@ export async function generateReply({ messages, specialtyId, lang = 'vi', isSugg
     ]
 
     const maxTokens = phase === 1 ? 800 : 2500
-    const fullReplyText = await callLLM({
+    const fullReplyText = await measureStage('answerGenerationMs', () => callLLM({
       messages: chatMessages,
       model: env.openrouterModelChat,
       stream: true,
       maxTokens,
       onChunk,
       signal
-    })
+    }))
 
-    return { fullReplyText, memoriesUsed }
+    return { fullReplyText, memoriesUsed, performanceMeta }
   }
 
   // Other specialties (General, Dermatology, Nutrition)
@@ -134,16 +138,16 @@ export async function generateReply({ messages, specialtyId, lang = 'vi', isSugg
     { role: 'system', content: systemPrompt },
     ...messages
   ]
-  const fullReplyText = await callLLM({
+  const fullReplyText = await measureStage('answerGenerationMs', () => callLLM({
     messages: chatMessages,
     model: null,
     stream: true,
     maxTokens: 1500,
     onChunk,
     signal
-  })
+  }))
 
-  return { fullReplyText, memoriesUsed }
+  return { fullReplyText, memoriesUsed, performanceMeta }
 }
 
 export function estimateTokens(text) {

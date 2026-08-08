@@ -109,6 +109,7 @@ router.post(
 
     let full = ''
     let memoriesUsed = []
+    let performanceMeta = {}
     let chatCompleted = false
     const start = performance.now()
     try {
@@ -125,6 +126,7 @@ router.post(
 
       full = replyRes.fullReplyText || ''
       memoriesUsed = replyRes.memoriesUsed || []
+      performanceMeta = replyRes.performanceMeta || {}
       chatCompleted = true
 
       if (memoriesUsed.length > 0) {
@@ -151,6 +153,7 @@ router.post(
           outputTokens,
           totalTokens,
           costUsd,
+          ...performanceMeta,
           lang: lang || 'vi'
         }
       })

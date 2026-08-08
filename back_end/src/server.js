@@ -11,6 +11,8 @@ import adminRoutes from './routes/admin.routes.js'
 import memoriesRoutes from './routes/memories.routes.js'
 import feedbackRoutes from './routes/feedback.routes.js'
 import { startBillingScheduler } from './services/billingScheduler.js'
+import { getSession, getAllSymptoms } from './services/graphrag/neo4jClient.js'
+import { initSymptomVectorIndex } from './services/graphrag/symptomVectorIndex.js'
 import { notFoundHandler, errorHandler } from './middleware/errorHandler.js'
 
 // Connect to MongoDB
@@ -71,6 +73,20 @@ app.use(errorHandler)
 app.listen(env.port, '0.0.0.0', () => {
   console.log(`MedChat247 backend listening on http://0.0.0.0:${env.port}`)
   startBillingScheduler()
+
+  // Build embeddings before the first consultation so cold-start work cannot
+  // delay a patient's first streamed response.
+  ;(async () => {
+    const session = getSession()
+    try {
+      const symptoms = await getAllSymptoms(session)
+      await initSymptomVectorIndex(symptoms)
+    } catch (err) {
+      console.error('[startup] Symptom vector index warm-up failed:', err.message)
+    } finally {
+      await session.close()
+    }
+  })()
   if (process.env.NODE_ENV === 'production') {
     console.log('[startup] Production mode — all secrets must be real values.')
   } else if (!env.ninerouterApi) {

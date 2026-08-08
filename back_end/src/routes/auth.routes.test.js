@@ -101,6 +101,20 @@ describe('POST /api/auth/signup and password reset', () => {
     expect(res.status).toBe(202)
     expect(issueEmailVerification).not.toHaveBeenCalled()
   })
+
+  it('tells Google users to use Google sign-in instead of requesting an OTP', async () => {
+    const { findUserByEmail } = await import('../db/usersRepo.js')
+    const { issueEmailVerification } = await import('../services/emailVerification.service.js')
+    findUserByEmail.mockResolvedValue({ id: 'google-user', provider: 'google' })
+
+    const res = await supertest(buildApp())
+      .post('/api/auth/password-reset/request')
+      .send({ email: 'google-user@gmail.com' })
+
+    expect(res.status).toBe(409)
+    expect(res.body.error).toMatch(/Google/i)
+    expect(issueEmailVerification).not.toHaveBeenCalled()
+  })
 })
 
 describe('POST /api/auth/google', () => {

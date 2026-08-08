@@ -127,6 +127,9 @@ router.post(
     if (!EMAIL_RE.test(trimmedEmail)) throw new HttpError(400, 'Email khong hop le.')
 
     const user = await findUserByEmail(trimmedEmail)
+    if (user?.provider === 'google') {
+      throw new HttpError(409, 'Tai khoan nay dung Google de dang nhap. Vui long chon "Tiep tuc voi Google".')
+    }
     if (user?.provider === 'form') {
       await issueEmailVerification(trimmedEmail, 'password_reset')
     }
