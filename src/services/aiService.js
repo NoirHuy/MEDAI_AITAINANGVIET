@@ -28,6 +28,12 @@ export async function streamAssistantReply({ messages, specialtyId, lang, isSugg
   } catch (err) {
     if (err.name === 'AbortError') throw err
     console.warn('Chat API unavailable:', err)
+
+    if (err.customMessage) {
+      onToken?.(err.customMessage)
+      return err.customMessage
+    }
+
     const message = lang === 'en'
       ? 'The medical consultation service is temporarily unavailable. If you have severe or worsening symptoms, contact local emergency services or seek urgent in-person care.'
       : 'Dịch vụ tư vấn y tế hiện tạm thời không khả dụng. Nếu bạn có triệu chứng nặng hoặc diễn tiến xấu, hãy gọi cấp cứu địa phương hoặc đến cơ sở y tế gần nhất.'
@@ -44,7 +50,22 @@ async function streamFromBackend({ messages, specialtyId, lang, isSuggestionDemo
     signal,
     body: JSON.stringify({ messages, specialtyId, lang, isSuggestionDemo, suggestionId, conversationId }),
   })
-  if (!res.ok || !res.body) throw new Error(`Chat API request failed (${res.status})`)
+
+  if (!res.ok) {
+    let errorMsg = ''
+    try {
+      const data = await res.json()
+      errorMsg = data?.error || data?.message
+    } catch {
+      // ignore JSON parse error
+    }
+    const err = new Error(errorMsg || `Chat API request failed (${res.status})`)
+    err.status = res.status
+    err.customMessage = errorMsg
+    throw err
+  }
+
+  if (!res.body) throw new Error('Chat API response body is empty')
 
   const reader = res.body.getReader()
   const decoder = new TextDecoder()
