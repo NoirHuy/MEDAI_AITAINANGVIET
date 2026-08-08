@@ -298,10 +298,11 @@ export default function SettingsModal({
             })
             showToast?.(res.message || 'Thanh toán PayPal thành công!')
             setConfirmPaymentModal(false)
+            if (res.user) {
+              onUpdateAccount?.(res.user)
+            }
             if (onRefetchAccount) {
               await onRefetchAccount()
-            } else if (res.user) {
-              onUpdateAccount?.(res.user)
             }
           } catch (err) {
             showToast?.(err.message || 'Không thể hoàn tất thanh toán PayPal.')

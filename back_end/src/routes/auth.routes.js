@@ -25,6 +25,7 @@ import {
   revokeMobileRefreshToken,
   rotateMobileRefreshToken,
 } from '../services/mobileToken.service.js'
+import { syncUserProStatus } from '../services/subscription.service.js'
 
 const router = Router()
 
@@ -195,6 +196,7 @@ router.get(
   '/me',
   requireAuth,
   asyncHandler(async (req, res) => {
+    await syncUserProStatus(req.userId)
     const user = await findUserById(req.userId)
     if (!user) throw new HttpError(404, 'Không tìm thấy tài khoản.')
     res.json({ user: toPublicUser(user) })
