@@ -229,6 +229,7 @@ function App() {
       {authTab && (
         <AuthModal
           initialTab={authTab}
+          lang={lang}
           onClose={() => {
             setAuthTab(null)
             if (isAdminPath) {

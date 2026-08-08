@@ -16,12 +16,14 @@ import './AuthModal.css'
 
 export default function AuthModal({
   initialTab = 'signin',
+  lang = 'vi',
   onClose,
   onSignUpForm,
   onSignInForm,
   onSignInWithGoogle,
   onAuthed,
 }) {
+  const isEn = lang === 'en'
   const [tab, setTab] = useState(initialTab)
   const [googlePicker, setGooglePicker] = useState(false)
   const [customGoogleEmail, setCustomGoogleEmail] = useState('')
@@ -63,12 +65,16 @@ export default function AuthModal({
     setError(null)
 
     if (tab === 'signup' && password !== confirmPassword) {
-      setError('Mật khẩu xác nhận không khớp.')
+      setError(isEn ? 'Confirm password does not match.' : 'Mật khẩu xác nhận không khớp.')
       return
     }
 
     if (tab === 'signup' && !termsConsent) {
-      setError('Bạn cần đồng ý với Điều khoản & Chính sách bảo mật dữ liệu y tế.')
+      setError(
+        isEn
+          ? 'You must agree to the Terms of Service & Privacy Policy.'
+          : 'Bạn cần đồng ý với Điều khoản & Chính sách bảo mật dữ liệu y tế.',
+      )
       return
     }
 
@@ -78,7 +84,16 @@ export default function AuthModal({
         tab === 'signup'
           ? await onSignUpForm({ name, email, password })
           : await onSignInForm({ email, password })
-      onAuthed(user, tab === 'signup' ? 'Tạo tài khoản thành công!' : 'Đăng nhập thành công!')
+      onAuthed(
+        user,
+        tab === 'signup'
+          ? isEn
+            ? 'Account created successfully!'
+            : 'Tạo tài khoản thành công!'
+          : isEn
+          ? 'Logged in successfully!'
+          : 'Đăng nhập thành công!',
+      )
     } catch (err) {
       setError(err.message)
     } finally {
@@ -91,7 +106,7 @@ export default function AuthModal({
     setLoading(true)
     try {
       const user = await onSignInWithGoogle({ email: chosenEmail, name: chosenName })
-      onAuthed(user, 'Đăng nhập bằng Google thành công!')
+      onAuthed(user, isEn ? 'Signed in with Google successfully!' : 'Đăng nhập bằng Google thành công!')
     } catch (err) {
       setError(err.message)
       setLoading(false)
@@ -103,7 +118,7 @@ export default function AuthModal({
     setLoading(true)
     try {
       const user = await onSignInWithGoogle({ credential })
-      onAuthed(user, 'Đăng nhập bằng Google thành công!')
+      onAuthed(user, isEn ? 'Signed in with Google successfully!' : 'Đăng nhập bằng Google thành công!')
     } catch (err) {
       setError(err.message)
     } finally {
@@ -119,13 +134,17 @@ export default function AuthModal({
         aria-modal="true"
         onClick={(e) => e.stopPropagation()}
       >
-        <button className="settings-modal__close" onClick={onClose} aria-label="Đóng">
+        <button className="settings-modal__close" onClick={onClose} aria-label={isEn ? 'Close' : 'Đóng'}>
           <CloseIcon />
         </button>
 
-        <h2 className="auth-modal__title">Chào mừng đến với MedChat247</h2>
+        <h2 className="auth-modal__title">
+          {isEn ? 'Welcome to MedChat247' : 'Chào mừng đến với MedChat247'}
+        </h2>
         <p className="auth-modal__subtitle">
-          Đăng nhập để lưu lịch sử trò chuyện và quản lý gói sử dụng của bạn.
+          {isEn
+            ? 'Sign in to save chat history and manage your plan.'
+            : 'Đăng nhập để lưu lịch sử trò chuyện và quản lý gói sử dụng của bạn.'}
         </p>
 
         <div className="auth-modal__tabs">
@@ -133,19 +152,21 @@ export default function AuthModal({
             className={`auth-modal__tab ${tab === 'signin' ? 'auth-modal__tab--active' : ''}`}
             onClick={() => switchTab('signin')}
           >
-            Đăng nhập
+            {isEn ? 'Sign in' : 'Đăng nhập'}
           </button>
           <button
             className={`auth-modal__tab ${tab === 'signup' ? 'auth-modal__tab--active' : ''}`}
             onClick={() => switchTab('signup')}
           >
-            Đăng ký
+            {isEn ? 'Sign up' : 'Đăng ký'}
           </button>
         </div>
 
         {googlePicker ? (
           <div className="google-picker">
-            <p className="google-picker__hint">Chọn một tài khoản Google (mô phỏng)</p>
+            <p className="google-picker__hint">
+              {isEn ? 'Select a Google account (simulated)' : 'Chọn một tài khoản Google (mô phỏng)'}
+            </p>
             <button
               className="google-picker__account"
               disabled={loading}
@@ -171,13 +192,13 @@ export default function AuthModal({
               >
                 <input
                   type="email"
-                  placeholder="tenban@gmail.com"
+                  placeholder="taikhoang@gmail.com"
                   value={customGoogleEmail}
                   onChange={(e) => setCustomGoogleEmail(e.target.value)}
                   autoFocus
                 />
                 <button type="submit" className="btn btn--primary" disabled={loading}>
-                  {loading ? <SpinnerIcon /> : 'Tiếp tục'}
+                  {loading ? <SpinnerIcon /> : isEn ? 'Continue' : 'Tiếp tục'}
                 </button>
               </form>
             ) : (
@@ -189,7 +210,9 @@ export default function AuthModal({
                   <UserCircleIcon />
                 </span>
                 <span className="google-picker__account-text">
-                  <span className="account-menu__name">Sử dụng tài khoản Gmail khác</span>
+                  <span className="account-menu__name">
+                    {isEn ? 'Use another Gmail account' : 'Sử dụng tài khoản Gmail khác'}
+                  </span>
                 </span>
               </button>
             )}
@@ -203,7 +226,7 @@ export default function AuthModal({
                 setError(null)
               }}
             >
-              ← Quay lại
+              {isEn ? '← Back' : '← Quay lại'}
             </button>
           </div>
         ) : (
@@ -227,47 +250,47 @@ export default function AuthModal({
                 }}
               >
                 <GoogleIcon />
-                <span>Tiếp tục với Google</span>
+                <span>{isEn ? 'Continue with Google' : 'Tiếp tục sử dụng dịch vụ bằng Google'}</span>
               </button>
             )}
 
             <div className="auth-modal__divider">
-              <span>hoặc</span>
+              <span>{isEn ? 'or' : 'hoặc'}</span>
             </div>
 
             <form className="auth-modal__form" onSubmit={handleFormSubmit}>
               {tab === 'signup' && (
                 <label className="settings-field">
-                  <span>Họ tên</span>
+                  <span>{isEn ? 'Full name' : 'Họ tên'}</span>
                   <input
                     type="text"
                     value={name}
                     onChange={(e) => setName(e.target.value)}
-                    placeholder="Nguyễn Văn A"
+                    placeholder={isEn ? 'John Doe' : 'Nguyễn Văn A'}
                     required
                   />
                 </label>
               )}
 
               <label className="settings-field">
-                <span>Email</span>
+                <span>{isEn ? 'Email' : 'Email'}</span>
                 <input
                   type="email"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  placeholder="ban@vidu.com"
+                  placeholder="taikhoang@gmail.com"
                   required
                 />
               </label>
 
               <label className="settings-field">
-                <span>Mật khẩu</span>
+                <span>{isEn ? 'Password' : 'Mật khẩu'}</span>
                 <div className="password-input">
                   <input
                     type={showPassword ? 'text' : 'password'}
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
-                    placeholder="Tối thiểu 6 ký tự"
+                    placeholder={isEn ? 'Minimum 6 characters' : 'Tối thiểu 6 ký tự'}
                     minLength={6}
                     required
                   />
@@ -275,7 +298,7 @@ export default function AuthModal({
                     type="button"
                     className="password-input__toggle"
                     onClick={() => setShowPassword((v) => !v)}
-                    aria-label={showPassword ? 'Ẩn mật khẩu' : 'Hiện mật khẩu'}
+                    aria-label={showPassword ? (isEn ? 'Hide password' : 'Ẩn mật khẩu') : (isEn ? 'Show password' : 'Hiện mật khẩu')}
                   >
                     {showPassword ? <EyeOffIcon /> : <EyeIcon />}
                   </button>
@@ -285,12 +308,12 @@ export default function AuthModal({
               {tab === 'signup' && (
                 <>
                   <label className="settings-field">
-                    <span>Xác nhận mật khẩu</span>
+                    <span>{isEn ? 'Confirm password' : 'Xác nhận mật khẩu'}</span>
                     <input
                       type={showPassword ? 'text' : 'password'}
                       value={confirmPassword}
                       onChange={(e) => setConfirmPassword(e.target.value)}
-                      placeholder="Nhập lại mật khẩu"
+                      placeholder={isEn ? 'Re-enter password' : 'Nhập lại mật khẩu'}
                       minLength={6}
                       required
                     />
@@ -305,7 +328,11 @@ export default function AuthModal({
                       style={{ marginTop: '3px', accentColor: 'var(--bg-accent)', width: '16px', height: '16px', flexShrink: 0 }}
                     />
                     <span style={{ fontSize: '12px', color: 'var(--text-muted)', lineHeight: '1.45' }}>
-                      Tôi đồng ý với <strong>Điều khoản sử dụng</strong> và <strong>Chính sách bảo mật dữ liệu y tế MedChat247</strong>.
+                      {isEn ? (
+                        <>I agree to the <strong>Terms of Service</strong> and <strong>Medical Data Privacy Policy of MedChat247</strong>.</>
+                      ) : (
+                        <>Tôi đồng ý với <strong>Điều khoản sử dụng</strong> và <strong>Chính sách bảo mật dữ liệu y tế MedChat247</strong>.</>
+                      )}
                     </span>
                   </label>
                 </>
@@ -317,9 +344,9 @@ export default function AuthModal({
                 {loading ? (
                   <SpinnerIcon />
                 ) : tab === 'signup' ? (
-                  'Tạo tài khoản'
+                  isEn ? 'Create account' : 'Tạo tài khoản'
                 ) : (
-                  'Đăng nhập'
+                  isEn ? 'Sign in' : 'Đăng nhập'
                 )}
               </button>
             </form>
@@ -327,13 +354,13 @@ export default function AuthModal({
             <p className="auth-modal__switch">
               {tab === 'signup' ? (
                 <>
-                  Đã có tài khoản?{' '}
-                  <button onClick={() => switchTab('signin')}>Đăng nhập</button>
+                  {isEn ? 'Already have an account?' : 'Đã có tài khoản?'}{' '}
+                  <button onClick={() => switchTab('signin')}>{isEn ? 'Sign in' : 'Đăng nhập'}</button>
                 </>
               ) : (
                 <>
-                  Chưa có tài khoản?{' '}
-                  <button onClick={() => switchTab('signup')}>Đăng ký</button>
+                  {isEn ? "Don't have an account?" : 'Chưa có tài khoản?'}{' '}
+                  <button onClick={() => switchTab('signup')}>{isEn ? 'Sign up' : 'Đăng ký'}</button>
                 </>
               )}
             </p>
@@ -341,10 +368,9 @@ export default function AuthModal({
         )}
 
         <p className="auth-modal__disclaimer">
-          Tài khoản và mật khẩu được lưu trên máy chủ backend (mã hoá bcrypt).{' '}
-          {isGoogleAuthConfigured()
-            ? 'Đăng nhập Google dùng OAuth thật và được máy chủ xác minh.'
-            : 'Đăng nhập Google hiện là bản mô phỏng — cấu hình GOOGLE_CLIENT_ID để bật OAuth thật.'}
+          {isEn
+            ? 'Accounts and passwords are saved on the backend server (bcrypt encrypted).'
+            : 'Tài khoản và mật khẩu được lưu trên máy chủ backend (mã hoá bcrypt).'}
         </p>
       </div>
     </div>
