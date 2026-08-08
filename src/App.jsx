@@ -42,7 +42,7 @@ function App() {
   const [dashboardTab] = useState('overview')
   const [settingsTab, setSettingsTab] = useState(null)
   const [authTab, setAuthTab] = useState(null)
-  const [lang, setLang] = useState(localStorage.getItem('medai_lang') || 'en')
+  const [lang, setLang] = useState(localStorage.getItem('medai_lang') || 'vi')
   
   const isAdminPath = window.location.pathname === '/admin' || window.location.pathname === '/admin/'
 

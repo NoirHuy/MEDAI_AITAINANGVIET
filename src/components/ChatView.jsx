@@ -39,14 +39,24 @@ export default function ChatView({
         <MenuIcon />
       </button>
 
-      <button
-        type="button"
-        className="lang-toggle-btn"
-        onClick={onToggleLang}
-        title={isEn ? "Switch to Vietnamese" : "Chuyển sang Tiếng Anh"}
-      >
-        {isEn ? "English" : "Tiếng Việt"}
-      </button>
+      <div className="lang-toggle-container">
+        <button
+          type="button"
+          className={`lang-toggle-pill ${!isEn ? 'lang-toggle-pill--active' : ''}`}
+          onClick={() => lang !== 'vi' && onToggleLang()}
+          title="Chuyển sang Tiếng Việt"
+        >
+          🇻🇳 Tiếng Việt
+        </button>
+        <button
+          type="button"
+          className={`lang-toggle-pill ${isEn ? 'lang-toggle-pill--active' : ''}`}
+          onClick={() => lang !== 'en' && onToggleLang()}
+          title="Switch to English"
+        >
+          🇺🇸 English
+        </button>
+      </div>
 
       <div className="chat-disclaimer">
         <AlertIcon />
