@@ -235,6 +235,7 @@ export function useChat(account) {
           specialtyId,
           lang,
           isSuggestionDemo: isDemo,
+          conversationId: specialtyId === 'health_consultation' ? convId : undefined,
           signal: controller.signal,
           onToken: appendToken,
         })

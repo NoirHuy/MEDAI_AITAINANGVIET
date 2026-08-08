@@ -70,23 +70,35 @@ if (process.env.NODE_ENV === 'production') {
 app.use(notFoundHandler)
 app.use(errorHandler)
 
+const WARMUP_RETRY_DELAYS_MS = [0, 1000, 2000, 4000, 8000, 15000]
+
+async function warmSymptomVectorIndex() {
+  let lastError = null
+  for (const delayMs of WARMUP_RETRY_DELAYS_MS) {
+    if (delayMs > 0) await new Promise((resolve) => setTimeout(resolve, delayMs))
+    const session = getSession()
+    try {
+      const symptoms = await getAllSymptoms(session)
+      await initSymptomVectorIndex(symptoms)
+      console.log('[startup] Symptom vector index warm-up completed.')
+      return
+    } catch (err) {
+      lastError = err
+      console.warn(`[startup] Symptom vector index warm-up attempt failed; retrying: ${err.message}`)
+    } finally {
+      await session.close()
+    }
+  }
+  console.error('[startup] Symptom vector index warm-up failed after retries:', lastError?.message)
+}
+
 app.listen(env.port, '0.0.0.0', () => {
   console.log(`MedChat247 backend listening on http://0.0.0.0:${env.port}`)
   startBillingScheduler()
 
   // Build embeddings before the first consultation so cold-start work cannot
   // delay a patient's first streamed response.
-  ;(async () => {
-    const session = getSession()
-    try {
-      const symptoms = await getAllSymptoms(session)
-      await initSymptomVectorIndex(symptoms)
-    } catch (err) {
-      console.error('[startup] Symptom vector index warm-up failed:', err.message)
-    } finally {
-      await session.close()
-    }
-  })()
+  void warmSymptomVectorIndex()
   if (process.env.NODE_ENV === 'production') {
     console.log('[startup] Production mode — all secrets must be real values.')
   } else if (!env.ninerouterApi) {

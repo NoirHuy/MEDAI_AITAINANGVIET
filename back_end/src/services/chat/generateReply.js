@@ -8,6 +8,7 @@ import { computeAdaptiveContext } from '../graphrag/adaptiveContext.js'
 import { extractSymptomsFromHistory } from '../graphrag/symptomExtraction.js'
 import { formatAdaptiveContext } from '../graphrag/formatContext.js'
 import { evaluatePhase } from './phaseEvaluator.js'
+import { getSCEState, mergeSCEState, setSCEState } from '../graphrag/sceStateCache.js'
 
 function buildMockReply(userText, specialtyId, lang = 'vi') {
   const specialty = getSpecialty(specialtyId)
@@ -31,7 +32,7 @@ function buildMockReply(userText, specialtyId, lang = 'vi') {
 
 import { getActiveMemoryContext } from '../memory/memoryRetrieval.js'
 
-export async function generateReply({ messages, specialtyId, lang = 'vi', isSuggestionDemo = false, userId = null, sessionMemoryPaused = false, onChunk, signal }) {
+export async function generateReply({ messages, specialtyId, lang = 'vi', isSuggestionDemo = false, userId = null, sessionMemoryPaused = false, conversationId = null, onChunk, signal }) {
   const isEn = lang === 'en'
   const performanceMeta = {}
   const measureStage = async (name, operation) => {
@@ -77,7 +78,20 @@ export async function generateReply({ messages, specialtyId, lang = 'vi', isSugg
     let sceResult = null
     try {
       const firstCtx = await measureStage('loadSymptomCatalogMs', () => computeAdaptiveContext(new Set(), new Set()))
-      sceResult = await measureStage('symptomExtractionMs', () => extractSymptomsFromHistory(messages, firstCtx.allSymptoms, lang))
+      const userMessageCount = messages.filter((message) => message.role === 'user').length
+      const previousSCE = specialtyId === 'health_consultation'
+        ? getSCEState(conversationId, userMessageCount)
+        : null
+      const messagesForExtraction = previousSCE
+        ? [messages.filter((message) => message.role === 'user').at(-1)]
+        : messages
+      const extractedSCE = await measureStage('symptomExtractionMs', () =>
+        extractSymptomsFromHistory(messagesForExtraction, firstCtx.allSymptoms, lang),
+      )
+      sceResult = previousSCE ? mergeSCEState(previousSCE, extractedSCE) : extractedSCE
+      if (specialtyId === 'health_consultation') {
+        setSCEState(conversationId, userMessageCount, sceResult)
+      }
       adaptiveCtx = await measureStage('graphRankingMs', () => computeAdaptiveContext(sceResult))
     } catch (err) {
       auditLog('Adaptive GraphRAG', 'Error', err.message, 'error')

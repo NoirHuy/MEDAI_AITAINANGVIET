@@ -120,6 +120,7 @@ router.post(
         isSuggestionDemo: !!isSuggestionDemo,
         userId: req.userId || null,
         sessionMemoryPaused: !!sessionMemoryPaused,
+        conversationId: specialtyId === 'health_consultation' ? conversationId || null : null,
         signal: controller.signal,
         onChunk: (chunk) => res.write(chunk),
       })

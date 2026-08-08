@@ -47,8 +47,8 @@ export async function initSymptomVectorIndex(symptomsList) {
       embeddings = await getEmbeddings(texts)
     } catch (err) {
       auditLog('VECTOR_INDEX', 'Error', `Failed to build index: ${err.message}`, 'error')
-      _initialized = true
-      return
+      _initPromise = null
+      throw err
     }
 
     _index = symptomsList

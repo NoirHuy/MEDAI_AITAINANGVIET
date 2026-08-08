@@ -13,6 +13,9 @@ services:
     volumes:
       - backend_data:/app/data
     restart: unless-stopped
+    depends_on:
+      neo4j:
+        condition: service_healthy
     ports:
       - '127.0.0.1:4000:4000'
 
@@ -67,6 +70,12 @@ services:
       - '127.0.0.1:7687:7687'
     volumes:
       - neo4j_data:/data
+    healthcheck:
+      test: ["CMD-SHELL", "bash -c 'exec 3<>/dev/tcp/localhost/7687'"]
+      interval: 5s
+      timeout: 5s
+      retries: 12
+      start_period: 15s
     restart: unless-stopped
 
 volumes:
