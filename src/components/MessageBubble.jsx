@@ -1,9 +1,9 @@
-import { useState } from 'react'
+import { useState, memo } from 'react'
 import { PulseIcon } from './Icons'
 import TypingDots from './TypingDots'
 import './MessageBubble.css'
 
-export default function MessageBubble({ role, content, streaming, lang = 'vi', onSend, isLast }) {
+export default memo(function MessageBubble({ role, content, streaming, lang = 'vi', onSend, isLast }) {
   const isUser = role === 'user'
   const isEn = lang === 'en'
 
@@ -52,8 +52,11 @@ export default function MessageBubble({ role, content, streaming, lang = 'vi', o
         <div
           className={`message-bubble ${isUser ? 'message-bubble--user' : 'message-bubble--assistant'}`}
         >
-          {cleanContent ? renderMessageContent(cleanContent) : streaming ? <TypingDots /> : null}
-          {streaming && content && <span className="message-cursor" />}
+          {cleanContent
+            ? renderMessageContent(cleanContent)
+            : (streaming ? <TypingDots /> : null)
+          }
+          {streaming && cleanContent && <span className="message-cursor" />}
 
           {memoriesUsed && memoriesUsed.length > 0 && !streaming && (
             <div className="memory-referenced-badge">
@@ -127,7 +130,7 @@ export default function MessageBubble({ role, content, streaming, lang = 'vi', o
       </div>
     </div>
   )
-}
+})
 
 // ─── MAIN RENDERER ───────────────────────────────────────────────────────────
 function renderMessageContent(text) {

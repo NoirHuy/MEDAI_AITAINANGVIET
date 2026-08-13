@@ -19,12 +19,26 @@ export default function ChatView({
   onToggleLang,
 }) {
   const scrollRef = useRef(null)
+  const shouldFollowStreamRef = useRef(true)
+  const scrollFrameRef = useRef(null)
   const isEn = lang === 'en'
 
   useEffect(() => {
     const el = scrollRef.current
-    if (el) el.scrollTop = el.scrollHeight
+    if (!el || !shouldFollowStreamRef.current) return
+    cancelAnimationFrame(scrollFrameRef.current)
+    scrollFrameRef.current = requestAnimationFrame(() => {
+      el.scrollTop = el.scrollHeight
+    })
   }, [messages])
+
+  useEffect(() => () => cancelAnimationFrame(scrollFrameRef.current), [])
+
+  const handleScroll = () => {
+    const el = scrollRef.current
+    if (!el) return
+    shouldFollowStreamRef.current = el.scrollHeight - el.scrollTop - el.clientHeight < 48
+  }
 
   const hasMessages = messages.length > 0
 
@@ -59,7 +73,7 @@ export default function ChatView({
         </span>
       </div>
 
-      <div className="chat-body" ref={scrollRef}>
+      <div className="chat-body" ref={scrollRef} onScroll={handleScroll}>
         {hasMessages ? (
           <div className="chat-messages">
             {messages.map((m, idx) => (
