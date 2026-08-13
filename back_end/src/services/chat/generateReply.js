@@ -69,34 +69,39 @@ export async function generateReply({ messages, specialtyId, lang = 'vi', isSugg
     return { fullReplyText, memoriesUsed: [], performanceMeta }
   }
 
-  // Active Memory Retrieval for authenticated user
-  const lastUserText = [...messages].reverse().find(m => m.role === 'user')?.content || ''
-  let memoryPromptBlock = ''
-  let memoriesUsed = []
-
-  if (userId && !sessionMemoryPaused) {
-    try {
-      const memRes = await measureStage('memoryRetrievalMs', () => getActiveMemoryContext(userId, lastUserText))
-      memoryPromptBlock = memRes.promptBlock
-      memoriesUsed = memRes.memoriesUsed
-    } catch (e) {
-      console.error('[GenerateReply] Memory retrieval error:', e)
-    }
-  }
-
   // TRUE ADAPTIVE GRAPHRAG for Health Consultation specialty
   if (specialtyId === 'health_consultation' || specialtyId === 'pediatrics') {
     let adaptiveCtx = null
     let sceResult = null
+    let memoryPromptBlock = ''
+    let memoriesUsed = []
+    
     try {
-      const firstCtx = await measureStage('loadSymptomCatalogMs', () => computeAdaptiveContext(new Set(), new Set()))
+      const lastUserText = [...messages].reverse().find(m => m.role === 'user')?.content || ''
       const userMessageCount = messages.filter((message) => message.role === 'user').length
-      const previousSCE = specialtyId === 'health_consultation'
-        ? await getSCEState(conversationId, userMessageCount)
-        : null
+      
+      // OPTIMIZATION: Parallelize independent operations that don't depend on each other
+      const [firstCtx, previousSCE, memRes] = await Promise.all([
+        measureStage('loadSymptomCatalogMs', () => computeAdaptiveContext(new Set(), new Set())),
+        specialtyId === 'health_consultation' ? getSCEState(conversationId, userMessageCount) : Promise.resolve(null),
+        userId && !sessionMemoryPaused 
+          ? measureStage('memoryRetrievalMs', () => getActiveMemoryContext(userId, lastUserText))
+          : Promise.resolve({ promptBlock: '', memoriesUsed: [] })
+      ])
+      
+      if (memRes) {
+        memoryPromptBlock = memRes.promptBlock
+        memoriesUsed = memRes.memoriesUsed
+      }
+      
+      // INCREMENTAL EXTRACTION: Only extract from new messages if we have previous SCE state
       const messagesForExtraction = previousSCE
         ? [messages.filter((message) => message.role === 'user').at(-1)]
         : messages
+      
+      auditLog('SCE_EXTRACTION', 'Info', 
+        `Extracting SCE from ${messagesForExtraction.length} message(s) - ${previousSCE ? 'incremental' : 'full'} mode`)
+      
       const extractedSCE = await measureStage('symptomExtractionMs', () =>
         extractSymptomsFromHistory(messagesForExtraction, firstCtx.allSymptoms, lang),
       )
@@ -155,6 +160,20 @@ export async function generateReply({ messages, specialtyId, lang = 'vi', isSugg
   }
 
   // Other specialties (General, Dermatology, Nutrition)
+  let memoryPromptBlock = ''
+  let memoriesUsed = []
+  
+  if (userId && !sessionMemoryPaused) {
+    try {
+      const lastUserText = [...messages].reverse().find(m => m.role === 'user')?.content || ''
+      const memRes = await measureStage('memoryRetrievalMs', () => getActiveMemoryContext(userId, lastUserText))
+      memoryPromptBlock = memRes.promptBlock
+      memoriesUsed = memRes.memoriesUsed
+    } catch (e) {
+      console.error('[GenerateReply] Memory retrieval error:', e)
+    }
+  }
+  
   let systemPrompt = renderSystemPrompt(specialtyId, lang, {})
   if (memoryPromptBlock) {
     systemPrompt += `\n\n${memoryPromptBlock}`

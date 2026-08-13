@@ -15,8 +15,8 @@ export async function closeDriver() {
   await driver.close()
 }
 
-// ─── TTL CACHE (10 MINUTES) ──────────────────────────────────────────────────
-const CACHE_TTL_SECONDS = 10 * 60 // 10 minutes
+// ─── TTL CACHE (60 MINUTES for static symptom data) ────────────────────────
+const CACHE_TTL_SECONDS = 60 * 60 // 60 minutes - increased from 10 minutes for better performance
 
 const KEY_SYMPTOMS = 'neo4j:symptoms'
 const KEY_SYMPTOM_NAMES = 'neo4j:symptom_names'

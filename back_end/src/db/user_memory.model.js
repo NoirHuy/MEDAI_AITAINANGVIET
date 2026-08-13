@@ -126,4 +126,7 @@ const UserMemorySchema = new mongoose.Schema(
 // TTL Index on ignoredExpiresAt (deletes document when current date reaches ignoredExpiresAt)
 UserMemorySchema.index({ ignoredExpiresAt: 1 }, { expireAfterSeconds: 0 })
 
+// Compound index for memory retrieval query optimization
+UserMemorySchema.index({ userId: 1, status: 1 })
+
 export const UserMemoryModel = mongoose.model('UserMemory', UserMemorySchema)

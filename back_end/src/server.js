@@ -11,6 +11,7 @@ import paymentRoutes from './routes/payment.routes.js'
 import adminRoutes from './routes/admin.routes.js'
 import memoriesRoutes from './routes/memories.routes.js'
 import feedbackRoutes from './routes/feedback.routes.js'
+import monitoringRoutes from './routes/monitoring.routes.js'
 import { startBillingScheduler } from './services/billingScheduler.js'
 import { getSession, getAllSymptoms } from './services/graphrag/neo4jClient.js'
 import { initSymptomVectorIndex } from './services/graphrag/symptomVectorIndex.js'
@@ -54,8 +55,6 @@ app.use(express.json({
 }))
 app.use(cookieParser())
 
-app.get('/health', (_req, res) => res.json({ ok: true }))
-
 app.use('/api/auth', authRoutes)
 app.use('/api/account', accountRoutes)
 app.use('/api/chat', chatRoutes)
@@ -63,6 +62,7 @@ app.use('/api/payments', paymentRoutes)
 app.use('/api/admin', adminRoutes)
 app.use('/api/memories', memoriesRoutes)
 app.use('/api/feedback', feedbackRoutes)
+app.use('/api/monitoring', monitoringRoutes)
 
 import path from 'path'
 import { fileURLToPath } from 'url'

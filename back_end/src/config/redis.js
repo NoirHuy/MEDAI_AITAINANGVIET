@@ -24,6 +24,39 @@ const client = createClient(redisConfig)
 let isConnected = false
 let connectionPromise = null
 
+// ─── Cache Performance Metrics ─────────────────────────────────────────────
+const metrics = {
+  hits: 0,
+  misses: 0,
+  errors: 0,
+  connectionAttempts: 0,
+  connectionFailures: 0,
+  lastHealthCheck: null,
+  uptime: 0,
+  startTime: Date.now()
+}
+
+export function getRedisMetrics() {
+  const totalRequests = metrics.hits + metrics.misses
+  const hitRate = totalRequests > 0 ? (metrics.hits / totalRequests * 100).toFixed(2) : 0
+  return {
+    ...metrics,
+    totalRequests,
+    hitRate: `${hitRate}%`,
+    uptime: Math.floor((Date.now() - metrics.startTime) / 1000),
+    isConnected
+  }
+}
+
+export function resetRedisMetrics() {
+  metrics.hits = 0
+  metrics.misses = 0
+  metrics.errors = 0
+  metrics.connectionAttempts = 0
+  metrics.connectionFailures = 0
+  metrics.startTime = Date.now()
+}
+
 client.on('error', (err) => {
   if (isConnected) {
     auditLog('REDIS', 'Error', `Redis client error: ${err.message}`, 'error')
@@ -53,13 +86,16 @@ export async function connectRedis() {
   if (isConnected) return true
   if (connectionPromise) return connectionPromise
 
+  metrics.connectionAttempts++
   connectionPromise = (async () => {
     try {
       await client.connect()
       await client.ping()
+      metrics.lastHealthCheck = new Date().toISOString()
       console.log(`[redis] Ping successful. Connected to ${redisConfig.url}`)
       return true
     } catch (err) {
+      metrics.connectionFailures++
       console.warn(`[redis] Failed to connect: ${err.message}. Falling back to in-memory cache.`)
       isConnected = false
       connectionPromise = null
@@ -68,6 +104,37 @@ export async function connectRedis() {
   })()
 
   return connectionPromise
+}
+
+export async function redisHealthCheck() {
+  if (!REDIS_ENABLED) {
+    return { healthy: false, reason: 'Redis disabled via config' }
+  }
+  
+  if (!isConnected) {
+    return { healthy: false, reason: 'Not connected', metrics: getRedisMetrics() }
+  }
+
+  try {
+    const start = performance.now()
+    await client.ping()
+    const latency = Math.round(performance.now() - start)
+    metrics.lastHealthCheck = new Date().toISOString()
+    
+    return {
+      healthy: true,
+      latency: `${latency}ms`,
+      url: redisConfig.url,
+      metrics: getRedisMetrics()
+    }
+  } catch (err) {
+    metrics.errors++
+    return {
+      healthy: false,
+      reason: err.message,
+      metrics: getRedisMetrics()
+    }
+  }
 }
 
 export async function disconnectRedis() {
@@ -89,10 +156,20 @@ export function isRedisConnected() {
 }
 
 export async function safeGet(key) {
-  if (!isConnected) return null
+  if (!isConnected) {
+    metrics.misses++
+    return null
+  }
   try {
-    return await client.get(key)
+    const value = await client.get(key)
+    if (value !== null) {
+      metrics.hits++
+    } else {
+      metrics.misses++
+    }
+    return value
   } catch (err) {
+    metrics.errors++
     auditLog('REDIS', 'Warning', `GET ${key} failed: ${err.message}`, 'warn')
     return null
   }

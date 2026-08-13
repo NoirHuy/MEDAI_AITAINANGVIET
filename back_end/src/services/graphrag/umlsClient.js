@@ -42,7 +42,7 @@ const umlsRamCache = new Map()
 const RAM_CACHE_LIMIT = 2000
 
 // ─── 3. REDIS CONFIG ───────────────────────────────────────────────────────
-const CACHE_TTL_SECONDS = 30 * 60 // 30 minutes
+const CACHE_TTL_SECONDS = 2 * 60 * 60 // 2 hours - increased from 30 minutes for better cache hit rate
 const KEY_PREFIX = 'umls:'
 
 function redisKey(normKey) {

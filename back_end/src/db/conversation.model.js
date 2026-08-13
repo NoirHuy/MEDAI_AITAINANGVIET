@@ -28,4 +28,7 @@ const conversationSchema = new mongoose.Schema({
 // Index on userId for fast query of a user's conversations
 conversationSchema.index({ userId: 1 })
 
+// Compound index for sorting by creation date
+conversationSchema.index({ userId: 1, createdAt: -1 })
+
 export const ConversationModel = mongoose.model('Conversation', conversationSchema, 'conversations')
