@@ -28,6 +28,7 @@ import {
 } from '../services/mobileToken.service.js'
 import { syncUserProStatus } from '../services/subscription.service.js'
 import { issueEmailVerification, verifyEmailCode } from '../services/emailVerification.service.js'
+import { storeSession, revokeSession } from '../services/auth/authCache.js'
 
 const router = Router()
 
@@ -40,8 +41,8 @@ const COOKIE_OPTIONS = {
   maxAge: 7 * 24 * 60 * 60 * 1000,
 }
 
-function setSessionCookie(res, userId) {
-  res.cookie(AUTH_COOKIE_NAME, signSessionToken(userId), COOKIE_OPTIONS)
+function setSessionCookie(res, token) {
+  res.cookie(AUTH_COOKIE_NAME, token, COOKIE_OPTIONS)
 }
 
 function isMobileClient(req) {
@@ -53,7 +54,9 @@ async function sendAuthenticated(res, req, user, status = 200) {
     const tokens = await issueMobileTokens(user.id)
     return res.status(status).json({ user: toPublicUser(user), tokens })
   }
-  setSessionCookie(res, user.id)
+  const { token, jti } = signSessionToken(user.id)
+  await storeSession(jti, { userId: user.id, email: user.email, createdAt: Date.now() })
+  setSessionCookie(res, token)
   return res.status(status).json({ user: toPublicUser(user) })
 }
 
@@ -222,10 +225,21 @@ router.post(
   }),
 )
 
-router.post('/signout', authGeneralLimiter, (_req, res) => {
+router.post('/signout', authGeneralLimiter, asyncHandler(async (req, res) => {
+  // Revoke the current session if a token is present
+  const token = req.cookies?.[AUTH_COOKIE_NAME]
+  if (token) {
+    try {
+      const { verifySessionToken } = await import('../utils/jwt.js')
+      const payload = verifySessionToken(token)
+      if (payload?.jti) {
+        await revokeSession(payload.jti)
+      }
+    } catch {}
+  }
   res.clearCookie(AUTH_COOKIE_NAME, { ...COOKIE_OPTIONS, maxAge: undefined })
   res.status(204).end()
-})
+}))
 
 router.post(
   '/mobile/refresh',

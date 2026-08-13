@@ -28,9 +28,9 @@ describe('SCE state cache', () => {
     })
   })
 
-  it('uses state only for the immediate next user turn', () => {
-    setSCEState('conversation-1', 1, { demographics: {}, temporal: {}, symptoms: [headache] })
-    expect(getSCEState('conversation-1', 2)).toMatchObject({ symptoms: [headache] })
-    expect(getSCEState('conversation-1', 3)).toBeNull()
+  it('uses state only for the immediate next user turn (async)', async () => {
+    await setSCEState('conversation-1', 1, { demographics: {}, temporal: {}, symptoms: [headache] })
+    expect(await getSCEState('conversation-1', 2)).toMatchObject({ symptoms: [headache] })
+    expect(await getSCEState('conversation-1', 3)).toBeNull()
   })
 })

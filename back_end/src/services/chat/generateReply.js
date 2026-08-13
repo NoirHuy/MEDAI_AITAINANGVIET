@@ -92,7 +92,7 @@ export async function generateReply({ messages, specialtyId, lang = 'vi', isSugg
       const firstCtx = await measureStage('loadSymptomCatalogMs', () => computeAdaptiveContext(new Set(), new Set()))
       const userMessageCount = messages.filter((message) => message.role === 'user').length
       const previousSCE = specialtyId === 'health_consultation'
-        ? getSCEState(conversationId, userMessageCount)
+        ? await getSCEState(conversationId, userMessageCount)
         : null
       const messagesForExtraction = previousSCE
         ? [messages.filter((message) => message.role === 'user').at(-1)]
@@ -102,7 +102,7 @@ export async function generateReply({ messages, specialtyId, lang = 'vi', isSugg
       )
       sceResult = previousSCE ? mergeSCEState(previousSCE, extractedSCE) : extractedSCE
       if (specialtyId === 'health_consultation') {
-        setSCEState(conversationId, userMessageCount, sceResult)
+        await setSCEState(conversationId, userMessageCount, sceResult)
       }
       adaptiveCtx = await measureStage('graphRankingMs', () => computeAdaptiveContext(sceResult))
     } catch (err) {

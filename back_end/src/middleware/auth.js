@@ -1,6 +1,7 @@
 import { AUTH_COOKIE_NAME, verifySessionToken } from '../utils/jwt.js'
 import { UserModel } from '../db/user.model.js'
 import { env } from '../config/env.js'
+import { isSessionRevoked } from '../services/auth/authCache.js'
 
 function extractToken(req) {
   if (req.cookies?.[AUTH_COOKIE_NAME]) return req.cookies[AUTH_COOKIE_NAME]
@@ -12,9 +13,21 @@ function extractToken(req) {
   return null
 }
 
-export function requireAuth(req, res, next) {
+async function verifyTokenWithRevocationCheck(token) {
+  const payload = verifySessionToken(token)
+  if (!payload) return null
+
+  // Check if this session has been revoked (e.g. user logged out)
+  if (payload.jti && (await isSessionRevoked(payload.jti))) {
+    return null
+  }
+
+  return payload.userId
+}
+
+export async function requireAuth(req, res, next) {
   const token = extractToken(req)
-  const userId = token ? verifySessionToken(token) : null
+  const userId = token ? await verifyTokenWithRevocationCheck(token) : null
   if (!userId) {
     res.status(401).json({ error: 'Bạn cần đăng nhập để thực hiện thao tác này.' })
     return
@@ -25,9 +38,9 @@ export function requireAuth(req, res, next) {
 
 // For routes usable by both guests and logged-in users (e.g. chat), where
 // we still want to attribute usage to an account when one is present.
-export function attachUserIfPresent(req, _res, next) {
+export async function attachUserIfPresent(req, _res, next) {
   const token = extractToken(req)
-  req.userId = token ? verifySessionToken(token) : null
+  req.userId = token ? await verifyTokenWithRevocationCheck(token) : null
   next()
 }
 

@@ -8,7 +8,9 @@ const MOBILE_REFRESH_EXPIRES_IN = '30d'
 export const AUTH_COOKIE_NAME = 'medchat_token'
 
 export function signSessionToken(userId) {
-  return jwt.sign({ sub: userId, type: 'web_session' }, env.jwtSecret, { expiresIn: SESSION_EXPIRES_IN })
+  const jti = randomUUID()
+  const token = jwt.sign({ sub: userId, type: 'web_session', jti }, env.jwtSecret, { expiresIn: SESSION_EXPIRES_IN })
+  return { token, jti }
 }
 
 export function signMobileAccessToken(userId) {
@@ -31,7 +33,9 @@ export function verifySessionToken(token) {
   try {
     const payload = jwt.verify(token, env.jwtSecret)
     if (payload.type === 'mobile_refresh') return null
-    return payload.sub
+    if (payload.type === 'mobile_access') return payload.sub
+    // Web session token: include jti so callers can revoke the session
+    return { userId: payload.sub, jti: payload.jti }
   } catch {
     return null
   }

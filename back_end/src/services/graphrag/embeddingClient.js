@@ -1,8 +1,32 @@
 import { env } from '../../config/env.js'
 import { auditLog } from '../../utils/auditLog.js'
+import { isRedisConnected, safeGet, safeSet } from '../../config/redis.js'
 
-// ─── In-memory embedding cache (key = normalized text, value = Float32Array) ──
+// ─── In-memory embedding cache (Layer 1, local to instance) ─────────────────
 const _cache = new Map()
+
+// ─── Redis config (Layer 2, shared across instances) ────────────────────────
+const CACHE_TTL_SECONDS = 24 * 60 * 60 // 24 hours — embeddings are stable
+const KEY_PREFIX = 'emb:'
+
+function redisKey(normKey) {
+  return `${KEY_PREFIX}${normKey}`
+}
+
+async function getFromRedis(normKey) {
+  const raw = await safeGet(redisKey(normKey))
+  if (!raw) return null
+  try {
+    const arr = JSON.parse(raw)
+    if (Array.isArray(arr)) return new Float32Array(arr)
+  } catch {}
+  return null
+}
+
+async function setToRedis(normKey, vec) {
+  // Serialize Float32Array as regular array for JSON compatibility
+  await safeSet(redisKey(normKey), JSON.stringify(Array.from(vec)), CACHE_TTL_SECONDS)
+}
 
 // ─── Cosine similarity between two vectors ────────────────────────────────────
 export function cosineSimilarity(a, b) {
@@ -30,20 +54,37 @@ export async function getEmbeddings(texts) {
   const uncachedIdx = []
   const uncachedTexts = []
 
-  // Layer 1: RAM cache hit
+  // Layer 1: RAM cache + Layer 2: Redis cache (per text)
   for (let i = 0; i < texts.length; i++) {
     const key = texts[i].toLowerCase().trim()
+
+    // Layer 1: RAM cache hit (fastest)
     if (_cache.has(key)) {
       results[i] = _cache.get(key)
-    } else {
-      uncachedIdx.push(i)
-      uncachedTexts.push(texts[i])
+      continue
     }
+
+    // Layer 2: Redis cache hit (shared across instances)
+    if (isRedisConnected()) {
+      try {
+        const cachedVec = await getFromRedis(key)
+        if (cachedVec) {
+          _cache.set(key, cachedVec) // warm RAM cache
+          results[i] = cachedVec
+          continue
+        }
+      } catch (err) {
+        auditLog('EMBEDDING', 'Warning', `Redis embedding cache miss: ${err.message}`, 'warn')
+      }
+    }
+
+    uncachedIdx.push(i)
+    uncachedTexts.push(texts[i])
   }
 
   if (uncachedTexts.length === 0) return results
 
-  // Layer 2: Batch API call to OpenRouter /v1/embeddings
+  // Layer 3: Batch API call to OpenRouter /v1/embeddings
   const BATCH_SIZE = 50
   for (let b = 0; b < uncachedTexts.length; b += BATCH_SIZE) {
     const batch = uncachedTexts.slice(b, b + BATCH_SIZE)
@@ -76,7 +117,12 @@ export async function getEmbeddings(texts) {
       for (let i = 0; i < embeddings.length; i++) {
         const vec = new Float32Array(embeddings[i].embedding)
         const key = batch[i].toLowerCase().trim()
+        // Save to both RAM and Redis caches
         _cache.set(key, vec)
+        if (isRedisConnected()) {
+          // Fire-and-forget to avoid blocking; failures are logged inside setToRedis
+          setToRedis(key, vec).catch(() => {})
+        }
         results[batchIdx[i]] = vec
       }
     } catch (err) {

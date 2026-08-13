@@ -1,5 +1,6 @@
 import { env } from '../../config/env.js'
 import { auditLog } from '../../utils/auditLog.js'
+import { isRedisConnected, safeGet, safeSet } from '../../config/redis.js'
 
 // ─── 1. BUILT-IN COMMON CLINICAL SYMPTOM DICTIONARY (0ms LOOKUP) ────────────
 const BUILTIN_UMLS_DICTIONARY = new Map([
@@ -36,9 +37,31 @@ const BUILTIN_UMLS_DICTIONARY = new Map([
   ['hoarseness', [{ ui: 'C0019825', name: 'Hoarseness' }]],
 ])
 
-// ─── 2. IN-MEMORY LRU CACHE (RAM) ───────────────────────────────────────────
+// ─── 2. IN-MEMORY LRU CACHE (RAM FALLBACK) ──────────────────────────────────
 const umlsRamCache = new Map()
 const RAM_CACHE_LIMIT = 2000
+
+// ─── 3. REDIS CONFIG ───────────────────────────────────────────────────────
+const CACHE_TTL_SECONDS = 30 * 60 // 30 minutes
+const KEY_PREFIX = 'umls:'
+
+function redisKey(normKey) {
+  return `${KEY_PREFIX}${normKey}`
+}
+
+async function getFromRedis(normKey) {
+  const raw = await safeGet(redisKey(normKey))
+  if (raw === null || raw === undefined) return null
+  try {
+    return JSON.parse(raw)
+  } catch {
+    return null
+  }
+}
+
+async function setToRedis(normKey, val) {
+  await safeSet(redisKey(normKey), JSON.stringify(val), CACHE_TTL_SECONDS)
+}
 
 function getFromRamCache(key) {
   return umlsRamCache.get(key) || null
@@ -52,7 +75,7 @@ function setToRamCache(key, val) {
   umlsRamCache.set(key, val)
 }
 
-// ─── 3. SEARCH UMLS FUNCTION WITH MULTI-LAYER CACHING ──────────────────────
+// ─── 4. SEARCH UMLS FUNCTION WITH MULTI-LAYER CACHING ──────────────────────
 export async function searchUMLS(queryString, retries = 1, delay = 300) {
   if (!queryString || typeof queryString !== 'string') return []
   const normKey = queryString.trim().toLowerCase()
@@ -62,7 +85,21 @@ export async function searchUMLS(queryString, retries = 1, delay = 300) {
     return BUILTIN_UMLS_DICTIONARY.get(normKey)
   }
 
-  // Layer 2: Check RAM Cache (0ms)
+  // Layer 2a: Check Redis (shared across instances)
+  if (isRedisConnected()) {
+    try {
+      const cachedVal = await getFromRedis(normKey)
+      if (cachedVal !== null) {
+        // Warm RAM cache for subsequent calls on this instance
+        setToRamCache(normKey, cachedVal)
+        return cachedVal
+      }
+    } catch (err) {
+      auditLog('UMLS', 'Warning', `Redis cache miss fallback: ${err.message}`, 'warn')
+    }
+  }
+
+  // Layer 2b: Check RAM Cache (0ms, local to this instance)
   const cachedVal = getFromRamCache(normKey)
   if (cachedVal !== null) {
     return cachedVal
@@ -72,6 +109,9 @@ export async function searchUMLS(queryString, retries = 1, delay = 300) {
   if (!env.umlsApiKey) {
     auditLog('UMLS', 'Info', 'No UMLS_API_KEY config. Skipping UMLS search.')
     setToRamCache(normKey, [])
+    if (isRedisConnected()) {
+      await setToRedis(normKey, [])
+    }
     return []
   }
 
@@ -86,14 +126,20 @@ export async function searchUMLS(queryString, retries = 1, delay = 300) {
       const data = await response.json()
       const results = data.result?.results || []
 
-      // Save to RAM cache
+      // Save to both caches
       setToRamCache(normKey, results)
+      if (isRedisConnected()) {
+        await setToRedis(normKey, results)
+      }
       return results
     } catch (err) {
       const isLastAttempt = attempt === retries + 1
       if (isLastAttempt) {
         // Fallback to empty array and cache it to prevent repeated network hangs
         setToRamCache(normKey, [])
+        if (isRedisConnected()) {
+          await setToRedis(normKey, [])
+        }
         return []
       }
       auditLog('UMLS', 'Warning', `UMLS "${queryString}" retry ${attempt}: ${err.message}`, 'warn')

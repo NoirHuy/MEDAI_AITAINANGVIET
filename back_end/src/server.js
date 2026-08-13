@@ -3,6 +3,7 @@ import cors from 'cors'
 import cookieParser from 'cookie-parser'
 import { env } from './config/env.js'
 import { connectDatabase } from './db/mongodb.js'
+import { connectRedis, disconnectRedis } from './config/redis.js'
 import authRoutes from './routes/auth.routes.js'
 import accountRoutes from './routes/account.routes.js'
 import chatRoutes from './routes/chat.routes.js'
@@ -17,6 +18,18 @@ import { notFoundHandler, errorHandler } from './middleware/errorHandler.js'
 
 // Connect to MongoDB
 connectDatabase()
+// Connect to Redis (non-blocking; falls back to in-memory cache if unavailable)
+connectRedis().catch((err) => {
+  console.warn(`[startup] Redis initialization error: ${err.message}`)
+})
+
+// Ensure Redis is closed on shutdown
+const shutdown = async () => {
+  await disconnectRedis()
+  process.exit(0)
+}
+process.on('SIGINT', shutdown)
+process.on('SIGTERM', shutdown)
 
 const app = express()
 

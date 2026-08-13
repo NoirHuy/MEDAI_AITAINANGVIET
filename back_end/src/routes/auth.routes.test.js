@@ -33,7 +33,13 @@ vi.mock('../services/mobileToken.service.js', () => ({
 
 vi.mock('../utils/jwt.js', () => ({
   AUTH_COOKIE_NAME: 'medchat_token',
-  signSessionToken: vi.fn(() => 'signed.jwt.value'),
+  signSessionToken: vi.fn(() => ({ token: 'signed.jwt.value', jti: 'mock-jti' })),
+}))
+
+vi.mock('../services/auth/authCache.js', () => ({
+  storeSession: vi.fn(async () => true),
+  revokeSession: vi.fn(async () => true),
+  isSessionRevoked: vi.fn(async () => false),
 }))
 
 const { default: authRouter } = await import('./auth.routes.js')

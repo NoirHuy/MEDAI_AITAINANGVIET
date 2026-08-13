@@ -1,5 +1,11 @@
-const CACHE_TTL_MS = 30 * 60 * 1000
-const stateByConversation = new Map()
+import { isRedisConnected, safeGet, safeSet, safeDel } from '../../config/redis.js'
+
+const CACHE_TTL_SECONDS = 30 * 60 // 30 minutes
+const CACHE_TTL_MS = CACHE_TTL_SECONDS * 1000
+const KEY_PREFIX = 'sce:'
+
+// In-memory fallback for tests or when Redis is unavailable
+const memoryFallback = new Map()
 
 function clone(value) {
   return structuredClone(value)
@@ -52,25 +58,91 @@ export function mergeSCEState(previous, incoming) {
   }
 }
 
-export function getSCEState(conversationId, userMessageCount) {
-  if (!conversationId) return null
-  const entry = stateByConversation.get(conversationId)
-  if (!entry || entry.expiresAt <= Date.now() || entry.userMessageCount !== userMessageCount - 1) {
-    if (entry?.expiresAt <= Date.now()) stateByConversation.delete(conversationId)
+function makeKey(conversationId) {
+  return `${KEY_PREFIX}${conversationId}`
+}
+
+// ─── Redis-backed implementations ──────────────────────────────────────────
+
+async function getFromRedis(conversationId) {
+  const raw = await safeGet(makeKey(conversationId))
+  if (!raw) return null
+  return JSON.parse(raw)
+}
+
+async function setToRedis(conversationId, entry) {
+  await safeSet(makeKey(conversationId), JSON.stringify(entry), CACHE_TTL_SECONDS)
+}
+
+// ─── In-memory fallback (used when Redis is disabled or unavailable) ──────
+
+function getFromMemory(conversationId) {
+  const entry = memoryFallback.get(conversationId)
+  if (!entry) return null
+  if (entry.expiresAt <= Date.now()) {
+    memoryFallback.delete(conversationId)
     return null
   }
+  return entry
+}
+
+function setToMemory(conversationId, entry) {
+  entry.expiresAt = Date.now() + CACHE_TTL_MS
+  memoryFallback.set(conversationId, entry)
+}
+
+export async function getSCEState(conversationId, userMessageCount) {
+  if (!conversationId) return null
+
+  let entry = null
+
+  if (isRedisConnected()) {
+    try {
+      entry = await getFromRedis(conversationId)
+    } catch (err) {
+      console.warn(`[sceStateCache] Redis GET failed, falling back to memory: ${err.message}`)
+      entry = getFromMemory(conversationId)
+    }
+  } else {
+    entry = getFromMemory(conversationId)
+  }
+
+  if (!entry) return null
+  if (entry.userMessageCount !== userMessageCount - 1) return null
+
   return clone(entry.sce)
 }
 
-export function setSCEState(conversationId, userMessageCount, sce) {
+export async function setSCEState(conversationId, userMessageCount, sce) {
   if (!conversationId) return
-  stateByConversation.set(conversationId, {
+
+  const entry = {
     sce: clone(sce),
     userMessageCount,
-    expiresAt: Date.now() + CACHE_TTL_MS,
-  })
+    storedAt: Date.now(),
+  }
+
+  if (isRedisConnected()) {
+    try {
+      await setToRedis(conversationId, entry)
+      return
+    } catch (err) {
+      console.warn(`[sceStateCache] Redis SET failed, falling back to memory: ${err.message}`)
+    }
+  }
+
+  setToMemory(conversationId, entry)
 }
 
+export async function clearSCEState(conversationId) {
+  if (!conversationId) return
+  memoryFallback.delete(conversationId)
+  if (isRedisConnected()) {
+    await safeDel(makeKey(conversationId))
+  }
+}
+
+// Kept for backward compatibility with existing tests
 export function clearSCEStateCache() {
-  stateByConversation.clear()
+  memoryFallback.clear()
 }

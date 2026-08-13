@@ -1,5 +1,6 @@
 import neo4j from 'neo4j-driver'
 import { env } from '../../config/env.js'
+import { isRedisConnected, safeGet, safeSet } from '../../config/redis.js'
 
 const driver = neo4j.driver(
   env.neo4jUri,
@@ -15,48 +16,84 @@ export async function closeDriver() {
 }
 
 // ─── TTL CACHE (10 MINUTES) ──────────────────────────────────────────────────
-const CACHE_TTL_MS = 10 * 60 * 1000 // 10 minutes
+const CACHE_TTL_SECONDS = 10 * 60 // 10 minutes
 
-let _cachedSymptoms = null
-let _symptomsCacheTime = 0
+const KEY_SYMPTOMS = 'neo4j:symptoms'
+const KEY_SYMPTOM_NAMES = 'neo4j:symptom_names'
+const KEY_DISEASE_OVERVIEW = 'neo4j:disease_overview'
 
-let _cachedSymptomNames = null
-let _symptomNamesCacheTime = 0
+// In-memory fallback cache
+const memCache = new Map()
 
-let _cachedDiseaseOverview = null
-let _diseaseOverviewCacheTime = 0
+function memGet(key) {
+  const entry = memCache.get(key)
+  if (!entry) return null
+  if (entry.expiresAt <= Date.now()) {
+    memCache.delete(key)
+    return null
+  }
+  return entry.value
+}
+
+function memSet(key, value, ttlSeconds) {
+  memCache.set(key, {
+    value,
+    expiresAt: Date.now() + ttlSeconds * 1000,
+  })
+}
+
+async function cacheGet(key) {
+  if (isRedisConnected()) {
+    try {
+      const raw = await safeGet(key)
+      if (raw) return JSON.parse(raw)
+    } catch (err) {
+      console.warn(`[neo4jClient] cacheGet ${key} Redis failed: ${err.message}`)
+    }
+  }
+  return memGet(key)
+}
+
+async function cacheSet(key, value, ttlSeconds = CACHE_TTL_SECONDS) {
+  if (isRedisConnected()) {
+    try {
+      await safeSet(key, JSON.stringify(value), ttlSeconds)
+      return
+    } catch (err) {
+      console.warn(`[neo4jClient] cacheSet ${key} Redis failed: ${err.message}`)
+    }
+  }
+  memSet(key, value, ttlSeconds)
+}
 
 export async function getAllSymptoms(session) {
-  const now = Date.now()
-  if (_cachedSymptoms && (now - _symptomsCacheTime < CACHE_TTL_MS)) {
-    return _cachedSymptoms
-  }
+  const cached = await cacheGet(KEY_SYMPTOMS)
+  if (cached) return cached
+
   const res = await session.run('MATCH (s:Symptom) RETURN s.id AS id, s.name AS name, s.cui AS cui ORDER BY s.name')
-  _cachedSymptoms = res.records.map(r => ({
+  const symptoms = res.records.map(r => ({
     id: r.get('id'),
     name: r.get('name'),
     cui: r.get('cui') || null
   }))
-  _symptomsCacheTime = now
-  return _cachedSymptoms
+  await cacheSet(KEY_SYMPTOMS, symptoms)
+  return symptoms
 }
 
 export async function getAllSymptomNames(session) {
-  const now = Date.now()
-  if (_cachedSymptomNames && (now - _symptomNamesCacheTime < CACHE_TTL_MS)) {
-    return _cachedSymptomNames
-  }
+  const cached = await cacheGet(KEY_SYMPTOM_NAMES)
+  if (cached) return cached
+
   const symptoms = await getAllSymptoms(session)
-  _cachedSymptomNames = symptoms.map(s => s.name)
-  _symptomNamesCacheTime = now
-  return _cachedSymptomNames
+  const names = symptoms.map(s => s.name)
+  await cacheSet(KEY_SYMPTOM_NAMES, names)
+  return names
 }
 
 export async function getDiseaseOverview(session) {
-  const now = Date.now()
-  if (_cachedDiseaseOverview && (now - _diseaseOverviewCacheTime < CACHE_TTL_MS)) {
-    return _cachedDiseaseOverview
-  }
+  const cached = await cacheGet(KEY_DISEASE_OVERVIEW)
+  if (cached) return cached
+
   const res = await session.run(`
     MATCH (d:Disease)-[r:HAS_SYMPTOM]->(s:Symptom)
     WITH d, collect({symptom: s.name, prob: r.probability, description: s.description}) AS symptoms
@@ -67,7 +104,7 @@ export async function getDiseaseOverview(session) {
     RETURN d.name AS disease, d.description AS description, d.remarks AS remarks, symptoms, ages, sexes
     ORDER BY d.name
   `)
-  _cachedDiseaseOverview = res.records.map(r => ({
+  const overview = res.records.map(r => ({
     name: r.get('disease'),
     description: r.get('description') || '',
     remarks: r.get('remarks') || '',
@@ -79,6 +116,21 @@ export async function getDiseaseOverview(session) {
     ages: r.get('ages').filter(a => a.age && a.prob).sort((a, b) => b.prob - a.prob).slice(0, 2),
     sexes: r.get('sexes').filter(s => s.sex && s.prob)
   }))
-  _diseaseOverviewCacheTime = now
-  return _cachedDiseaseOverview
+  await cacheSet(KEY_DISEASE_OVERVIEW, overview)
+  return overview
+}
+
+/**
+ * Invalidate all Neo4j caches (e.g. after a knowledge-graph update).
+ */
+export async function invalidateNeo4jCache() {
+  memCache.clear()
+  if (isRedisConnected()) {
+    const { safeDel } = await import('../../config/redis.js')
+    await Promise.all([
+      safeDel(KEY_SYMPTOMS),
+      safeDel(KEY_SYMPTOM_NAMES),
+      safeDel(KEY_DISEASE_OVERVIEW),
+    ])
+  }
 }

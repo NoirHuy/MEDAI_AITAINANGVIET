@@ -1,4 +1,5 @@
 import rateLimit from 'express-rate-limit'
+import { createRedisStore } from './redisStore.js'
 
 const isDev = process.env.NODE_ENV !== 'production'
 
@@ -8,10 +9,16 @@ const createRateLimitMessage = (msg) => ({
   statusCode: 429,
 })
 
+// Helper to build a limiter that prefers Redis but falls back to in-memory store
+function buildLimiter(options) {
+  const store = createRedisStore(options.windowMs)
+  return rateLimit({ ...options, store: store || undefined })
+}
+
 // ─── 1. AUTH RATE LIMITERS ──────────────────────────────────────────────────
 
 /// Chống Brute-force dò mật khẩu: Tối đa 5 lần sai / 15 phút
-export const authSigninLimiter = rateLimit({
+export const authSigninLimiter = buildLimiter({
   windowMs: 15 * 60 * 1000,
   max: isDev ? 100 : 5,
   standardHeaders: true,
@@ -22,7 +29,7 @@ export const authSigninLimiter = rateLimit({
 })
 
 /// Chống Spam tạo tài khoản rác: Tối đa 3 lần đăng ký / 1 giờ
-export const authSignupLimiter = rateLimit({
+export const authSignupLimiter = buildLimiter({
   windowMs: 60 * 60 * 1000,
   max: isDev ? 100 : 3,
   standardHeaders: true,
@@ -34,7 +41,7 @@ export const authSignupLimiter = rateLimit({
 
 /// Đăng nhập Google OAuth: Tối đa 10 lần / 15 phút
 /// Gui va xac minh ma OTP email: giam spam email va brute-force ma 6 chu so.
-export const authEmailCodeLimiter = rateLimit({
+export const authEmailCodeLimiter = buildLimiter({
   windowMs: 15 * 60 * 1000,
   max: isDev ? 100 : 5,
   standardHeaders: true,
@@ -42,7 +49,7 @@ export const authEmailCodeLimiter = rateLimit({
   message: createRateLimitMessage('Ban da yeu cau hoac nhap ma qua nhieu lan. Vui long thu lai sau 15 phut.'),
 })
 
-export const authGoogleLimiter = rateLimit({
+export const authGoogleLimiter = buildLimiter({
   windowMs: 15 * 60 * 1000,
   max: isDev ? 100 : 10,
   standardHeaders: true,
@@ -53,7 +60,7 @@ export const authGoogleLimiter = rateLimit({
 })
 
 /// Lấy cấu hình & Signout: Tối đa 30 lần / 1 phút
-export const authGeneralLimiter = rateLimit({
+export const authGeneralLimiter = buildLimiter({
   windowMs: 1 * 60 * 1000,
   max: isDev ? 200 : 30,
   standardHeaders: true,
@@ -64,7 +71,7 @@ export const authGeneralLimiter = rateLimit({
 // ─── 2. CHAT & AI LLM RATE LIMITERS ────────────────────────────────────────
 
 /// Hỏi đáp Y tế AI (LLM Stream): Khách vãng lai 10 lượt/15phút, Thành viên 30 lượt/15phút
-export const chatLimiter = rateLimit({
+export const chatLimiter = buildLimiter({
   windowMs: 15 * 60 * 1000,
   max: isDev ? 500 : (req) => (req.userId ? 30 : 10),
   standardHeaders: true,
@@ -75,7 +82,7 @@ export const chatLimiter = rateLimit({
 })
 
 /// Tạo tiêu đề tự động: Tối đa 20 lần / 15 phút
-export const chatTitleLimiter = rateLimit({
+export const chatTitleLimiter = buildLimiter({
   windowMs: 15 * 60 * 1000,
   max: isDev ? 100 : 20,
   standardHeaders: true,
@@ -84,7 +91,7 @@ export const chatTitleLimiter = rateLimit({
 })
 
 /// Lấy / Tạo / Xóa danh sách hội thoại: Tối đa 60 lần / 1 phút
-export const chatGeneralLimiter = rateLimit({
+export const chatGeneralLimiter = buildLimiter({
   windowMs: 1 * 60 * 1000,
   max: isDev ? 300 : 60,
   standardHeaders: true,
@@ -95,7 +102,7 @@ export const chatGeneralLimiter = rateLimit({
 // ─── 3. ACCOUNT & PROFILE RATE LIMITERS ─────────────────────────────────────
 
 /// Đổi mật khẩu: Tối đa 5 lần / 15 phút
-export const accountPasswordLimiter = rateLimit({
+export const accountPasswordLimiter = buildLimiter({
   windowMs: 15 * 60 * 1000,
   max: isDev ? 50 : 5,
   standardHeaders: true,
@@ -104,7 +111,7 @@ export const accountPasswordLimiter = rateLimit({
 })
 
 /// Cập nhật hồ sơ & Thẻ thanh toán: Tối đa 15 lần / 15 phút
-export const accountGeneralLimiter = rateLimit({
+export const accountGeneralLimiter = buildLimiter({
   windowMs: 15 * 60 * 1000,
   max: isDev ? 150 : 15,
   standardHeaders: true,
@@ -115,7 +122,7 @@ export const accountGeneralLimiter = rateLimit({
 // ─── 4. MEMORIES RATE LIMITERS ─────────────────────────────────────────────
 
 /// Quản lý ký ức y tế: Tối đa 60 lần / 1 phút
-export const memoriesLimiter = rateLimit({
+export const memoriesLimiter = buildLimiter({
   windowMs: 1 * 60 * 1000,
   max: isDev ? 300 : 60,
   standardHeaders: true,
@@ -126,7 +133,7 @@ export const memoriesLimiter = rateLimit({
 // ─── 5. PAYMENT RATE LIMITERS ──────────────────────────────────────────────
 
 /// Tạo & xác nhận đơn hàng PayPal: Tối đa 5 lần / 15 phút
-export const paymentLimiter = rateLimit({
+export const paymentLimiter = buildLimiter({
   windowMs: 15 * 60 * 1000,
   max: isDev ? 50 : 5,
   standardHeaders: true,
@@ -139,7 +146,7 @@ export const paymentLimiter = rateLimit({
 // ─── 6. ADMIN DASHBOARD RATE LIMITERS ──────────────────────────────────────
 
 /// Bảng điều khiển Quản trị Admin: Tối đa 100 lần / 1 phút
-export const adminLimiter = rateLimit({
+export const adminLimiter = buildLimiter({
   windowMs: 1 * 60 * 1000,
   max: isDev ? 500 : 100,
   standardHeaders: true,
