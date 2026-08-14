@@ -78,9 +78,17 @@ services:
       start_period: 15s
     restart: unless-stopped
 
+  redis:
+    image: redis:7-alpine
+    container_name: medchat-redis
+    restart: unless-stopped
+    volumes:
+      - redis_data:/data
+
 volumes:
   backend_data:
   mongodb_data:
   ninerouter_data:
   neo4j_data:
+  redis_data:
 
