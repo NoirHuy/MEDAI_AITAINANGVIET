@@ -102,10 +102,16 @@ router.post(
     req.socket.setKeepAlive(true)
     req.socket.setTimeout(0)
 
+    // CRITICAL: Headers to force streaming (disable all buffering)
     res.setHeader('Content-Type', 'text/plain; charset=utf-8')
-    res.setHeader('Cache-Control', 'no-cache, no-transform')
-    res.setHeader('X-Accel-Buffering', 'no')
+    res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate, no-transform')
+    res.setHeader('X-Accel-Buffering', 'no') // Nginx
+    res.setHeader('X-Content-Type-Options', 'nosniff')
+    res.setHeader('Transfer-Encoding', 'chunked')
     res.setHeader('Connection', 'keep-alive')
+    
+    // Flush headers immediately to force streaming start
+    res.flushHeaders()
 
     let full = ''
     let memoriesUsed = []

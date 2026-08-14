@@ -1,6 +1,4 @@
-// Smoke test: verify all new Redis modules load and exports resolve correctly
-// without actually starting the server. Run with: node --test src/_smoke.test.js
-// (Or via `node -e "..."`).
+process.env.REDIS_ENABLED = 'false'
 
 import { describe, it, expect } from 'vitest'
 
