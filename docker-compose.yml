@@ -2,6 +2,7 @@ services:
   backend:
     build:
       context: ./back_end
+    container_name: medchat-backend
     env_file:
       - ./back_end/.env
     environment:
@@ -26,6 +27,7 @@ services:
         VITE_API_URL: ''
         # Sourced from the root .env (same value used by `npm run dev`).
         VITE_GOOGLE_CLIENT_ID: ${VITE_GOOGLE_CLIENT_ID:-}
+    container_name: medchat-frontend
     depends_on:
       - backend
     env_file:
@@ -33,6 +35,7 @@ services:
     environment:
       - PORT=7860
       - MONGODB_URI=${MONGODB_URI:-mongodb://mongodb:27017/medchat}
+      - REDIS_URL=redis://redis:6379
     ports:
       - '127.0.0.1:8080:7860'
     restart: unless-stopped
