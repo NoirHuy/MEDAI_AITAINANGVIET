@@ -109,6 +109,9 @@ router.post(
     res.setHeader('X-Content-Type-Options', 'nosniff')
     res.setHeader('Transfer-Encoding', 'chunked')
     res.setHeader('Connection', 'keep-alive')
+    // Prevent proxy/gateway compression to avoid buffering
+    res.setHeader('X-Accel-Encoding', 'identity')
+    res.setHeader('Content-Encoding', 'identity')
     
     // Flush headers immediately to force streaming start
     res.flushHeaders()
@@ -129,7 +132,10 @@ router.post(
         sessionMemoryPaused: !!sessionMemoryPaused,
         conversationId: specialtyId === 'health_consultation' ? conversationId || null : null,
         signal: controller.signal,
-        onChunk: (chunk) => res.write(chunk),
+        onChunk: (chunk) => {
+          res.write(chunk)
+          if (typeof res.flush === 'function') res.flush()
+        },
       })
 
       full = replyRes.fullReplyText || ''
