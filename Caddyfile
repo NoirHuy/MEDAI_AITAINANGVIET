@@ -4,11 +4,6 @@
 		reverse_proxy backend:4000 {
 			# Disable buffering for streaming responses (chat, SSE)
 			flush_interval -1
-			# Increase timeout for long-running requests
-			transport http {
-				read_timeout 120s
-				write_timeout 120s
-			}
 		}
 	}
 	handle {

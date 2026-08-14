@@ -70,8 +70,6 @@ async function streamFromBackend({ messages, specialtyId, lang, isSuggestionDemo
   const reader = res.body.getReader()
   const decoder = new TextDecoder()
   let full = ''
-  // leftover: tail of the previous chunk that could be the start of a control marker
-  let leftover = ''
   // Strip server-side control sequences so they never flash as raw text during streaming.
   // They're still accumulated in `full` and parsed by MessageBubble after streaming ends.
   const CONTROL_MARKER_RE = /(__MEMORIES_USED__:[\s\S]*$|\[SymptomChecklist:[\s\S]*?\])/g
@@ -89,21 +87,15 @@ async function streamFromBackend({ messages, specialtyId, lang, isSuggestionDemo
       const chunk = decoder.decode(value, { stream: true })
       if (!chunk) continue
       full += chunk
-      // Combine with leftover to catch markers that span two chunks
-      const combined = leftover + chunk
-      // Keep the last 64 chars as leftover for next iteration
-      const safeLength = Math.max(0, combined.length - 64)
-      leftover = combined.slice(safeLength)
-      emitVisible(combined.slice(0, safeLength))
+      // Emit immediately for real-time streaming
+      emitVisible(chunk)
     }
 
     const finalChunk = decoder.decode()
     if (finalChunk) {
       full += finalChunk
-      leftover += finalChunk
+      emitVisible(finalChunk)
     }
-    // Emit whatever remains in the leftover buffer
-    emitVisible(leftover)
   } finally {
     reader.releaseLock()
   }
