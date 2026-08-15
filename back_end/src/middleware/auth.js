@@ -17,12 +17,20 @@ async function verifyTokenWithRevocationCheck(token) {
   const payload = verifySessionToken(token)
   if (!payload) return null
 
-  // Check if this session has been revoked (e.g. user logged out)
+  // `verifySessionToken` normalizes every accepted token type into an object
+  // ({ userId, jti? }). Defensive string-coercion is kept here in case the
+  // jwt helper is ever refactored to return a raw subject again.
+  const userId = typeof payload === 'string' ? payload : payload.userId
+  if (!userId) return null
+
+  // Check if this session has been revoked (e.g. user logged out). Only
+  // web session tokens carry a jti; mobile access tokens are short-lived
+  // and not individually revocable, so they always pass this check.
   if (payload.jti && (await isSessionRevoked(payload.jti))) {
     return null
   }
 
-  return payload.userId
+  return userId
 }
 
 export async function requireAuth(req, res, next) {

@@ -33,8 +33,13 @@ export function verifySessionToken(token) {
   try {
     const payload = jwt.verify(token, env.jwtSecret)
     if (payload.type === 'mobile_refresh') return null
-    if (payload.type === 'mobile_access') return payload.sub
-    // Web session token: include jti so callers can revoke the session
+    // Normalize every accepted token type into { userId, jti? } so callers
+    // (e.g. verifyTokenWithRevocationCheck) can read `.userId` uniformly.
+    // `mobile_access` has no jti because it is short-lived and cannot be
+    // individually revoked; the revocation check in middleware already
+    // short-circuits when `jti` is absent.
+    if (payload.type === 'mobile_access') return { userId: payload.sub }
+    // Web session token: include jti so callers can revoke the session.
     return { userId: payload.sub, jti: payload.jti }
   } catch {
     return null

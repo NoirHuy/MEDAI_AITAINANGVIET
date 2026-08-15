@@ -136,8 +136,12 @@ export const env = {
   memoryMinConfidence: Number(process.env.MEMORY_MIN_CONFIDENCE) || 0.70,
   memoryTokenBudget: Number(process.env.MEMORY_TOKEN_BUDGET) || 500,
 
-  redisEnabled: process.env.REDIS_ENABLED !== 'false',
-  redisUrl: (process.env.REDIS_URL || 'redis://127.0.0.1:6379').trim(),
+  get redisEnabled() {
+    return process.env.REDIS_ENABLED !== 'false'
+  },
+  get redisUrl() {
+    return (process.env.REDIS_URL || 'redis://127.0.0.1:6379').trim()
+  },
 
   enableAuditLogs: process.env.ENABLE_AUDIT_LOGS !== 'false',
 

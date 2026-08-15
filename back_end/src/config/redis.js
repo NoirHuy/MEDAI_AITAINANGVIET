@@ -78,7 +78,7 @@ client.on('reconnecting', () => {
 })
 
 export async function connectRedis() {
-  if (!REDIS_ENABLED) {
+  if (!env.redisEnabled) {
     console.log('[redis] Redis is disabled via REDIS_ENABLED=false. Using in-memory cache only.')
     return false
   }
