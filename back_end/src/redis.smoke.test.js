@@ -13,6 +13,27 @@ vi.mock('redis', () => ({
   })),
 }))
 
+const fakeDriver = {
+  session: vi.fn(() => ({
+    run: vi.fn().mockResolvedValue({ records: [] }),
+    close: vi.fn().mockResolvedValue(undefined),
+  })),
+  close: vi.fn().mockResolvedValue(undefined),
+}
+
+vi.mock('neo4j-driver', () => {
+  const driverFn = vi.fn(() => fakeDriver)
+  const authObj = { basic: vi.fn() }
+  return {
+    default: {
+      driver: driverFn,
+      auth: authObj,
+    },
+    driver: driverFn,
+    auth: authObj,
+  }
+})
+
 describe('Redis integration smoke test', () => {
   it('redis config module exports expected surface', async () => {
     const mod = await import('./config/redis.js')
