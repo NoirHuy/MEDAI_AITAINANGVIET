@@ -21,7 +21,8 @@ export function randomBetween(min, max) {
 
 export async function streamText(text, onChunk, signal, { thinkingDelayMs, tokenDelayMs } = {}) {
   await wait(thinkingDelayMs ?? randomBetween(...THINKING_DELAY_RANGE), signal)
-  const chunks = text.match(/[\s\S]{1,4}/g) ?? []
+  // Split by Unicode tokens / words to safely preserve surrogate pairs, emojis, and Vietnamese diacritics
+  const chunks = text.match(/\S+\s*|\s+/gu) ?? [text]
   let full = ''
   for (const chunk of chunks) {
     full += chunk

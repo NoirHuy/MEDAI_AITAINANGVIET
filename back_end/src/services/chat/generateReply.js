@@ -50,8 +50,8 @@ export async function generateReply({ messages, specialtyId, lang = 'vi', isSugg
     : null
   if (staticSuggestionReply) {
     const fullReplyText = await streamText(staticSuggestionReply, onChunk, signal, {
-      thinkingDelayMs: 2200,
-      tokenDelayMs: 1,
+      thinkingDelayMs: 600,
+      tokenDelayMs: 15,
     })
     return { fullReplyText, memoriesUsed: [], performanceMeta: { staticSuggestionReply: true } }
   }
