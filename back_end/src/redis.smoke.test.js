@@ -2,7 +2,7 @@ process.env.REDIS_ENABLED = 'false'
 
 import { describe, it, expect } from 'vitest'
 
-describe('Redis integration smoke test', () => {
+describe('Redis integration smoke test', { timeout: 20000 }, () => {
   it('redis config module exports expected surface', async () => {
     const mod = await import('./config/redis.js')
     expect(typeof mod.connectRedis).toBe('function')

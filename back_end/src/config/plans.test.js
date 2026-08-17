@@ -9,13 +9,13 @@ describe('plans config', () => {
   it('free plan has correct token limit', () => {
     const free = PLANS.find(p => p.id === 'free')
     expect(free).toBeDefined()
-    expect(free.tokenLimit).toBe(50000)
+    expect(free.tokenLimit).toBe(500000000)
   })
 
   it('pro plan has correct token limit', () => {
     const pro = PLANS.find(p => p.id === 'pro')
     expect(pro).toBeDefined()
-    expect(pro.tokenLimit).toBe(2000000)
+    expect(pro.tokenLimit).toBe(2000000000)
   })
 
   it('isValidPlanId returns true for free', () => {

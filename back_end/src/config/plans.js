@@ -3,8 +3,8 @@
 export const DEFAULT_PLAN_ID = 'free'
 
 export const PLANS = [
-  { id: 'free', tokenLimit: 50000 },
-  { id: 'pro', tokenLimit: 2000000 },
+  { id: 'free', tokenLimit: 500000000 },
+  { id: 'pro', tokenLimit: 2000000000 },
 ]
 
 export function getPlan(planId) {
