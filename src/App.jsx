@@ -41,6 +41,7 @@ function AppContent() {
     refetchAccount,
     signOut,
     fetchUsage,
+    fetchPlans,
   } = useAccount()
   const chat = useChat(account)
   const { theme, toggleTheme } = useTheme()
@@ -236,6 +237,7 @@ function AppContent() {
           onSignOut={handleSignOut}
           onDeleteAccount={deleteAccount}
           onFetchUsage={fetchUsage}
+          onFetchPlans={fetchPlans}
           showToast={showToast}
           lang={lang}
         />

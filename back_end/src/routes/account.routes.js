@@ -6,7 +6,7 @@ import {
   accountPasswordLimiter,
   accountGeneralLimiter,
 } from '../middleware/rateLimiters.js'
-import { getPlan, isValidPlanId } from '../config/plans.js'
+import { getPlan, isValidPlanId, PLANS } from '../config/plans.js'
 import { findUserById, updateUser, toPublicUser } from '../db/usersRepo.js'
 import { UserModel } from '../db/user.model.js'
 import { ConversationModel } from '../db/conversation.model.js'
@@ -20,6 +20,11 @@ import { PaymentModel } from '../db/payment.model.js'
 import { AUTH_COOKIE_NAME } from '../utils/jwt.js'
 
 const router = Router()
+
+// Public endpoint so clients can fetch dynamic plan definitions and token limits
+router.get('/plans', (req, res) => {
+  res.json({ plans: PLANS })
+})
 
 router.use(requireAuth)
 

@@ -148,6 +148,7 @@ export function useAccount() {
   }, [])
 
   const fetchUsage = useCallback(() => apiRequest('/api/account/usage'), [])
+  const fetchPlans = useCallback(() => apiRequest('/api/account/plans'), [])
 
   const refetchAccount = useCallback(async () => {
     try {
@@ -178,5 +179,6 @@ export function useAccount() {
     refetchAccount,
     signOut,
     fetchUsage,
+    fetchPlans,
   }
 }

@@ -33,6 +33,7 @@ export default function SettingsModal({
   onSignOut,
   onDeleteAccount,
   onFetchUsage,
+  onFetchPlans,
   showToast,
   lang = 'vi',
 }) {
@@ -47,6 +48,7 @@ export default function SettingsModal({
     { id: 'help', label: isEn ? 'Help & Support' : 'Trợ giúp & Phản hồi', Icon: HelpCircleIcon },
   ]
 
+  const [availablePlans, setAvailablePlans] = useState(PLANS)
   const [nameDraft, setNameDraft] = useState(account?.name || '')
   const [usage, setUsage] = useState(null)
   const [usageError, setUsageError] = useState(null)
@@ -385,9 +387,24 @@ export default function SettingsModal({
     }
   }, [activeTab, onFetchUsage])
 
+  useEffect(() => {
+    let cancelled = false
+    const fetchFn = onFetchPlans || (() => apiRequest('/api/account/plans'))
+    fetchFn()
+      .then((data) => {
+        if (!cancelled && Array.isArray(data?.plans) && data.plans.length > 0) {
+          setAvailablePlans(data.plans)
+        }
+      })
+      .catch(() => {})
+    return () => {
+      cancelled = true
+    }
+  }, [onFetchPlans])
+
   if (!activeTab || !account) return null
 
-  const plan = getPlan(account.planId, lang)
+  const plan = getPlan(account.planId, lang, availablePlans)
   const usagePercent = usage
     ? Math.min(100, Math.round((usage.tokensUsed / usage.tokenLimit) * 100))
     : 0
@@ -867,8 +884,8 @@ export default function SettingsModal({
             <section>
               <h2>{isEn ? 'Subscription Plans' : 'Gói thuê bao'}</h2>
               <div className="plans-grid">
-                {PLANS.map((pRaw) => {
-                  const p = getPlan(pRaw.id, lang)
+                {availablePlans.map((pRaw) => {
+                  const p = getPlan(pRaw.id, lang, availablePlans)
                   const isCurrent = p.id === account.planId
                   return (
                     <div key={p.id} className={`plan-card ${isCurrent ? 'plan-card--current' : ''}`}>

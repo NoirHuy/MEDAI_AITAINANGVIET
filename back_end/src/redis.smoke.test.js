@@ -1,8 +1,19 @@
-process.env.REDIS_ENABLED = 'false'
+import { describe, it, expect, vi } from 'vitest'
 
-import { describe, it, expect } from 'vitest'
+vi.mock('redis', () => ({
+  createClient: vi.fn(() => ({
+    on: vi.fn(),
+    connect: vi.fn().mockResolvedValue(true),
+    disconnect: vi.fn().mockResolvedValue(true),
+    get: vi.fn().mockResolvedValue(null),
+    set: vi.fn().mockResolvedValue('OK'),
+    del: vi.fn().mockResolvedValue(1),
+    isOpen: false,
+    isReady: false,
+  })),
+}))
 
-describe('Redis integration smoke test', { timeout: 20000 }, () => {
+describe('Redis integration smoke test', () => {
   it('redis config module exports expected surface', async () => {
     const mod = await import('./config/redis.js')
     expect(typeof mod.connectRedis).toBe('function')
