@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
-import { isValidPlanId } from '../config/plans.js'
+import { isValidPlanId, PLANS } from '../config/plans.js'
 
 // Mock the repo functions used by account.routes
 vi.mock('../db/usersRepo.js', () => ({
@@ -94,5 +94,32 @@ describe('PATCH /api/account/plan', () => {
     const res = await patchPlan({ userId: 'u1', body: { planId: 'free' }, findUserById, updateUser })
     expect(res.status).toBe(200)
     expect(updateUser).toHaveBeenCalled()
+  })
+})
+
+describe('GET /api/account/plans', () => {
+  it('returns the same PLANS exported from plans config', () => {
+    expect(Array.isArray(PLANS)).toBe(true)
+    expect(PLANS).toHaveLength(2)
+    const ids = PLANS.map((p) => p.id).sort()
+    expect(ids).toEqual(['free', 'pro'])
+  })
+
+  it('every plan has an id and a positive tokenLimit', () => {
+    for (const p of PLANS) {
+      expect(typeof p.id).toBe('string')
+      expect(typeof p.tokenLimit).toBe('number')
+      expect(p.tokenLimit).toBeGreaterThan(0)
+    }
+  })
+
+  it('free plan has 500,000,000 token limit', () => {
+    const free = PLANS.find((p) => p.id === 'free')
+    expect(free.tokenLimit).toBe(500000000)
+  })
+
+  it('pro plan has 2,000,000,000 token limit', () => {
+    const pro = PLANS.find((p) => p.id === 'pro')
+    expect(pro.tokenLimit).toBe(2000000000)
   })
 })
