@@ -8,7 +8,7 @@ export default defineConfig({
     coverage: {
       provider: 'v8',
       reporter: ['text', 'lcov'],
-      include: ['src/routes/', 'src/middleware/', 'src/config/'],
+      include: ['src/routes/', 'src/middleware/', 'src/config/', 'src/services/chat/'],
       exclude: ['src/**/node_modules/**'],
     },
   },

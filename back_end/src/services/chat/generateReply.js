@@ -10,6 +10,7 @@ import { formatAdaptiveContext } from '../graphrag/formatContext.js'
 import { evaluatePhase } from './phaseEvaluator.js'
 import { getSCEState, mergeSCEState, setSCEState } from '../graphrag/sceStateCache.js'
 import { getStaticSuggestionReply } from './staticSuggestionReplies.js'
+import { detectIntent, streamQuickReply, streamRefusalReply } from './intentClassifier.js'
 
 function buildMockReply(userText, specialtyId, lang = 'vi') {
   const specialty = getSpecialty(specialtyId)
@@ -56,6 +57,24 @@ export async function generateReply({ messages, specialtyId, lang = 'vi', isSugg
     return { fullReplyText, memoriesUsed: [], performanceMeta: { staticSuggestionReply: true } }
   }
 
+  // ── INTENT-BASED ROUTING ──────────────────────────────────────────────────────
+  const lastUserText = [...messages].reverse().find(m => m.role === 'user')?.content || ''
+  const intent = await detectIntent(lastUserText, lang)
+
+  // Fast path: quick responses (no LLM, no GraphRAG)
+  if (intent.type === 'quick') {
+    const fullReplyText = await streamQuickReply(lang, intent.subtype, onChunk, signal)
+    return { fullReplyText, memoriesUsed: [], performanceMeta: { intent: 'quick', subtype: intent.subtype } }
+  }
+
+  // Out-of-scope: refusal (no LLM, no GraphRAG)
+  if (intent.type === 'refusal') {
+    const fullReplyText = await streamRefusalReply(lang, onChunk, signal)
+    return { fullReplyText, memoriesUsed: [], performanceMeta: { intent: 'refusal' } }
+  }
+  // SYMPTOM_QUERY: fall through to existing full GraphRAG pipeline below
+  // ─────────────────────────────────────────────────────────────────────────────
+
   // No API Key: hard error in production; dev-only mock via flag
   if (!env.llmApiKey) {
     const msg = '[generateReply] NINEROUTER_API is not configured. Set NINEROUTER_API in back_end/.env.'
@@ -77,7 +96,6 @@ export async function generateReply({ messages, specialtyId, lang = 'vi', isSugg
     let memoriesUsed = []
     
     try {
-      const lastUserText = [...messages].reverse().find(m => m.role === 'user')?.content || ''
       const userMessageCount = messages.filter((message) => message.role === 'user').length
       
       // OPTIMIZATION: Parallelize independent operations that don't depend on each other
