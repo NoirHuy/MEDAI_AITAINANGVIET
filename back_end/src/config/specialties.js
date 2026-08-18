@@ -1,5 +1,5 @@
 export const SPECIALTIES = [
-  { id: 'health_consultation', name: { vi: 'Tư vấn sức khỏe', en: 'Health Consultation' } },
+  { id: 'health_consultation', name: { vi: 'Chẩn đoán sàng lọc ban đầu', en: 'Health Consultation' } },
   { id: 'general', name: { vi: 'Đa khoa', en: 'General Medicine' } },
   { id: 'dermatology', name: { vi: 'Da liễu', en: 'Dermatology' } },
   { id: 'nutrition', name: { vi: 'Dinh dưỡng', en: 'Nutrition' } },

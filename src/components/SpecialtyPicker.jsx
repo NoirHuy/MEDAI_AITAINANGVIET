@@ -58,7 +58,9 @@ export default function SpecialtyPicker({
               >
                 <span className="specialty-picker__item-text">
                   <span className="specialty-picker__item-name">{name}</span>
-                  <span className="specialty-picker__item-tagline">{tagline}</span>
+                  {tagline && (
+                    <span className="specialty-picker__item-tagline">{tagline}</span>
+                  )}
                 </span>
                 {s.id === value && <CheckIcon className="specialty-picker__check" />}
               </button>
