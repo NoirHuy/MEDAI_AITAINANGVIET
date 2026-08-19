@@ -424,26 +424,81 @@ function renderBlock(block, key) {
   }
 }
 
-// ─── INLINE RENDERER (bold, italic, code) ────────────────────────────────────
+// ─── INLINE RENDERER (bold, italic, code, links) ───────────────────────────
 function renderInline(text, keyPrefix) {
-  // Lọc sạch mọi ký tự Unicode hỏng (\uFFFD), variation selectors đứng một mình (\uFE0F, \uFE0E) và zero-width spaces (\u200B)
-  const sanitizedText = (text || '')
+  // 1. Lọc sạch mọi ký tự Unicode hỏng (\uFFFD), variation selectors đứng một mình (\uFE0F, \uFE0E) và zero-width spaces (\u200B)
+  let sanitizedText = (text || '')
     .replace(/[\uFFFD\uFE0F\uFE0E\u200B]/g, '')
     .replace(/\u00A0/g, ' ')
     .trim()
 
+  // 2. Tự động chuẩn hóa các lỗi cú pháp dấu sao markdown thường gặp từ LLM:
+  // Ví dụ: *Lưu ý:** -> **Lưu ý:** hoặc **Lưu ý:* -> **Lưu ý:**
+  sanitizedText = sanitizedText
+    .replace(/\*([^*:\n]+):\*\*/g, '**$1:**')
+    .replace(/\*\*([^*:\n]+):\*/g, '**$1:**')
+
+  // 3. Tách chuỗi theo thứ tự ưu tiên: Link -> Bold-Italic (***) -> Bold (**) -> Italic (*) -> Italic (_) -> Inline Code (`)
   return sanitizedText
-    .split(/(\*\*[^*]+\*\*|_[^_]+_|`[^`]+`)/g)
+    .split(/(\*\*\*[^*]+\*\*\*|\*\*[^*]+\*\*|\*[^*\n]+\*|_[^_\n]+_|`[^`]+`|\[[^\]]+\]\([^)]+\))/g)
     .filter(part => part.length > 0)
     .map((part, i) => {
       const k = `${keyPrefix}-${i}`
-      if (part.startsWith('**') && part.endsWith('**'))
+
+      // Bold + Italic / Triple Asterisks: ***text*** → Render as Bold only
+      if (part.startsWith('***') && part.endsWith('***') && part.length >= 6) {
+        return <strong key={k}>{part.slice(3, -3)}</strong>
+      }
+
+      // Bold: **text** → Render as Bold
+      if (part.startsWith('**') && part.endsWith('**') && part.length >= 4) {
         return <strong key={k}>{part.slice(2, -2)}</strong>
-      if (part.startsWith('_') && part.endsWith('_'))
-        return <em key={k}>{part.slice(1, -1)}</em>
-      if (part.startsWith('`') && part.endsWith('`'))
+      }
+
+      // Single Asterisk / Italic marker: *text* → Strip asterisks, render as normal text (no italics)
+      if (part.startsWith('*') && part.endsWith('*') && part.length >= 2) {
+        return <span key={k}>{part.slice(1, -1)}</span>
+      }
+
+      // Underscore Italic marker: _text_ → Strip underscores, render as normal text (no italics)
+      if (part.startsWith('_') && part.endsWith('_') && part.length >= 2) {
+        return <span key={k}>{part.slice(1, -1)}</span>
+      }
+
+      // Inline code: `code`
+      if (part.startsWith('`') && part.endsWith('`') && part.length >= 2) {
         return <code key={k} className="msg-code">{part.slice(1, -1)}</code>
-      return <span key={k}>{part}</span>
+      }
+
+      // Markdown Link / Button: [Label](href)
+      if (part.startsWith('[') && part.includes('](') && part.endsWith(')')) {
+        const match = part.match(/^\[(.*?)\]\((.*?)\)$/)
+        if (match) {
+          const label = match[1]
+          const href = match[2]
+          if (href.startsWith('#auth')) {
+            const tab = href.includes('signin') ? 'signin' : 'signup'
+            return (
+              <button
+                key={k}
+                type="button"
+                className="msg-auth-cta-link"
+                onClick={() => window.dispatchEvent(new CustomEvent('open-auth-modal', { detail: tab }))}
+              >
+                {label}
+              </button>
+            )
+          }
+          return (
+            <a key={k} href={href} className="msg-inline-link" target="_blank" rel="noopener noreferrer">
+              {label}
+            </a>
+          )
+        }
+      }
+
+      // Plain text: loại bỏ bất kỳ dấu sao trôi nổi không đóng mở nếu còn sót
+      const cleanPlain = part.replace(/(?:^\*|\*$)/g, '')
+      return <span key={k}>{cleanPlain}</span>
     })
 }
-

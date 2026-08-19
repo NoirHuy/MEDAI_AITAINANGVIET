@@ -4,7 +4,8 @@ import { asyncHandler } from '../utils/asyncHandler.js'
 import { HttpError } from '../utils/httpError.js'
 import { attachUserIfPresent, requireAuth } from '../middleware/auth.js'
 import {
-  chatLimiter,
+  guestChatLimiter,
+  memberChatLimiter,
   chatTitleLimiter,
   chatGeneralLimiter,
 } from '../middleware/rateLimiters.js'
@@ -81,7 +82,8 @@ router.post(
 router.post(
   '/',
   attachUserIfPresent,
-  chatLimiter,
+  guestChatLimiter,
+  memberChatLimiter,
   asyncHandler(async (req, res) => {
     const { messages, specialtyId, lang, isSuggestionDemo, suggestionId, sessionMemoryPaused, conversationId } = req.body ?? {}
     validateMessages(messages)

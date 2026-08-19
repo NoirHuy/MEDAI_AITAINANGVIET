@@ -81,6 +81,15 @@ function AppContent() {
     }
   }, [account, view, lang, isAdminPath, showToast])
 
+  useEffect(() => {
+    const handleOpenAuth = (e) => {
+      const tab = e.detail === 'signin' ? 'signin' : 'signup'
+      setAuthTab(tab)
+    }
+    window.addEventListener('open-auth-modal', handleOpenAuth)
+    return () => window.removeEventListener('open-auth-modal', handleOpenAuth)
+  }, [])
+
   const specialtyId = chat.activeConversation?.specialtyId ?? pendingSpecialtyId
 
   function handleToggleLang() {

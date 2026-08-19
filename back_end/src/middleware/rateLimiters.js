@@ -70,16 +70,35 @@ export const authGeneralLimiter = buildLimiter({
 
 // ─── 2. CHAT & AI LLM RATE LIMITERS ────────────────────────────────────────
 
-/// Hỏi đáp Y tế AI (LLM Stream): Khách vãng lai 10 lượt/15phút, Thành viên 30 lượt/15phút
-export const chatLimiter = buildLimiter({
-  windowMs: 15 * 60 * 1000,
-  max: isDev ? 500 : (req) => (req.userId ? 30 : 10),
+/// Giới hạn Khách vãng lai (Guest): Tối đa 5 câu hỏi / 1 giờ
+export const guestChatLimiter = buildLimiter({
+  windowMs: 60 * 60 * 1000, // 1 giờ
+  max: 5,
+  skip: (req) => !!req.userId, // Bỏ qua nếu đã đăng nhập tài khoản
+  validate: { xForwardedForHeader: false },
   standardHeaders: true,
   legacyHeaders: false,
   message: createRateLimitMessage(
-    'Bạn đã đặt quá nhiều câu hỏi trong thời gian ngắn. Vui lòng nghỉ ngơi vài phút trước khi tiếp tục tư vấn.'
+    'Vui lòng [Đăng nhập](#auth/signin) hoặc [Đăng ký tài khoản miễn phí](#auth/signup) để tiếp tục chat và trải nghiệm đầy đủ tính năng AI Y tế!'
   ),
 })
+
+/// Giới hạn Thành viên đã đăng nhập: Tối đa 60 câu hỏi / 15 phút chống spam bot
+export const memberChatLimiter = buildLimiter({
+  windowMs: 15 * 60 * 1000,
+  max: isDev ? 500 : 60,
+  skip: (req) => !req.userId, // Bỏ qua nếu chưa đăng nhập
+  keyGenerator: (req) => String(req.userId),
+  validate: { ip: false, xForwardedForHeader: false },
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: createRateLimitMessage(
+    'Bạn đã gửi quá nhiều yêu cầu trong thời gian ngắn. Vui lòng thử lại sau ít phút.'
+  ),
+})
+
+// Tương thích ngược
+export const chatLimiter = guestChatLimiter
 
 /// Tạo tiêu đề tự động: Tối đa 20 lần / 15 phút
 export const chatTitleLimiter = buildLimiter({

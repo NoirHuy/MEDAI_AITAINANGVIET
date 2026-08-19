@@ -103,9 +103,16 @@ export async function computeAdaptiveContext(sceResult, excludedSymptoms = new S
           }
         }
         if (demographics.sex) {
-          const matchedSex = (r.get('sexes') || []).find(s => s.sex && s.sex.toLowerCase() === demographics.sex.toLowerCase())
-          if (matchedSex && matchedSex.prob !== null && matchedSex.prob !== undefined) {
-            demographicMultiplier *= Math.max(0.1, matchedSex.prob)
+          const userSex = String(demographics.sex).trim().toLowerCase()
+          const diseaseSexes = (r.get('sexes') || []).filter(s => s && s.sex)
+          if (diseaseSexes.length > 0) {
+            const matchedSex = diseaseSexes.find(s => s.sex && s.sex.toLowerCase() === userSex)
+            if (matchedSex && matchedSex.prob !== null && matchedSex.prob !== undefined) {
+              demographicMultiplier *= Math.max(0.1, matchedSex.prob)
+            } else {
+              // Bệnh có giới hạn giới tính trong đồ thị nhưng không khớp với giới tính bệnh nhân (VD: bệnh phụ khoa ở nam)
+              demographicMultiplier = 0.0
+            }
           }
         }
 

@@ -432,5 +432,36 @@
   margin-top: 2px;
 }
 
+/* ─── Inline Links & CTA Auth Buttons ───────────────────────────── */
+.msg-auth-cta-link {
+  display: inline;
+  background: none;
+  border: none;
+  color: var(--bg-accent, #1a73e8);
+  font-weight: 600;
+  font-size: inherit;
+  font-family: inherit;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+  cursor: pointer;
+  padding: 0;
+  margin: 0;
+  transition: opacity 0.2s ease, color 0.2s ease;
+}
 
+.msg-auth-cta-link:hover {
+  opacity: 0.8;
+  color: var(--bg-accent-hover, #1557b0);
+}
 
+.msg-inline-link {
+  color: var(--bg-accent, #1a73e8);
+  text-decoration: underline;
+  text-underline-offset: 2px;
+  font-weight: 500;
+  transition: opacity 0.2s ease;
+}
+
+.msg-inline-link:hover {
+  opacity: 0.8;
+}

@@ -34,8 +34,14 @@ function buildMockReply(userText, specialtyId, lang = 'vi') {
 
 import { getActiveMemoryContext } from '../memory/memoryRetrieval.js'
 
+export const GUEST_CTA = {
+  vi: '\n\n---\n💡 **Gợi ý:** Bạn đang sử dụng mô hình AI cơ bản. Hãy [Đăng ký tài khoản miễn phí](#auth/signup) để mở khóa **Mô hình AI Y tế Tăng cường** (tích hợp Đồ thị Tri thức Y khoa & Trí nhớ bệnh án cá nhân).',
+  en: '\n\n---\n💡 **Tip:** You are using the standard AI model. [Sign up for free](#auth/signup) to unlock the **Enhanced Medical AI Model** (powered by Knowledge Graph & Personal Clinical Memory).',
+}
+
 export async function generateReply({ messages, specialtyId, lang = 'vi', isSuggestionDemo = false, suggestionId = null, userId = null, sessionMemoryPaused = false, conversationId = null, onChunk, signal }) {
   const isEn = lang === 'en'
+  const isGuest = !userId
   const performanceMeta = {}
   const measureStage = async (name, operation) => {
     const startedAt = performance.now()
@@ -46,7 +52,8 @@ export async function generateReply({ messages, specialtyId, lang = 'vi', isSugg
     }
   }
 
-  const staticSuggestionReply = specialtyId === 'health_consultation'
+  // 1. Static suggestions only for logged-in users
+  const staticSuggestionReply = (!isGuest && specialtyId === 'health_consultation')
     ? getStaticSuggestionReply(suggestionId, lang)
     : null
   if (staticSuggestionReply) {
@@ -72,7 +79,7 @@ export async function generateReply({ messages, specialtyId, lang = 'vi', isSugg
     const fullReplyText = await streamRefusalReply(lang, onChunk, signal)
     return { fullReplyText, memoriesUsed: [], performanceMeta: { intent: 'refusal' } }
   }
-  // SYMPTOM_QUERY: fall through to existing full GraphRAG pipeline below
+  // SYMPTOM_QUERY: fall through to existing pipeline below
   // ─────────────────────────────────────────────────────────────────────────────
 
   // No API Key: hard error in production; dev-only mock via flag
@@ -88,7 +95,43 @@ export async function generateReply({ messages, specialtyId, lang = 'vi', isSugg
     return { fullReplyText, memoriesUsed: [], performanceMeta }
   }
 
-  // TRUE ADAPTIVE GRAPHRAG for Health Consultation specialty
+  // ── GUEST MODE: Basic LLM response without Enhanced GraphRAG / Knowledge Graph / Memory ──
+  if (isGuest) {
+    const guestSystemPrompt = isEn
+      ? `You are MedChat247, a helpful medical AI assistant providing general health consultation and symptom guidance.
+Provide clear, empathetic, and professional advice. Always remind the user to consult a doctor for a definitive diagnosis.`
+      : `Bạn là MedChat247, trợ lý AI y khoa hỗ trợ tư vấn sức khỏe tổng quát và định hướng triệu chứng.
+Hãy cung cấp thông tin y tế hữu ích, rõ ràng và chu đáo. Luôn nhắc nhở người dùng thăm khám bác sĩ để có chẩn đoán chính xác.`
+
+    const chatMessages = [
+      { role: 'system', content: guestSystemPrompt },
+      ...messages,
+    ]
+
+    const baseReplyText = await measureStage('answerGenerationMs', () => callLLM({
+      messages: chatMessages,
+      model: env.openrouterModelChat,
+      stream: true,
+      maxTokens: 1200,
+      onChunk,
+      signal,
+    }))
+
+    const ctaText = isEn ? GUEST_CTA.en : GUEST_CTA.vi
+    await streamText(ctaText, onChunk, signal, {
+      thinkingDelayMs: 80,
+      tokenDelayMs: 10,
+    })
+
+    const fullReplyText = (baseReplyText || '') + ctaText
+    return {
+      fullReplyText,
+      memoriesUsed: [],
+      performanceMeta: { isGuest: true, modelMode: 'basic_llm' },
+    }
+  }
+
+  // TRUE ADAPTIVE GRAPHRAG for Health Consultation specialty (LOGGED-IN USERS ONLY)
   if (specialtyId === 'health_consultation' || specialtyId === 'pediatrics') {
     let adaptiveCtx = null
     let sceResult = null
@@ -133,8 +176,12 @@ export async function generateReply({ messages, specialtyId, lang = 'vi', isSugg
       throw err
     }
 
+    const hasAge = !!(sceResult?.demographics?.age)
+    const hasSex = !!(sceResult?.demographics?.sex)
     const checklistStatus = {
-      hasAgeSex: !!(sceResult?.demographics?.age || sceResult?.demographics?.sex),
+      hasAge,
+      hasSex,
+      hasAgeSex: hasAge && hasSex,
       hasDuration: !!(sceResult?.temporal?.durationValue),
       hasSeverity: !!(sceResult?.symptoms?.some(s => s.status === 'positive' && s.attributes?.severity))
     }
