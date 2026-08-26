@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import {
   UserCircleIcon,
   GaugeIcon,
@@ -13,28 +13,17 @@ import {
   FileSpreadsheetIcon,
   MessageSquareIcon,
 } from './Icons'
+import { apiUrl } from '../services/api'
+import { exportToExcelCSV, downloadJsonFile } from './admin/helpers.jsx'
+import { UrgencyBadge } from './admin/UrgencyBadge.jsx'
+import ConversationDetailModal from './admin/ConversationDetailModal.jsx'
+import FeedbackDetailModal from './admin/FeedbackDetailModal.jsx'
 import './DashboardView.css'
 
-function exportToExcelCSV(filename, headers, rows) {
-  const BOM = '\uFEFF'
-  const csvContent = [
-    headers.map((h) => `"${String(h).replace(/"/g, '""')}"`).join(','),
-    ...rows.map((row) => row.map((val) => `"${String(val ?? '').replace(/"/g, '""')}"`).join(',')),
-  ].join('\n')
+export default function DashboardView({ account, onBack, onSignOut }) {
+  const [activeTab, setActiveTab] = useState('overview')
+  const isAdmin = account.role === 'admin'
 
-  const blob = new Blob([BOM + csvContent], { type: 'text/csv;charset=utf-8;' })
-  const url = URL.createObjectURL(blob)
-  const link = document.createElement('a')
-  link.setAttribute('href', url)
-  link.setAttribute('download', `${filename}.csv`)
-  document.body.appendChild(link)
-  link.click()
-  document.body.removeChild(link)
-}
-
-export default function DashboardView({ account, onSignOut, initialTab }) {
-  const [activeTab, setActiveTab] = useState(initialTab || 'overview')
-  const [isAdmin, setIsAdmin] = useState(account.role === 'admin')
 
   // State các dữ liệu quản trị
   const [overviewStats, setOverviewStats] = useState(null)
@@ -87,20 +76,21 @@ export default function DashboardView({ account, onSignOut, initialTab }) {
   const [fbSaving, setFbSaving] = useState(false)
 
   const [loading, setLoading] = useState(false)
-
-  useEffect(() => {
-    setIsAdmin(account.role === 'admin')
-  }, [account])
+  // Monotonic token: responses from superseded requests are discarded so a
+  // slow earlier reply can never overwrite fresher data.
+  const fetchSeqRef = useRef(0)
 
   // Hàm tải lại dữ liệu Admin cho tab hiện tại
   const fetchAdminData = async () => {
     if (!isAdmin) return
     setLoading(true)
+    const seq = ++fetchSeqRef.current
     try {
       if (activeTab === 'overview') {
-        const res = await fetch('/api/admin/stats/overview')
+        const res = await fetch(apiUrl('/api/admin/stats/overview'))
         if (res.ok) {
           const data = await res.json()
+          if (seq !== fetchSeqRef.current) return
           setOverviewStats(data.overview)
         }
       } else if (activeTab === 'conversations') {
@@ -112,29 +102,33 @@ export default function DashboardView({ account, onSignOut, initialTab }) {
           lang: filterLang,
           isGuest: filterGuest
         })
-        const res = await fetch(`/api/admin/conversations?${queryParams}`)
+        const res = await fetch(apiUrl(`/api/admin/conversations?${queryParams}`))
         if (res.ok) {
           const data = await res.json()
+          if (seq !== fetchSeqRef.current) return
           setConversations(data.conversations || [])
           setTotalConvPages(data.pagination?.totalPages || 1)
         }
       } else if (activeTab === 'safety') {
-        const res = await fetch('/api/admin/safety-logs')
+        const res = await fetch(apiUrl('/api/admin/safety-logs'))
         if (res.ok) {
           const data = await res.json()
+          if (seq !== fetchSeqRef.current) return
           setSafetyLogs(data.logs || [])
         }
       } else if (activeTab === 'users') {
-        const res = await fetch(`/api/admin/users?page=${userPage}&search=${encodeURIComponent(searchUser)}`)
+        const res = await fetch(apiUrl(`/api/admin/users?page=${userPage}&search=${encodeURIComponent(searchUser)}`))
         if (res.ok) {
           const data = await res.json()
+          if (seq !== fetchSeqRef.current) return
           setUsers(data.users || [])
           setTotalUserPages(data.pagination?.totalPages || 1)
         }
       } else if (activeTab === 'ops') {
-        const res = await fetch('/api/admin/ops/logs')
+        const res = await fetch(apiUrl('/api/admin/ops/logs'))
         if (res.ok) {
           const data = await res.json()
+          if (seq !== fetchSeqRef.current) return
           setOpsLogs(data.ops)
         }
       } else if (activeTab === 'payments') {
@@ -144,9 +138,10 @@ export default function DashboardView({ account, onSignOut, initialTab }) {
           status: filterPayStatus,
           gateway: filterPayGateway
         })
-        const res = await fetch(`/api/admin/payments?${queryParams}`)
+        const res = await fetch(apiUrl(`/api/admin/payments?${queryParams}`))
         if (res.ok) {
           const data = await res.json()
+          if (seq !== fetchSeqRef.current) return
           setPayments(data.payments || [])
           setTotalPayPages(data.pagination?.totalPages || 1)
         }
@@ -158,9 +153,10 @@ export default function DashboardView({ account, onSignOut, initialTab }) {
           category: filterFbCategory,
           search: searchFb,
         })
-        const res = await fetch(`/api/admin/feedbacks?${queryParams}`)
+        const res = await fetch(apiUrl(`/api/admin/feedbacks?${queryParams}`))
         if (res.ok) {
           const data = await res.json()
+          if (seq !== fetchSeqRef.current) return
           setFeedbacks(data.feedbacks || [])
           setTotalFbPages(data.pagination?.totalPages || 1)
         }
@@ -182,7 +178,7 @@ export default function DashboardView({ account, onSignOut, initialTab }) {
   // Xem chi tiết hội thoại
   const handleViewDetails = async (convId) => {
     try {
-      const res = await fetch(`/api/admin/conversations/${convId}`)
+      const res = await fetch(apiUrl(`/api/admin/conversations/${convId}`))
       if (res.ok) {
         const data = await res.json()
         setSelectedConv(data.conversation)
@@ -200,7 +196,7 @@ export default function DashboardView({ account, onSignOut, initialTab }) {
     if (!selectedConv) return
     const nextFlag = !selectedConv.flagged
     try {
-      const res = await fetch(`/api/admin/conversations/${selectedConv.id}/flag`, {
+      const res = await fetch(apiUrl(`/api/admin/conversations/${selectedConv.id}/flag`), {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ flagged: nextFlag, flaggedReason: flagReason })
@@ -254,7 +250,7 @@ export default function DashboardView({ account, onSignOut, initialTab }) {
   // Quản lý người dùng
   const handleSaveUserEdit = async (userId) => {
     try {
-      const res = await fetch(`/api/admin/users/${userId}`, {
+      const res = await fetch(apiUrl(`/api/admin/users/${userId}`), {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ planId: editPlan, role: editRole })
@@ -272,7 +268,7 @@ export default function DashboardView({ account, onSignOut, initialTab }) {
   const handleDeleteUser = async (userId) => {
     if (!confirm('Xóa tài khoản này đồng thời sẽ xóa mọi phiên hội thoại liên quan. Bạn có chắc chắn?')) return
     try {
-      const res = await fetch(`/api/admin/users/${userId}`, { method: 'DELETE' })
+      const res = await fetch(apiUrl(`/api/admin/users/${userId}`), { method: 'DELETE' })
       if (res.ok) {
         setUsers(prev => prev.filter(u => u.id !== userId))
       }
@@ -284,7 +280,7 @@ export default function DashboardView({ account, onSignOut, initialTab }) {
   const handleResetTokens = async (userId) => {
     if (!confirm('Đặt lại số token đã dùng về 0?')) return
     try {
-      const res = await fetch(`/api/admin/users/${userId}`, {
+      const res = await fetch(apiUrl(`/api/admin/users/${userId}`), {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ resetTokens: true })
@@ -314,7 +310,7 @@ export default function DashboardView({ account, onSignOut, initialTab }) {
     if (!fbId) return
     setFbSaving(true)
     try {
-      const res = await fetch(`/api/admin/feedbacks/${fbId}`, {
+      const res = await fetch(apiUrl(`/api/admin/feedbacks/${fbId}`), {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -345,7 +341,7 @@ export default function DashboardView({ account, onSignOut, initialTab }) {
     if (!targetId) return
     if (!confirm('Xóa phản hồi này? Hành động không thể hoàn tác.')) return
     try {
-      const res = await fetch(`/api/admin/feedbacks/${targetId}`, { method: 'DELETE' })
+      const res = await fetch(apiUrl(`/api/admin/feedbacks/${targetId}`), { method: 'DELETE' })
       if (res.ok) {
         setFeedbacks(prev => prev.filter(f => f.id !== targetId && f._id !== targetId))
         if (selectedFb?.id === targetId || selectedFb?._id === targetId) setShowFbDetail(false)
@@ -368,23 +364,7 @@ export default function DashboardView({ account, onSignOut, initialTab }) {
         topSymptoms: overviewStats.topSymptoms
       } : 'No data available'
     }
-    const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(reportData, null, 2))
-    const downloadAnchor = document.createElement('a')
-    downloadAnchor.setAttribute("href", dataStr)
-    downloadAnchor.setAttribute("download", `MedChat247_Periodic_Report_${type}.json`)
-    document.body.appendChild(downloadAnchor)
-    downloadAnchor.click()
-    downloadAnchor.remove()
-  }
-
-  // Phân loại nhãn khẩn cấp
-  const renderUrgencyBadge = (urgency) => {
-    if (urgency === 'emergency') {
-      return <span className="urgency-tag tag-red">Khẩn cấp (Đỏ)</span>
-    } else if (urgency === 'warning') {
-      return <span className="urgency-tag tag-yellow">Cần theo dõi (Vàng)</span>
-    }
-    return <span className="urgency-tag tag-green">Bình thường (Xanh)</span>
+    downloadJsonFile(`MedChat247_Periodic_Report_${type}.json`, reportData)
   }
 
   return (
@@ -436,6 +416,9 @@ export default function DashboardView({ account, onSignOut, initialTab }) {
         </nav>
 
         <footer className="admin-side__foot">
+          <button className="btn-exit-admin" onClick={onBack} title="Quay lại màn hình chat">
+            ← Quay lại ứng dụng
+          </button>
           <button className="btn-exit-admin" onClick={onSignOut} style={{ borderColor: '#ef4444', color: '#ef4444' }}>
             Đăng xuất tài khoản
           </button>
@@ -531,9 +514,10 @@ export default function DashboardView({ account, onSignOut, initialTab }) {
                     {/* SVG Donut logic segments */}
                     {(() => {
                       const total = overviewStats.urgencyDistribution.emergency + overviewStats.urgencyDistribution.warning + overviewStats.urgencyDistribution.normal
-                      const ePct = total > 0 ? (overviewStats.urgencyDistribution.emergency / total) * 100 : 15
-                      const wPct = total > 0 ? (overviewStats.urgencyDistribution.warning / total) * 100 : 25
-                      const nPct = total > 0 ? (overviewStats.urgencyDistribution.normal / total) * 100 : 60
+                      if (total === 0) return null
+                      const ePct = (overviewStats.urgencyDistribution.emergency / total) * 100
+                      const wPct = (overviewStats.urgencyDistribution.warning / total) * 100
+                      const nPct = (overviewStats.urgencyDistribution.normal / total) * 100
                       
                       // Calculate offset strokes
                       const strokeE = `${ePct} ${100 - ePct}`
@@ -656,7 +640,7 @@ export default function DashboardView({ account, onSignOut, initialTab }) {
                               <span className="user-pill">Member</span>
                             )}
                           </td>
-                          <td>{renderUrgencyBadge(c.urgency)}</td>
+                          <td><UrgencyBadge urgency={c.urgency} /></td>
                           <td>{c.responseTimeMs ? `${c.responseTimeMs}ms` : 'N/A'}</td>
                           <td>
                             {c.flagged ? (
@@ -735,7 +719,7 @@ export default function DashboardView({ account, onSignOut, initialTab }) {
                             <p className="text-xs text-muted limit-chars">{log.messages[0]?.content.slice(0, 80)}...</p>
                           </td>
                           <td>{new Date(log.createdAt).toLocaleString('vi-VN')}</td>
-                          <td>{renderUrgencyBadge(log.urgency)}</td>
+                          <td><UrgencyBadge urgency={log.urgency} /></td>
                           <td>
                             {log.flagged ? (
                               <span className="text-danger font-semibold">{log.flaggedReason}</span>
@@ -1280,250 +1264,33 @@ export default function DashboardView({ account, onSignOut, initialTab }) {
       </main>
 
       {/* MODAL CHI TIẾT PHẢN HỒI */}
-      {showFbDetail && selectedFb && (
-        <div className="modal-backdrop" onClick={() => setShowFbDetail(false)}>
-          <div className="audit-detail-modal card-glass" onClick={e => e.stopPropagation()} style={{ maxWidth: '680px' }}>
-            <header className="modal-header-custom">
-              <div>
-                <h2>Chi tiết phản hồi</h2>
-                <p className="text-xs text-muted">
-                  ID: {selectedFb.id} | Gửi: {selectedFb.createdAt ? new Date(selectedFb.createdAt).toLocaleString('vi-VN') : '—'}
-                </p>
-              </div>
-              <button className="modal-close" onClick={() => setShowFbDetail(false)}>×</button>
-            </header>
-
-            <div className="audit-detail-body mt-4">
-              {/* Meta info */}
-              <div className="flex-meta-header" style={{ flexWrap: 'wrap', gap: '10px' }}>
-                <div>
-                  <strong>Người gửi:</strong>{' '}
-                  {selectedFb.isAnonymous ? 'Khách ẩn danh' : (selectedFb.user?.name || selectedFb.userName)}
-                </div>
-                {!selectedFb.isAnonymous && (
-                  <div><strong>Email:</strong> {selectedFb.user?.email || selectedFb.userEmail || '—'}</div>
-                )}
-                <div>
-                  <span className={`category-badge category-${selectedFb.category}`}>
-                    {selectedFb.category === 'help' ? 'Trợ giúp' :
-                     selectedFb.category === 'bug' ? 'Báo lỗi' :
-                     selectedFb.category === 'feature' ? 'Tính năng' :
-                     selectedFb.category === 'question' ? 'Câu hỏi' :
-                     selectedFb.category === 'complaint' ? 'Khiếu nại' : 'Khác'}
-                  </span>
-                </div>
-                <div>
-                  <span className={`priority-badge priority-${selectedFb.priority}`}>
-                    {selectedFb.priority === 'urgent' ? 'Khẩn cấp' :
-                     selectedFb.priority === 'high' ? 'Cao' :
-                     selectedFb.priority === 'medium' ? 'Trung bình' : 'Thấp'}
-                  </span>
-                </div>
-                {selectedFb.adminReply && (
-                  <div className="flagged-banner" style={{ background: 'rgba(14, 165, 233, 0.08)', borderColor: '#0ea5e9', color: '#0ea5e9' }}>
-                    Đã phản hồi bởi {selectedFb.replierName || 'Admin'} ({selectedFb.repliedAt ? new Date(selectedFb.repliedAt).toLocaleString('vi-VN') : '—'})
-                  </div>
-                )}
-              </div>
-
-              {/* Nội dung phản hồi */}
-              <div style={{ marginTop: '16px' }}>
-                <h4 style={{ fontSize: '13px', fontWeight: 600, color: 'var(--text-muted)', marginBottom: '8px' }}>NỘI DUNG PHẢN HỒI</h4>
-                <div className="card-box" style={{ padding: '14px' }}>
-                  <p style={{ whiteSpace: 'pre-wrap', lineHeight: 1.6, margin: 0 }}>{selectedFb.content}</p>
-                </div>
-              </div>
-
-              {/* Admin reply (nếu có) */}
-              {selectedFb.adminReply && (
-                <div style={{ marginTop: '14px' }}>
-                  <h4 style={{ fontSize: '13px', fontWeight: 600, color: '#0ea5e9', marginBottom: '8px' }}>PHẢN HỒI CỦA ADMIN</h4>
-                  <div style={{
-                    padding: '12px 14px',
-                    background: 'rgba(14, 165, 233, 0.08)',
-                    borderLeft: '3px solid #0ea5e9',
-                    borderRadius: '0 8px 8px 0',
-                    fontSize: '13px',
-                    whiteSpace: 'pre-wrap',
-                    lineHeight: 1.6,
-                  }}>
-                    {selectedFb.adminReply}
-                  </div>
-                </div>
-              )}
-
-              {/* Admin reply form (chỉ cho loại help) */}
-              <div style={{ marginTop: '20px', paddingTop: '16px', borderTop: '1px solid var(--border-subtle)' }}>
-                <h4 style={{ fontSize: '13px', fontWeight: 600, color: 'var(--text-muted)', marginBottom: '12px' }}>
-                  XỬ LÝ BỞI ADMIN
-                </h4>
-
-                <div style={{ display: 'grid', gap: '12px' }}>
-                  <div>
-                    <label style={{ fontSize: '12px', color: 'var(--text-muted)', display: 'block', marginBottom: '4px' }}>Trạng thái</label>
-                    <select
-                      value={fbStatusUpdate}
-                      onChange={e => setFbStatusUpdate(e.target.value)}
-                      style={{
-                        width: '100%',
-                        padding: '8px 12px',
-                        borderRadius: 'var(--radius-md)',
-                        border: '1px solid var(--border-subtle)',
-                        background: 'var(--bg-surface-hover)',
-                        color: 'var(--text-primary)',
-                        fontSize: '13px',
-                        fontFamily: 'inherit',
-                      }}
-                    >
-                      <option value="new">Mới</option>
-                      <option value="read">Đã đọc</option>
-                      <option value="in_progress">Đang xử lý</option>
-                      <option value="resolved">Đã giải quyết</option>
-                      <option value="closed">Đã đóng</option>
-                    </select>
-                  </div>
-
-                  <div>
-                    <label style={{ fontSize: '12px', color: 'var(--text-muted)', display: 'block', marginBottom: '4px' }}>
-                      Ghi chú nội bộ (không hiển thị cho user)
-                    </label>
-                    <textarea
-                      value={fbNotesText}
-                      onChange={e => setFbNotesText(e.target.value)}
-                      rows={2}
-                      placeholder="Ghi chú riêng của admin..."
-                      style={{
-                        width: '100%',
-                        padding: '8px 12px',
-                        borderRadius: 'var(--radius-md)',
-                        border: '1px solid var(--border-subtle)',
-                        background: 'var(--bg-surface-hover)',
-                        color: 'var(--text-primary)',
-                        fontSize: '13px',
-                        fontFamily: 'inherit',
-                        resize: 'vertical',
-                      }}
-                    />
-                  </div>
-
-                  <div>
-                    <label style={{ fontSize: '12px', color: 'var(--text-muted)', display: 'block', marginBottom: '4px' }}>
-                      Phản hồi cho user {selectedFb.category !== 'help' && <span style={{ fontStyle: 'italic' }}>(chỉ gửi khi cần)</span>}
-                    </label>
-                    <textarea
-                      value={fbReplyText}
-                      onChange={e => setFbReplyText(e.target.value)}
-                      rows={3}
-                      placeholder="Nhập phản hồi để gửi cho user..."
-                      style={{
-                        width: '100%',
-                        padding: '8px 12px',
-                        borderRadius: 'var(--radius-md)',
-                        border: '1px solid var(--border-subtle)',
-                        background: 'var(--bg-surface-hover)',
-                        color: 'var(--text-primary)',
-                        fontSize: '13px',
-                        fontFamily: 'inherit',
-                        resize: 'vertical',
-                      }}
-                    />
-                  </div>
-                </div>
-
-                <div style={{ marginTop: '12px', display: 'flex', gap: '10px' }}>
-                  <button
-                    className="btn btn--primary btn--sm"
-                    onClick={handleSaveFbUpdate}
-                    disabled={fbSaving}
-                  >
-                    {fbSaving ? 'Đang lưu...' : 'Lưu cập nhật'}
-                  </button>
-                  <button
-                    className="btn btn--outline btn--sm"
-                    onClick={() => setShowFbDetail(false)}
-                  >
-                    Đóng
-                  </button>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
+      {showFbDetail && (
+        <FeedbackDetailModal
+          feedback={selectedFb}
+          statusUpdate={fbStatusUpdate}
+          onStatusUpdateChange={setFbStatusUpdate}
+          notesText={fbNotesText}
+          onNotesTextChange={setFbNotesText}
+          replyText={fbReplyText}
+          onReplyTextChange={setFbReplyText}
+          saving={fbSaving}
+          onSave={handleSaveFbUpdate}
+          onClose={() => setShowFbDetail(false)}
+        />
       )}
 
       {/* MODAL XEM CHI TIẾT HỘI THOẠI & AUDIT */}
-      {showDetailModal && selectedConv && (
-        <div className="modal-backdrop" onClick={() => setShowDetailModal(false)}>
-          <div className="audit-detail-modal card-glass" onClick={e => e.stopPropagation()}>
-            <header className="modal-header-custom">
-              <div>
-                <h2>{selectedConv.title}</h2>
-                <p className="text-xs text-muted">ID: {selectedConv.id} | Ngày khởi tạo: {new Date(selectedConv.createdAt).toLocaleString('vi-VN')}</p>
-              </div>
-              <button className="modal-close" onClick={() => setShowDetailModal(false)}>×</button>
-            </header>
-
-            <div className="audit-detail-body mt-4">
-              <div className="flex-meta-header">
-                <div><strong>Ngôn ngữ:</strong> <span className="uppercase">{selectedConv.lang}</span></div>
-                <div><strong>Người dùng:</strong> {selectedConv.isGuest ? 'Guest (Vãng lai)' : 'Thành viên'}</div>
-                <div><strong>Mức độ nguy cơ:</strong> {renderUrgencyBadge(selectedConv.urgency)}</div>
-                {selectedConv.flagged && (
-                  <div className="flagged-banner">
-                    🚩 **Cần Review:** {selectedConv.flaggedReason}
-                  </div>
-                )}
-              </div>
-
-              {/* Chat Timeline history */}
-              <div className="audit-timeline mt-4">
-                {selectedConv.messages.map((m, idx) => (
-                  <div className={`timeline-bubble bubble-${m.role}`} key={idx}>
-                    <div className="bubble-header-label">
-                      <strong>{m.role === 'user' ? 'Người bệnh (User)' : 'Bác sĩ ảo MedChat247'}</strong>
-                      <span className="text-xs text-muted">{new Date(m.createdAt || selectedConv.createdAt).toLocaleString('vi-VN')}</span>
-                    </div>
-                    <div className="bubble-text-content">{m.content}</div>
-                  </div>
-                ))}
-              </div>
-
-              {/* Actions panel for audit */}
-              <div className="audit-actions-panel mt-6">
-                {!showFlagInput ? (
-                  <div className="flex-actions-row">
-                    <button className={`btn-audit ${selectedConv.flagged ? 'btn-unflag' : 'btn-flag'}`} onClick={() => {
-                      if (selectedConv.flagged) {
-                        handleToggleFlag()
-                      } else {
-                        setShowFlagInput(true)
-                      }
-                    }}>
-                      {selectedConv.flagged ? '🚩 Gỡ cờ review' : '🚩 Đánh dấu cần review'}
-                    </button>
-                    <button className="btn-audit btn-export-json" onClick={() => handleExportAudit(selectedConv)}>
-                      Xuất File kiểm toán (JSON)
-                    </button>
-                  </div>
-                ) : (
-                  <div className="flag-input-group card-box">
-                    <h4>Nhập lý do cần review hội thoại</h4>
-                    <textarea 
-                      value={flagReason} 
-                      onChange={e => setFlagReason(e.target.value)} 
-                      placeholder="Ví dụ: Bot bỏ sót cảnh báo đau ngực dữ dội, chẩn đoán sai triệu chứng nhi..."
-                      rows="2"
-                    />
-                    <div className="flag-buttons mt-2">
-                      <button className="btn-table-action green" onClick={handleToggleFlag}>Lưu cờ</button>
-                      <button className="btn-table-action gray" onClick={() => setShowFlagInput(false)}>Hủy</button>
-                    </div>
-                  </div>
-                )}
-              </div>
-            </div>
-          </div>
-        </div>
+      {showDetailModal && (
+        <ConversationDetailModal
+          conversation={selectedConv}
+          flagReason={flagReason}
+          onFlagReasonChange={setFlagReason}
+          showFlagInput={showFlagInput}
+          onShowFlagInputChange={setShowFlagInput}
+          onToggleFlag={handleToggleFlag}
+          onExportAudit={handleExportAudit}
+          onClose={() => setShowDetailModal(false)}
+        />
       )}
     </div>
   )

@@ -23,10 +23,11 @@ router.get(
       .sort({ createdAt: -1 })
       .lean()
 
-    const decryptedList = list.map(m => ({
-      ...m,
-      content: decryptText(m.content, m.keyVersion || 1),
-    }))
+    // Skip records whose ciphertext can no longer be decrypted (key rotated /
+    // corrupted) instead of leaking raw ciphertext to the client.
+    const decryptedList = list
+      .map(m => ({ ...m, content: decryptText(m.content) }))
+      .filter(m => m.content !== null)
 
     res.json({ memories: decryptedList })
   })
@@ -72,10 +73,9 @@ router.get(
       status: 'active',
     }).lean()
 
-    const decryptedList = list.map(m => ({
-      ...m,
-      content: decryptText(m.content, m.keyVersion || 1),
-    }))
+    const decryptedList = list
+      .map(m => ({ ...m, content: decryptText(m.content) }))
+      .filter(m => m.content !== null)
 
     const categoriesMap = {
       allergy: 'DỊ ỨNG THUỐC & THỨC ĂN',
@@ -124,7 +124,7 @@ router.post(
     if (!content || !content.trim()) throw new HttpError(400, 'Nội dung trí nhớ không được để trống.')
     if (!category) throw new HttpError(400, 'Danh mục trí nhớ không được để trống.')
 
-    const encrypted = encryptText(content.trim(), 1)
+    const encrypted = encryptText(content.trim())
     let expiresAt = null
     if (category === 'past_episode') {
       expiresAt = new Date(Date.now() + 90 * 24 * 60 * 60 * 1000)
@@ -198,11 +198,13 @@ router.patch(
     const memory = await UserMemoryModel.findOne({ id, userId: req.userId })
     if (!memory) throw new HttpError(404, 'Không tìm thấy mục trí nhớ.')
 
-    const previousDecrypted = decryptText(memory.content, memory.keyVersion || 1)
+    // Null means the stored ciphertext is undecryptable; treat the previous
+    // content as empty so any user-supplied edit overwrites it.
+    const previousDecrypted = decryptText(memory.content) ?? ''
     const patch = {}
 
     if (content !== undefined && content.trim() !== previousDecrypted) {
-      patch.content = encryptText(content.trim(), memory.keyVersion || 1)
+      patch.content = encryptText(content.trim())
       patch.version = (memory.version || 1) + 1
       patch.lastConfirmedAt = new Date()
       patch.verificationStatus = 'verified'
@@ -222,10 +224,15 @@ router.patch(
       { new: true }
     ).lean()
 
-    const decrypted = {
-      ...updated,
-      content: decryptText(updated.content, updated.keyVersion || 1),
+    // Concurrent soft-delete between the lookup above and this update makes
+    // `updated` null; surface a 404 instead of crashing with a TypeError.
+    if (!updated) throw new HttpError(404, 'Không tìm thấy mục trí nhớ.')
+
+    const decryptedContent = decryptText(updated.content)
+    if (decryptedContent === null) {
+      throw new HttpError(500, 'Dữ liệu trí nhớ không thể giải mã. Vui lòng xóa và tạo lại mục này.')
     }
+    const decrypted = { ...updated, content: decryptedContent }
 
     await logMemoryAudit({
       memoryId: id,
@@ -258,7 +265,7 @@ router.delete(
       userId: req.userId,
       action: 'delete',
       performedBy: 'user',
-      previousContent: decryptText(memory.content, memory.keyVersion || 1),
+      previousContent: decryptText(memory.content) ?? '',
     })
 
     res.json({ success: true, message: 'Đã xóa mục trí nhớ.' })

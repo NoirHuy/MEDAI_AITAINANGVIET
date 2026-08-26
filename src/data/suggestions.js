@@ -1,7 +1,6 @@
 export const SUGGESTIONS = [
   {
     id: 'disease_1',
-    isDemo: true, // Ép xuất Báo cáo Sàng lọc & Hướng giải quyết ngay lượt 1
     title: {
       vi: 'Viêm Họng Cấp',
       en: 'Acute Pharyngitis'
@@ -17,7 +16,6 @@ export const SUGGESTIONS = [
   },
   {
     id: 'disease_2',
-    isDemo: true,
     title: {
       vi: 'Trào Ngược Dạ Dày (GERD)',
       en: 'Acid Reflux (GERD)'
@@ -33,7 +31,6 @@ export const SUGGESTIONS = [
   },
   {
     id: 'disease_3',
-    isDemo: true,
     title: {
       vi: 'Viêm Xoang Cấp & Mãn Tính',
       en: 'Sinusitis (Sinus Infection)'
@@ -49,7 +46,6 @@ export const SUGGESTIONS = [
   },
   {
     id: 'disease_4',
-    isDemo: true,
     title: {
       vi: 'Viêm Phế Quản',
       en: 'Acute Bronchitis'

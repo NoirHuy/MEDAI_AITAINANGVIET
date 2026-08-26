@@ -119,6 +119,9 @@ cp back_end/.env.example back_end/.env
 # - NEO4J_PASSWORD: Đặt password mới cho Neo4j
 # - PAYPAL_CLIENT_ID / PAYPAL_CLIENT_SECRET: Lấy từ developer.paypal.com
 # - Các API key AI: Cấu hình trong 9Router dashboard hoặc .env
+
+# Nâng quyền Admin cho một tài khoản (không còn cấp admin theo email):
+cd back_end && node scripts/promote-admin.js admin@your-domain.example.com
 ```
 
 ### 7.2. Khởi chạy bằng Docker
@@ -132,10 +135,26 @@ docker compose ps
 
 # 3. Xem log vận hành backend thời gian thực:
 docker compose logs -f backend
-
-# 4. Chạy tests:
-cd back_end && npm install && npm test
 ```
+
+### 7.3. Phát triển cục bộ (Local Development)
+
+```bash
+# Backend (cổng 4000):
+cd back_end && npm install
+npm run dev          # node --watch src/server.js
+npm test             # vitest run (unit tests)
+
+# Frontend (cổng 5173, proxy /api -> localhost:4000):
+npm install
+npm run dev          # vite
+npm run lint         # oxlint
+npm test             # vitest run (unit tests)
+npm run build        # production bundle -> dist/
+```
+
+> Lưu ý: ở môi trường dev, Vite tự động proxy `/api/*` tới `http://localhost:4000`
+> (coi `vite.config.js`). Nếu cần trỏ sang backend khác, đặt `VITE_API_URL` trong `.env`.
 
 ---
 

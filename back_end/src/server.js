@@ -1,6 +1,8 @@
 import express from 'express'
 import cors from 'cors'
 import cookieParser from 'cookie-parser'
+import path from 'path'
+import { fileURLToPath } from 'url'
 import { env } from './config/env.js'
 import { connectDatabase } from './db/mongodb.js'
 import { connectRedis, disconnectRedis } from './config/redis.js'
@@ -16,6 +18,9 @@ import { startBillingScheduler } from './services/billingScheduler.js'
 import { getSession, getAllSymptoms } from './services/graphrag/neo4jClient.js'
 import { initSymptomVectorIndex } from './services/graphrag/symptomVectorIndex.js'
 import { notFoundHandler, errorHandler } from './middleware/errorHandler.js'
+
+const __filename = fileURLToPath(import.meta.url)
+const __dirname = path.dirname(__filename)
 
 // Connect to MongoDB
 connectDatabase()
@@ -63,12 +68,6 @@ app.use('/api/admin', adminRoutes)
 app.use('/api/memories', memoriesRoutes)
 app.use('/api/feedback', feedbackRoutes)
 app.use('/api/monitoring', monitoringRoutes)
-
-import path from 'path'
-import { fileURLToPath } from 'url'
-
-const __filename = fileURLToPath(import.meta.url)
-const __dirname = path.dirname(__filename)
 
 // Phục vụ tệp tĩnh Frontend trong môi trường Production
 if (process.env.NODE_ENV === 'production') {

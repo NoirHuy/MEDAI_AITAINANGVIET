@@ -102,7 +102,10 @@ describe('PayPal webhook order identity', () => {
     )
   })
 
-  it('rejects a completed webhook when stored payment ownership differs', async () => {
+  it('acks (200) and skips a completed webhook when stored payment ownership differs', async () => {
+    // Permanent business-rule rejection: ack with 200 so PayPal stops
+    // redelivering an event we can never act on. The subscription must NOT be
+    // upgraded for the attacker's userId.
     const res = await invokeWebhook({
       event_type: 'PAYMENT.CAPTURE.COMPLETED',
       resource: {
@@ -116,7 +119,7 @@ describe('PayPal webhook order identity', () => {
       paypalCaptureId: 'CAPTURE-XYZ',
     })
 
-    expect(res.status).toBe(400)
+    expect(res.status).toBe(200)
     expect(mocks.upsertSubscription).not.toHaveBeenCalled()
   })
 

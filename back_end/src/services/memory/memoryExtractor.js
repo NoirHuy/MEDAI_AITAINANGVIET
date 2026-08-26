@@ -94,7 +94,7 @@ Trả về định dạng JSON thuần duy nhất dạng mảng:
           userId,
           category: ignoredItem.category || 'lifestyle',
           memoryType: ignoredItem.memoryType || 'observation',
-          content: encryptText(ignoredItem.content, 1),
+          content: encryptText(ignoredItem.content),
           keyVersion: 1,
           status: 'ignored',
           subject: ignoredItem.subject || 'self',
@@ -114,10 +114,11 @@ Trả về định dạng JSON thuần duy nhất dạng mảng:
 
     // Fetch current active user memories for semantic deduplication & conflict resolution
     const existingMemories = await UserMemoryModel.find({ userId, status: 'active' }).lean()
-    const decryptedExisting = existingMemories.map(m => ({
-      ...m,
-      decryptedContent: decryptText(m.content, m.keyVersion || 1),
-    }))
+    const decryptedExisting = existingMemories
+      .map(m => ({ ...m, decryptedContent: decryptText(m.content) }))
+      // Undecryptable records (key rotated / corrupted) must not be matched or
+      // compared — skip them entirely.
+      .filter(m => typeof m.decryptedContent === 'string')
 
     for (const candidate of validCandidates) {
       // Find matching existing memory in the same category & subject
@@ -162,7 +163,7 @@ Trả về định dạng JSON thuần duy nhất dạng mảng:
         })
 
         // Create new active memory version
-        const encryptedContent = encryptText(candidate.content, 1)
+        const encryptedContent = encryptText(candidate.content)
         let expiresAt = null
         if (candidate.category === 'past_episode') {
           expiresAt = new Date(Date.now() + 90 * 24 * 60 * 60 * 1000) // 90 days
@@ -200,7 +201,7 @@ Trả về định dạng JSON thuần duy nhất dạng mảng:
         })
       } else {
         // Entirely new memory item
-        const encryptedContent = encryptText(candidate.content, 1)
+        const encryptedContent = encryptText(candidate.content)
         let expiresAt = null
         if (candidate.category === 'past_episode') {
           expiresAt = new Date(Date.now() + 90 * 24 * 60 * 60 * 1000) // 90 days

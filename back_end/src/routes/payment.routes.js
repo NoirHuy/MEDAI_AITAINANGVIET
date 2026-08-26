@@ -14,12 +14,26 @@ import {
   parsePayPalCustom,
 } from '../utils/paypal-webhook.util.js'
 import { auditLog } from '../utils/auditLog.js'
+import { safeSetNx } from '../config/redis.js'
+import { PRO_PLAN, PRO_DURATION_MS } from '../config/plans.js'
 import {
   upsertSubscriptionAndSync,
   cancelSubscriptionAndSync,
 } from '../services/subscription.service.js'
 
 const router = Router()
+
+// PayPal redelivers webhooks until it sees a 2xx; without de-duplication each
+// replay of PAYMENT.CAPTURE.COMPLETED would extend the Pro subscription by
+// another 30 days. Mark event IDs as seen for 90 days (longer than PayPal's
+// retry horizon). Redis unavailable => skip dedup (the success-status guard in
+// the handler still prevents double upgrades).
+const WEBHOOK_EVENT_TTL_SECONDS = 90 * 24 * 60 * 60
+
+async function isDuplicateWebhookEvent(eventId) {
+  if (!eventId) return false
+  return !(await safeSetNx(`paypal:event:${eventId}`, WEBHOOK_EVENT_TTL_SECONDS))
+}
 
 // ─── 0. PAYPAL PUBLIC CONFIG (Client ID & Mode for Frontend Buttons) ────────
 router.get('/config', (req, res) => {
@@ -51,6 +65,12 @@ router.post(
     if (!verifyResult.valid) {
       auditLog('PAYPAL_WEBHOOK', 'Warn', `Signature invalid: ${verifyResult.reason}`, 'warn')
       return res.status(400).json({ error: 'Invalid signature' })
+    }
+
+    // 1.5 De-duplicate redelivered events (PayPal retries until 2xx).
+    if (await isDuplicateWebhookEvent(event.id)) {
+      auditLog('PAYPAL_WEBHOOK', 'Info', `Duplicate event ${event.id} (${event.event_type}) ignored`, 'info')
+      return res.status(200).json({ received: true, duplicate: true })
     }
 
     const eventType = event.event_type
@@ -91,23 +111,31 @@ router.post(
         const paymentFilter = { paymentGateway: 'paypal', billingToken: orderId }
         const payment = await PaymentModel.findOne(paymentFilter).lean()
         if (!payment) {
+          // Permanent condition: ack so PayPal stops redelivering an event we
+          // can never act on.
           auditLog('PAYPAL_WEBHOOK', 'Warn', `No local payment record for order ${orderId}`, 'warn')
-          return res.status(400).json({ error: 'Unknown payment order' })
+          break
         }
         if (payment.userId !== custom.userId) {
           auditLog('PAYPAL_WEBHOOK', 'Error', `User mismatch for order ${orderId}`, 'error')
-          return res.status(400).json({ error: 'Payment ownership mismatch' })
+          break
+        }
+        // Idempotency fallback (when Redis dedup is unavailable): never
+        // re-extend a subscription for an order already marked successful.
+        if (payment.status === 'success') {
+          auditLog('PAYPAL_WEBHOOK', 'Info', `Order ${orderId} already completed; skipping replay`, 'info')
+          break
         }
 
         const webhookAmount = resource.amount?.value || resource.amount?.total || purchaseUnit.amount?.value
         const webhookCurrency = resource.amount?.currency_code || resource.amount?.currency || purchaseUnit.amount?.currency_code
-        if (webhookAmount !== '3.99' || webhookCurrency !== 'USD') {
+        if (webhookAmount !== PRO_PLAN.priceUsd || webhookCurrency !== PRO_PLAN.currency) {
           auditLog('PAYPAL_WEBHOOK', 'Error', `Amount mismatch for order ${orderId}`, 'error')
           return res.status(400).json({ error: 'Payment amount mismatch' })
         }
 
-        // Tính expiresAt = now + 30 ngày
-        const expiresAt = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000)
+        // Tính expiresAt từ thời hạn gói trong config
+        const expiresAt = new Date(Date.now() + PRO_DURATION_MS)
 
         await upsertSubscriptionAndSync({
           userId: custom.userId,
@@ -209,8 +237,8 @@ router.post(
 
     try {
       const order = await createPayPalOrder({
-        amountUSD: '3.99',
-        description: `MedChat247 Pro Plan Subscription (30 Days) - User: ${user.email}`,
+        amountUSD: PRO_PLAN.priceUsd,
+        description: `MedChat247 Pro Plan Subscription (${PRO_PLAN.durationDays} Days) - User: ${user.email}`,
         // Truyền userId qua custom để webhook có thể map về user khi nhận event
         custom: JSON.stringify({
           userId: user.id,
@@ -224,7 +252,7 @@ router.post(
           id: `pay_${randomUUID()}`,
           userId: user.id,
           planId: 'pro',
-          amount: 99000,
+          amount: PRO_PLAN.priceVnd,
           status: 'pending',
           type: 'initial',
           paymentGateway: 'paypal',
@@ -237,7 +265,11 @@ router.post(
 
       res.json({ orderId: order.id })
     } catch (err) {
-      throw new HttpError(500, `Không thể tạo đơn hàng PayPal: ${err.message}`)
+      // Log the raw SDK/network error server-side; keep the client response
+      // generic so internals do not leak.
+      if (err instanceof HttpError) throw err
+      auditLog('PAYPAL', 'Error', `Create order failed: ${err.message}`, 'error')
+      throw new HttpError(500, 'Không thể tạo đơn hàng PayPal. Vui lòng thử lại sau.')
     }
   })
 )
@@ -291,11 +323,14 @@ router.post(
       const capturedAmount = captureResult.purchase_units?.[0]?.payments?.captures?.[0]?.amount?.value
       const capturedCurrency = captureResult.purchase_units?.[0]?.payments?.captures?.[0]?.amount?.currency_code
 
-      if (capturedAmount !== '3.99' || capturedCurrency !== 'USD') {
-        console.error(`[PAYPAL AUDIT ALERT] Detected price mismatch for order ${orderId}: Expected $3.99 USD, got ${capturedAmount} ${capturedCurrency}`)
-        throw new HttpError(400, 'Giao dịch bị từ chối do số tiền thanh toán không đúng hạn mức gói Pro ($3.99 USD).')
+      if (capturedAmount !== PRO_PLAN.priceUsd || capturedCurrency !== PRO_PLAN.currency) {
+        console.error(`[PAYPAL AUDIT ALERT] Detected price mismatch for order ${orderId}: Expected ${PRO_PLAN.priceUsd} ${PRO_PLAN.currency}, got ${capturedAmount} ${capturedCurrency}`)
+        throw new HttpError(400, `Giao dịch bị từ chối do số tiền thanh toán không đúng hạn mức gói Pro (${PRO_PLAN.priceUsd} ${PRO_PLAN.currency}).`)
       }
     } catch (err) {
+      // Re-throw domain errors untouched; only wrap unexpected SDK/network
+      // failures so their status and message are not flattened into a 400.
+      if (err instanceof HttpError) throw err
       throw new HttpError(400, `Thanh toán PayPal thất bại: ${err.message}`)
     }
 
@@ -338,7 +373,7 @@ router.post(
       throw new HttpError(409, 'Đơn hàng PayPal đang được xử lý. Vui lòng thử lại sau ít phút.')
     }
 
-    const expiresAt = new Date(now.getTime() + 30 * 24 * 60 * 60 * 1000)
+    const expiresAt = new Date(now.getTime() + PRO_DURATION_MS)
 
     // Ghi subscription record + sync plan (dùng chung với webhook)
     await upsertSubscriptionAndSync({

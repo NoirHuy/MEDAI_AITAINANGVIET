@@ -26,7 +26,9 @@ export default function ChatInput({
   }, [value])
 
   function handleKeyDown(e) {
-    if (e.key === 'Enter' && !e.shiftKey) {
+    // Enter during IME composition (Vietnamese Telex, etc.) confirms the
+    // composition — it must not send the message.
+    if (e.key === 'Enter' && !e.shiftKey && !e.nativeEvent.isComposing) {
       e.preventDefault()
       if (!isResponding && value.trim()) onSend()
     }

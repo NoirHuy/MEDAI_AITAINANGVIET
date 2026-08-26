@@ -10,6 +10,7 @@ import {
 import GoogleAuthButton from './GoogleAuthButton'
 import { isGoogleAuthConfigured, setDynamicGoogleClientId, getGoogleClientId } from '../utils/googleAuthConfig'
 import { MOCK_GOOGLE_ACCOUNT } from '../data/account'
+import { apiUrl } from '../services/api'
 import './SettingsModal.css'
 import './AccountMenu.css'
 import './AuthModal.css'
@@ -34,19 +35,23 @@ export default function AuthModal({
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState(null)
   const [showPassword, setShowPassword] = useState(false)
-  const [, setForceUpdate] = useState(0)
+  const [fetchedGoogleClientId, setFetchedGoogleClientId] = useState(null)
 
   useEffect(() => {
+    let cancelled = false
     if (!isGoogleAuthConfigured()) {
-      fetch('/api/auth/config')
+      fetch(apiUrl('/api/auth/config'))
         .then((res) => (res.ok ? res.json() : null))
         .then((data) => {
-          if (data?.googleClientId) {
+          if (data?.googleClientId && !cancelled) {
             setDynamicGoogleClientId(data.googleClientId)
-            setForceUpdate((n) => n + 1)
+            setFetchedGoogleClientId(data.googleClientId)
           }
         })
         .catch(() => {})
+    }
+    return () => {
+      cancelled = true
     }
   }, [])
 
@@ -149,6 +154,7 @@ export default function AuthModal({
       onAuthed(user, isEn ? 'Signed in with Google successfully!' : 'Đăng nhập bằng Google thành công!')
     } catch (err) {
       setError(err.message)
+    } finally {
       setLoading(false)
     }
   }
@@ -322,7 +328,7 @@ export default function AuthModal({
           </div>
         ) : (
           <>
-            {isGoogleAuthConfigured() ? (
+            {isGoogleAuthConfigured() || fetchedGoogleClientId ? (
               <GoogleAuthButton onCredential={handleGoogleCredential} />
             ) : (
               <button

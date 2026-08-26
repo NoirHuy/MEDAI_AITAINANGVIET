@@ -3,6 +3,12 @@ import { PulseIcon } from './Icons'
 import TypingDots from './TypingDots'
 import './MessageBubble.css'
 
+// The regexes below deliberately match malformed emoji sequences (variation
+// selectors, zero-width chars, U+FFFD) emitted by LLM output, which triggers
+// no-misleading-character-class even though matching combining sequences is
+// exactly the goal.
+/* eslint-disable eslint/no-misleading-character-class */
+
 export default memo(function MessageBubble({ role, content, streaming, lang = 'vi', onSend, isLast }) {
   const isUser = role === 'user'
   const isEn = lang === 'en'

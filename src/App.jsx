@@ -32,8 +32,6 @@ function AppContent() {
     signInWithGoogle,
     updateName,
     changePassword,
-    updateCard,
-    deleteCard,
     toggleAutoRenew,
     setPlan,
     updateAccountUser,
@@ -53,19 +51,19 @@ function AppContent() {
   const [collapsed, setCollapsed] = useState(false)
   const [mobileOpen, setMobileOpen] = useState(false)
   const [view, setView] = useState('chat')
-  const [dashboardTab] = useState('overview')
   const [settingsTab, setSettingsTab] = useState(null)
   const [authTab, setAuthTab] = useState(null)
   const [lang, setLang] = useState(localStorage.getItem('medai_lang') || 'vi')
-  
+
   const isAdminPath = window.location.pathname === '/admin' || window.location.pathname === '/admin/'
 
   // Tự động chuyển view nếu truy cập trực tiếp đường dẫn /admin
   useEffect(() => {
-    if (isAdminPath && account && account.role === 'admin' && view !== 'dashboard') {
+    if (isAdminPath && account?.role === 'admin' && view !== 'dashboard') {
       setView('dashboard')
-    } else if (isAdminPath && !account && !authTab) {
-      // Yêu cầu đăng nhập nếu chưa đăng nhập vào trang /admin
+    } else if (isAdminPath && account === null && !authTab) {
+      // account === null nghĩa là đã xác nhận khách (undefined = đang loading),
+      // tránh nhảy modal đăng nhập trong lúc /api/auth/me chưa trả về.
       setAuthTab('signin')
     }
   }, [isAdminPath, account, authTab, view])
@@ -108,8 +106,8 @@ function AppContent() {
   }
 
   function handleSend(text, suggestionId = null) {
-    const toSend = (text ?? '').trim() ? text : inputValue
-    if (!toSend.trim() || chat.isResponding) return
+    const toSend = (text ?? '').trim() || inputValue.trim()
+    if (!toSend || chat.isResponding) return
     setInputValue('')
     chat.sendMessage(toSend, specialtyId, lang, suggestionId)
   }
@@ -168,11 +166,9 @@ function AppContent() {
   }
 
   function handleDashboardBack() {
-    window.history.pushState({}, '', '/')
+    window.history.replaceState({}, '', '/')
     setView('chat')
   }
-
-  // handleOpenDashboard has been removed so that clicking profile settings always opens the standard SettingsModal.
 
   if (view === 'dashboard' && account) {
     return (
@@ -182,7 +178,6 @@ function AppContent() {
           onBack={handleDashboardBack}
           onSignOut={handleSignOut}
           lang={lang}
-          initialTab={dashboardTab}
         />
         <Toast message={toastMessage} />
       </div>
@@ -237,8 +232,6 @@ function AppContent() {
           account={account}
           onUpdateName={handleUpdateName}
           onChangePassword={changePassword}
-          onUpdateCard={updateCard}
-          onDeleteCard={deleteCard}
           onToggleAutoRenew={toggleAutoRenew}
           onSetPlan={handleSetPlan}
           onUpdateAccount={updateAccountUser}

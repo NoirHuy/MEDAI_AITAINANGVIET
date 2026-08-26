@@ -86,10 +86,8 @@ router.post(
   memberChatLimiter,
   asyncHandler(async (req, res) => {
     const { messages, specialtyId, lang, isSuggestionDemo, suggestionId, sessionMemoryPaused, conversationId } = req.body ?? {}
+    // validateMessages đã bao phủ kiểm tra mảng rỗng / định dạng / giới hạn độ dài.
     validateMessages(messages)
-    if (!Array.isArray(messages) || messages.length === 0) {
-      throw new HttpError(400, 'Thiếu nội dung hội thoại (messages).')
-    }
     if (typeof specialtyId !== 'string' || !specialtyId) {
       throw new HttpError(400, 'Thiếu specialtyId.')
     }

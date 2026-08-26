@@ -88,7 +88,7 @@ describe('detectIntent — symptom keyword path (rule-based, no LLM)', () => {
     ]
     for (const input of inputs) {
       const result = await detectIntent(input, 'vi')
-      expect(result.type).toBe('symptom_query'), `Failed for: "${input}"`
+      expect(result.type, `Failed for: "${input}"`).toBe('symptom_query')
       expect(result.confidence).toBe(0.85)
     }
   })
@@ -104,7 +104,7 @@ describe('detectIntent — symptom keyword path (rule-based, no LLM)', () => {
     ]
     for (const input of inputs) {
       const result = await detectIntent(input, 'en')
-      expect(result.type).toBe('symptom_query'), `Failed for: "${input}"`
+      expect(result.type, `Failed for: "${input}"`).toBe('symptom_query')
       expect(result.confidence).toBe(0.85)
     }
   })

@@ -32,7 +32,6 @@ const metrics = {
   connectionAttempts: 0,
   connectionFailures: 0,
   lastHealthCheck: null,
-  uptime: 0,
   startTime: Date.now()
 }
 
@@ -48,16 +47,8 @@ export function getRedisMetrics() {
   }
 }
 
-export function resetRedisMetrics() {
-  metrics.hits = 0
-  metrics.misses = 0
-  metrics.errors = 0
-  metrics.connectionAttempts = 0
-  metrics.connectionFailures = 0
-  metrics.startTime = Date.now()
-}
-
 client.on('error', (err) => {
+  metrics.errors++
   if (isConnected) {
     auditLog('REDIS', 'Error', `Redis client error: ${err.message}`, 'error')
   }
@@ -121,10 +112,11 @@ export async function redisHealthCheck() {
     const latency = Math.round(performance.now() - start)
     metrics.lastHealthCheck = new Date().toISOString()
     
+    // Never expose the Redis URL here: REDIS_URL may embed credentials and
+    // health endpoints can be reachable without authentication.
     return {
       healthy: true,
       latency: `${latency}ms`,
-      url: redisConfig.url,
       metrics: getRedisMetrics()
     }
   } catch (err) {
@@ -201,16 +193,17 @@ export async function safeDel(key) {
   }
 }
 
-export async function safeDelPattern(pattern) {
-  if (!isConnected) return 0
+// Atomically set a marker key only when it does not exist yet. Returns true if
+// this call created the key (first writer wins) — useful for de-duplication.
+export async function safeSetNx(key, ttlSeconds = null) {
+  if (!isConnected) return false
   try {
-    const keys = await client.keys(pattern)
-    if (keys.length === 0) return 0
-    await client.del(keys)
-    return keys.length
+    const options = ttlSeconds ? { EX: ttlSeconds } : undefined
+    const result = await client.set(key, '1', options)
+    return result === 'OK'
   } catch (err) {
-    auditLog('REDIS', 'Warning', `DEL pattern ${pattern} failed: ${err.message}`, 'warn')
-    return 0
+    auditLog('REDIS', 'Warning', `SETNX ${key} failed: ${err.message}`, 'warn')
+    return false
   }
 }
 
@@ -218,7 +211,7 @@ export async function safeExists(key) {
   if (!isConnected) return false
   try {
     return (await client.exists(key)) > 0
-  } catch (err) {
+  } catch {
     return false
   }
 }
@@ -226,12 +219,23 @@ export async function safeExists(key) {
 export async function safeIncr(key, ttlSeconds = null) {
   if (!isConnected) return null
   try {
+    // Fast path: claim a fresh window atomically (INCR + EXPIRE in one command).
+    if (ttlSeconds) {
+      const created = await client.set(key, '1', { EX: ttlSeconds, NX: true })
+      if (created === 'OK') return 1
+    }
     const val = await client.incr(key)
     if (ttlSeconds && val === 1) {
       await client.expire(key, ttlSeconds)
+    } else if (ttlSeconds && val > 1) {
+      // Repair path: a crash between INCR and EXPIRE could leave the counter
+      // without a TTL, permanently locking the key out. Give it a TTL again.
+      const currentTtl = await safeTTL(key)
+      if (currentTtl === -1) await client.expire(key, ttlSeconds)
     }
     return val
   } catch (err) {
+    metrics.errors++
     auditLog('REDIS', 'Warning', `INCR ${key} failed: ${err.message}`, 'warn')
     return null
   }
@@ -241,7 +245,7 @@ export async function safeTTL(key) {
   if (!isConnected) return -2
   try {
     return await client.ttl(key)
-  } catch (err) {
+  } catch {
     return -2
   }
 }

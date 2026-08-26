@@ -1,13 +1,8 @@
-// Explicitly empty VITE_API_URL means same-origin production API. In local
-// development, use the separately-running backend service by default.
-const envApiUrl = import.meta.env.VITE_API_URL
-const API_URL = (envApiUrl && envApiUrl !== 'http://localhost:4000')
-  ? envApiUrl
-  : (import.meta.env.DEV ? 'http://localhost:4000' : '')
+import { apiUrl } from './api'
 
 export async function fetchSmartTitle(text, lang = 'vi') {
   try {
-    const res = await fetch(`${API_URL}/api/chat/generate-title`, {
+    const res = await fetch(apiUrl('/api/chat/generate-title'), {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ text, lang }),
@@ -43,7 +38,7 @@ export async function streamAssistantReply({ messages, specialtyId, lang, isSugg
 }
 
 async function streamFromBackend({ messages, specialtyId, lang, isSuggestionDemo, suggestionId, conversationId, signal, onToken }) {
-  const res = await fetch(`${API_URL}/api/chat`, {
+  const res = await fetch(apiUrl('/api/chat'), {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     credentials: 'include',

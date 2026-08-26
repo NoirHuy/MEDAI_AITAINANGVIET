@@ -19,8 +19,19 @@ export const PLANS = [
     price: { vi: '99.000đ', en: '$3.99' },
     priceDetail: { vi: '/tháng', en: '/month' },
     tokenLimit: 2000000000,
+    // Must mirror back_end/src/config/plans.js
+    priceUsd: '$3.99',
+    priceVnd: '99.000đ',
+    durationDays: 30,
   },
 ]
+
+// Shared Pro pricing copy so UI text never drifts from PLANS.
+export const PRO_PRICE_LABEL = {
+  vi: `${PLANS[1].priceVnd} (~${PLANS[1].priceUsd} USD)`,
+  en: `${PLANS[1].priceUsd} (~${PLANS[1].priceVnd})`,
+}
+export const PRO_DURATION_LABEL = { vi: '30 ngày', en: '30 days' }
 
 export function formatTokenLimit(limit, lang = 'vi') {
   const num = Number(limit || 0)
@@ -41,12 +52,12 @@ export function getPlan(planId, lang = 'vi', customPlans = null) {
     ? [
         isFree ? 'Unlimited medical conversation turns' : 'All features included in Free plan',
         tokenFeature,
-        ...(isFree ? ['Access to 4 essential medical specialties'] : ['Maximum AI response speed priority', 'Early access to new medical specialties']),
+        ...(isFree ? ['Access to the initial medical screening specialty'] : ['Maximum AI response speed priority', 'Early access to new medical specialties']),
       ]
     : [
         isFree ? 'Tư vấn không giới hạn số cuộc trò chuyện' : 'Toàn bộ tính năng của gói Free',
         tokenFeature,
-        ...(isFree ? ['Truy cập 4 chuyên khoa cơ bản'] : ['Ưu tiên tốc độ phản hồi tối đa', 'Truy cập sớm các chuyên khoa mới']),
+        ...(isFree ? ['Truy cập chuyên khoa sàng lọc y tế ban đầu'] : ['Ưu tiên tốc độ phản hồi tối đa', 'Truy cập sớm các chuyên khoa mới']),
       ]
 
   const priceObj = p.price ?? defaultMeta.price

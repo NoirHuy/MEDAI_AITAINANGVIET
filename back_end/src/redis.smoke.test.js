@@ -49,7 +49,7 @@ describe('Redis integration smoke test', () => {
   it('redisStore module exports factory', async () => {
     const mod = await import('./middleware/redisStore.js')
     expect(typeof mod.createRedisStore).toBe('function')
-    // When Redis is not connected, returns null (falls back to in-memory)
+    // The store always exists; Redis-vs-memory is decided per request.
     const store = mod.createRedisStore(60000)
     expect(store === null || typeof store.increment === 'function').toBe(true)
   })
@@ -67,7 +67,8 @@ describe('Redis integration smoke test', () => {
     const mod = await import('./middleware/rateLimiters.js')
     expect(typeof mod.authSigninLimiter).toBe('function')
     expect(typeof mod.authSignupLimiter).toBe('function')
-    expect(typeof mod.chatLimiter).toBe('function')
+    expect(typeof mod.guestChatLimiter).toBe('function')
+    expect(typeof mod.memberChatLimiter).toBe('function')
   })
 
   it('sceStateCache module is async-compatible', async () => {

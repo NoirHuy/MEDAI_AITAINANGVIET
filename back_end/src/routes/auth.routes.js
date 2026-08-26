@@ -1,8 +1,7 @@
 import { Router } from 'express'
-import bcrypt from 'bcryptjs'
 import { asyncHandler } from '../utils/asyncHandler.js'
 import { HttpError } from '../utils/httpError.js'
-import { AUTH_COOKIE_NAME, signSessionToken } from '../utils/jwt.js'
+import { AUTH_COOKIE_NAME, signSessionToken, verifySessionToken } from '../utils/jwt.js'
 import { requireAuth } from '../middleware/auth.js'
 import {
   authSigninLimiter,
@@ -28,7 +27,8 @@ import {
 } from '../services/mobileToken.service.js'
 import { syncUserProStatus } from '../services/subscription.service.js'
 import { issueEmailVerification, verifyEmailCode } from '../services/emailVerification.service.js'
-import { storeSession, revokeSession } from '../services/auth/authCache.js'
+import { storeSession, revokeSession, revokeAllUserSessions } from '../services/auth/authCache.js'
+import { hashPassword, verifyPassword } from '../utils/passwordHash.js'
 
 const router = Router()
 
@@ -89,7 +89,7 @@ router.post(
 
     await issueEmailVerification(trimmedEmail, 'signup', {
       name: trimmedName,
-      passwordHash: await bcrypt.hash(password, 10),
+      passwordHash: await hashPassword(password),
     })
     res.status(202).json({ message: 'Ma xac minh da duoc gui den email cua ban.' })
   }),
@@ -156,7 +156,9 @@ router.post(
       throw new HttpError(400, 'Khong the dat lai mat khau cho tai khoan nay.')
     }
     await verifyEmailCode(trimmedEmail, 'password_reset', code)
-    await updateUser(user.id, { passwordHash: await bcrypt.hash(password, 10) })
+    await updateUser(user.id, { passwordHash: await hashPassword(password) })
+    // The old password may have been compromised — sign every device out.
+    await revokeAllUserSessions(user.id)
     res.json({ message: 'Mat khau da duoc dat lai. Vui long dang nhap.' })
   }),
 )
@@ -176,7 +178,7 @@ router.post(
       throw new HttpError(400, 'Tài khoản này được đăng ký qua Google. Vui lòng nhấn nút "Tiếp tục với Google".')
     }
 
-    const passwordMatches = await bcrypt.compare(password ?? '', user.passwordHash)
+    const passwordMatches = await verifyPassword(password ?? '', user.passwordHash)
     if (!passwordMatches) throw new HttpError(401, 'Email hoặc mật khẩu không chính xác.')
 
     await sendAuthenticated(res, req, user)
@@ -230,7 +232,6 @@ router.post('/signout', authGeneralLimiter, asyncHandler(async (req, res) => {
   const token = req.cookies?.[AUTH_COOKIE_NAME]
   if (token) {
     try {
-      const { verifySessionToken } = await import('../utils/jwt.js')
       const payload = verifySessionToken(token)
       if (payload?.jti) {
         await revokeSession(payload.jti)

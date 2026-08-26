@@ -12,6 +12,13 @@ import { toPublicUser } from '../db/usersRepo.js'
 
 const router = Router()
 
+// Escape user-supplied search text before embedding it in $regex filters so
+// special characters cannot break the query or trigger ReDoS patterns.
+function escapeRegex(text) {
+  return String(text).replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
+}
+const caseInsensitive = (text) => ({ $regex: escapeRegex(text), $options: 'i' })
+
 // Bắt buộc quyền Admin & áp dụng Admin Rate Limiter
 router.use(requireAuth, requireAdmin, adminLimiter)
 
@@ -103,8 +110,9 @@ router.get(
       { $group: { _id: null, total: { $sum: '$amount' } } }
     ])
     const proUsersCount = await UserModel.countDocuments({ planId: 'pro' })
-    const recordedRevenue = revenueStats[0]?.total || 0
-    const totalRevenue = Math.max(recordedRevenue, proUsersCount * 99000)
+    // Report only actually recorded payment amounts. Never fabricate revenue
+    // by multiplying user counts with an assumed price.
+    const totalRevenue = revenueStats[0]?.total || 0
 
     res.json({
       overview: {
@@ -139,7 +147,7 @@ router.get(
     const filter = {}
 
     if (search) {
-      filter.title = { $regex: search, $options: 'i' }
+      filter.title = caseInsensitive(search)
     }
     if (urgency) {
       filter.urgency = urgency
@@ -214,7 +222,8 @@ router.get(
       .limit(30)
       .lean()
 
-    const costStats = await SystemLogModel.aggregate([
+    // Latest 15 days first, then restore ascending day order for the chart.
+    const rawCostStats = await SystemLogModel.aggregate([
       { $match: { type: 'perf' } },
       {
         $group: {
@@ -223,9 +232,10 @@ router.get(
           totalTokens: { $sum: '$meta.totalTokens' }
         }
       },
-      { $sort: { _id: 1 } },
+      { $sort: { _id: -1 } },
       { $limit: 15 }
     ])
+    const costStats = [...rawCostStats].reverse()
 
     let finalizedCosts = costStats
     if (!finalizedCosts || finalizedCosts.length === 0) {
@@ -295,8 +305,8 @@ router.get(
     const filter = {}
     if (search) {
       filter.$or = [
-        { name: { $regex: search, $options: 'i' } },
-        { email: { $regex: search, $options: 'i' } }
+        { name: caseInsensitive(search) },
+        { email: caseInsensitive(search) }
       ]
     }
 
@@ -414,9 +424,9 @@ router.get(
     if (category) filter.category = category
     if (search) {
       filter.$or = [
-        { userName: { $regex: search, $options: 'i' } },
-        { userEmail: { $regex: search, $options: 'i' } },
-        { content: { $regex: search, $options: 'i' } }
+        { userName: caseInsensitive(search) },
+        { userEmail: caseInsensitive(search) },
+        { content: caseInsensitive(search) }
       ]
     }
 

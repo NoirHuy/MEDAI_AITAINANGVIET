@@ -28,11 +28,11 @@ export async function getActiveMemoryContext(userId, currentQuery = '') {
       return { promptBlock: '', memoriesUsed: [] }
     }
 
-    // Decrypt content for each memory item
-    const decryptedMemories = rawMemories.map(m => ({
-      ...m,
-      content: decryptText(m.content, m.keyVersion || 1),
-    }))
+    // Decrypt content for each memory item, dropping records whose ciphertext
+    // can no longer be authenticated (never inject raw ciphertext into prompts).
+    const decryptedMemories = rawMemories
+      .map(m => ({ ...m, content: decryptText(m.content) }))
+      .filter(m => m.content !== null)
 
     // Filter memories based on granular user toggles
     const filteredMemories = decryptedMemories.filter(m => {

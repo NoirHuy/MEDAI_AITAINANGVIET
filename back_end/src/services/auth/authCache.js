@@ -99,10 +99,8 @@ export async function isSessionRevoked(jti) {
     try {
       const blacklisted = await safeExists(makeBlacklistKey(jti))
       if (blacklisted) return true
-      const sessionExists = await safeExists(makeSessionKey(jti))
-      // If session exists in Redis, it has not been revoked
-      // If it doesn't exist but no blacklist either, treat as not revoked
-      // (might have expired naturally)
+      // No blacklist entry => not revoked (the session may have simply expired
+      // naturally; absence of both keys is treated as valid).
       return false
     } catch (err) {
       console.warn(`[authCache] isSessionRevoked Redis failed: ${err.message}`)
@@ -142,9 +140,7 @@ export async function revokeAllUserSessions(userId) {
             await revokeSession(jti)
             count++
           }
-        } catch (e) {
-          // Skip malformed entries
-        }
+        } catch { /* Skip malformed entries */ }
       }
       return count
     } catch (err) {
@@ -161,7 +157,7 @@ export async function revokeAllUserSessions(userId) {
         memoryBlacklist.set(jti, entry.expiresAt)
         count++
       }
-    } catch (e) {}
+    } catch {}
   }
   return count
 }

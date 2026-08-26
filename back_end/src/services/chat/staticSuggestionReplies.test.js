@@ -128,7 +128,8 @@ describe('static suggestion replies', () => {
 
           it('does not contain replacement characters or raw control chars', () => {
             expect(reply).not.toMatch(/\uFFFD/) // U+FFFD replacement char
-            expect(reply).not.toMatch(/[\u0000-\u0008\u000B\u000C\u000E-\u001F]/)
+            // eslint-disable-next-line no-control-regex -- matching control chars is the point of this assertion
+            expect(reply).not.toMatch(/[\0-\b\u000B\f\u000E-\u001F]/)
           })
 
           it('does not contain leftover emoji-only subsection labels', () => {
@@ -164,7 +165,7 @@ describe('static suggestion replies', () => {
       }
     })
 
-    it('respects streamText chunk regex /\S+\s*|\s+/gu without losing characters', () => {
+    it('respects streamText chunk regex without losing characters', () => {
       // Simulate streamText chunking: split and rejoin, must equal original
       for (const id of SUGGESTION_IDS) {
         for (const lang of LANGS) {

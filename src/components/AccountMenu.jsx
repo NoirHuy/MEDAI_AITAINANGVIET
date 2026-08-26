@@ -37,9 +37,19 @@ export default function AccountMenu({
         setAppearanceExpanded(false)
       }
     }
+    function handleEscape(e) {
+      if (e.key === 'Escape' && open) {
+        setOpen(false)
+        setAppearanceExpanded(false)
+      }
+    }
     document.addEventListener('mousedown', handleClickOutside)
-    return () => document.removeEventListener('mousedown', handleClickOutside)
-  }, [])
+    document.addEventListener('keydown', handleEscape)
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside)
+      document.removeEventListener('keydown', handleEscape)
+    }
+  }, [open])
 
   function openDashboardTab(tab) {
     onOpenDashboard(tab)

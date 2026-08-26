@@ -11,7 +11,7 @@ vi.mock('../../config/env.js', () => ({
 }))
 
 vi.mock('../llm/llmClient.js', () => ({
-  callLLM: vi.fn(async ({ messages, onChunk }) => {
+  callLLM: vi.fn(async ({ onChunk }) => {
     const reply = 'Mock AI medical response.'
     if (onChunk) onChunk(reply)
     return reply

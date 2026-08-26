@@ -1,21 +1,5 @@
 import { useCallback, useEffect, useState } from 'react'
-
-const envApiUrl = import.meta.env.VITE_API_URL
-const API_URL = (envApiUrl && envApiUrl !== 'http://localhost:4000')
-  ? envApiUrl
-  : (import.meta.env.DEV ? 'http://localhost:4000' : '')
-
-async function apiRequest(path, options = {}) {
-  const res = await fetch(`${API_URL}${path}`, {
-    cache: 'no-store',
-    credentials: 'include',
-    headers: { 'Content-Type': 'application/json' },
-    ...options,
-  })
-  const data = await res.json().catch(() => ({}))
-  if (!res.ok) throw new Error(data.error || `Yêu cầu thất bại (${res.status})`)
-  return data
-}
+import { apiRequest } from '../services/api'
 
 export function useAccount() {
   const [account, setAccount] = useState(undefined)
@@ -98,23 +82,6 @@ export function useAccount() {
     })
   }, [])
 
-  const updateCard = useCallback(async (cardData) => {
-    const { user } = await apiRequest('/api/account/card', {
-      method: 'PATCH',
-      body: JSON.stringify(cardData),
-    })
-    setAccount(user)
-    return user
-  }, [])
-
-  const deleteCard = useCallback(async () => {
-    const { user } = await apiRequest('/api/account/card', {
-      method: 'DELETE',
-    })
-    setAccount(user)
-    return user
-  }, [])
-
   const toggleAutoRenew = useCallback(async (autoRenew) => {
     const { user } = await apiRequest('/api/account/autorenew', {
       method: 'PATCH',
@@ -170,8 +137,6 @@ export function useAccount() {
     signInWithGoogle,
     updateName,
     changePassword,
-    updateCard,
-    deleteCard,
     toggleAutoRenew,
     setPlan,
     updateAccountUser: (user) => setAccount(user),

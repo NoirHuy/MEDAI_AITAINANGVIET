@@ -7,6 +7,7 @@ import {
   accountGeneralLimiter,
 } from '../middleware/rateLimiters.js'
 import { getPlan, isValidPlanId, PLANS } from '../config/plans.js'
+import { env } from '../config/env.js'
 import { findUserById, updateUser, toPublicUser } from '../db/usersRepo.js'
 import { UserModel } from '../db/user.model.js'
 import { ConversationModel } from '../db/conversation.model.js'
@@ -17,7 +18,10 @@ import { UserMemorySettingsModel } from '../db/user_memory_settings.model.js'
 import { MemoryAuditModel } from '../db/memory_audit.model.js'
 import { MobileRefreshTokenModel } from '../db/mobile_refresh_token.model.js'
 import { PaymentModel } from '../db/payment.model.js'
-import { AUTH_COOKIE_NAME } from '../utils/jwt.js'
+import { AUTH_COOKIE_NAME, signSessionToken } from '../utils/jwt.js'
+import { hashPassword, verifyPassword } from '../utils/passwordHash.js'
+import { revokeAllUserSessions, storeSession } from '../services/auth/authCache.js'
+import { issueMobileTokens } from '../services/mobileToken.service.js'
 
 const router = Router()
 
@@ -39,6 +43,10 @@ router.delete(
 
     const user = await findUserById(req.userId)
     if (!user) throw new HttpError(404, 'Không tìm thấy tài khoản.')
+
+    // Invalidate every active session (web + mobile refresh tokens are removed
+    // below) before the account itself disappears.
+    await revokeAllUserSessions(req.userId)
 
     // Remove user-owned personal data. Payment records remain for financial
     // reconciliation, but their direct user reference is anonymized.
@@ -120,7 +128,6 @@ router.patch(
   '/password',
   accountPasswordLimiter,
   asyncHandler(async (req, res) => {
-    const bcrypt = await import('bcryptjs').then(m => m.default)
     const { oldPassword, newPassword } = req.body ?? {}
     if (!newPassword || newPassword.trim().length < 6) {
       throw new HttpError(400, 'Mật khẩu mới phải có ít nhất 6 ký tự.')
@@ -133,14 +140,27 @@ router.patch(
     }
 
     if (user.passwordHash) {
-      const isMatch = await bcrypt.compare(oldPassword || '', user.passwordHash)
+      const isMatch = await verifyPassword(oldPassword || '', user.passwordHash)
       if (!isMatch) throw new HttpError(400, 'Mật khẩu cũ không chính xác.')
     }
 
-    const salt = await bcrypt.genSalt(10)
-    const passwordHash = await bcrypt.hash(newPassword, salt)
-    
-    await updateUser(req.userId, { passwordHash })
+    await updateUser(req.userId, { passwordHash: await hashPassword(newPassword) })
+
+    // Kick every other device out of the account. The current request then
+    // receives a brand-new session so this device stays signed in.
+    await revokeAllUserSessions(req.userId)
+    if (req.body?.client === 'mobile') {
+      const tokens = await issueMobileTokens(req.userId)
+      return res.json({ success: true, message: 'Đổi mật khẩu thành công.', tokens })
+    }
+    const { token, jti } = signSessionToken(req.userId)
+    await storeSession(jti, { userId: req.userId, email: user.email, createdAt: Date.now() })
+    res.cookie(AUTH_COOKIE_NAME, token, {
+      httpOnly: true,
+      sameSite: 'lax',
+      secure: env.cookieSecure,
+      maxAge: 7 * 24 * 60 * 60 * 1000,
+    })
     res.json({ success: true, message: 'Đổi mật khẩu thành công.' })
   }),
 )

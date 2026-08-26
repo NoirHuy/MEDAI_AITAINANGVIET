@@ -1,7 +1,10 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { createId } from '../utils/id'
 import { streamAssistantReply, fetchSmartTitle } from '../services/aiService'
+import { apiUrl } from '../services/api'
 import { DEFAULT_SPECIALTY_ID } from '../data/specialties'
+
+const ACTIVE_CHAT_STORAGE_KEY = 'medai_active_chat_id'
 
 function makeConversation(specialtyId = DEFAULT_SPECIALTY_ID) {
   return {
@@ -25,17 +28,27 @@ function titleFromText(text) {
 
 export function useChat(account) {
   const [conversations, setConversations] = useState([])
-  const [activeId, setActiveId] = useState(() => localStorage.getItem('medai_active_chat_id') || null)
+  const [activeId, setActiveId] = useState(() => localStorage.getItem(ACTIVE_CHAT_STORAGE_KEY) || null)
   const [isResponding, setIsResponding] = useState(false)
   const abortRef = useRef(null)
+  // Mirror of the latest conversations state so async callbacks can read fresh
+  // data without performing side effects inside setState updaters (which
+  // double-fire under React StrictMode).
+  const conversationsRef = useRef(conversations)
+  useEffect(() => {
+    conversationsRef.current = conversations
+  }, [conversations])
+
+  // Abort any in-flight stream when the hook unmounts.
+  useEffect(() => () => abortRef.current?.abort(), [])
 
   // Lưu activeId vào state & localStorage (chỉ khi có id hợp lệ)
   const setActiveIdAndPersist = useCallback((id) => {
     setActiveId(id)
     if (id) {
-      localStorage.setItem('medai_active_chat_id', id)
+      localStorage.setItem(ACTIVE_CHAT_STORAGE_KEY, id)
     } else {
-      localStorage.removeItem('medai_active_chat_id')
+      localStorage.removeItem(ACTIVE_CHAT_STORAGE_KEY)
     }
   }, [])
 
@@ -47,22 +60,28 @@ export function useChat(account) {
     }
 
     let cancelled = false
-    fetch('/api/chat/conversations')
+    fetch(apiUrl('/api/chat/conversations'), { credentials: 'include' })
       .then((res) => {
         if (!res.ok) throw new Error()
         return res.json()
       })
       .then((data) => {
-        if (!cancelled && data.conversations) {
-          setConversations(data.conversations)
-          if (data.conversations.length > 0) {
-            const savedId = localStorage.getItem('medai_active_chat_id')
-            const exists = data.conversations.some((c) => c.id === savedId)
-            if (savedId && exists) {
-              setActiveId(savedId)
-            } else {
-              setActiveIdAndPersist(data.conversations[0].id)
-            }
+        if (cancelled || !data.conversations) return
+        // Never wipe local conversations that already carry user content —
+        // a slow server response must not discard messages typed meanwhile.
+        const hasLocalContent = conversationsRef.current.some((c) => c.messages.length > 0)
+        if (hasLocalContent && conversationsRef.current.length > 0) {
+          console.warn('Bỏ qua tải lịch sử: có hội thoại cục bộ chưa được lưu.')
+          return
+        }
+        setConversations(data.conversations)
+        if (data.conversations.length > 0) {
+          const savedId = localStorage.getItem(ACTIVE_CHAT_STORAGE_KEY)
+          const exists = data.conversations.some((c) => c.id === savedId)
+          if (savedId && exists) {
+            setActiveId(savedId)
+          } else {
+            setActiveIdAndPersist(data.conversations[0].id)
           }
         }
       })
@@ -80,6 +99,22 @@ export function useChat(account) {
     [conversations, activeId],
   )
 
+  const persistConversation = useCallback((conv, lang) => {
+    if (!account || !conv) return
+    fetch(apiUrl('/api/chat/conversations'), {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      credentials: 'include',
+      body: JSON.stringify({
+        id: conv.id,
+        title: conv.title,
+        specialtyId: conv.specialtyId,
+        messages: conv.messages,
+        lang,
+      }),
+    }).catch((err) => console.error('Không thể lưu cuộc trò chuyện:', err))
+  }, [account])
+
   const startNewConversation = useCallback((specialtyId) => {
     const conv = makeConversation(specialtyId)
     setConversations((prev) => [conv, ...prev])
@@ -92,43 +127,25 @@ export function useChat(account) {
   }, [setActiveIdAndPersist])
 
   const deleteConversation = useCallback((id) => {
-    setConversations((prev) => {
-      const remaining = prev.filter((c) => c.id !== id)
-      const currentSaved = localStorage.getItem('medai_active_chat_id')
-      if (currentSaved === id) {
-        const nextActive = remaining.length > 0 ? remaining[0].id : null
-        setActiveIdAndPersist(nextActive)
-      }
-      return remaining
-    })
+    const remaining = conversationsRef.current.filter((c) => c.id !== id)
+    setConversations(remaining)
+    const currentSaved = localStorage.getItem(ACTIVE_CHAT_STORAGE_KEY)
+    if (currentSaved === id || activeId === id) {
+      const nextActive = remaining.length > 0 ? remaining[0].id : null
+      setActiveIdAndPersist(nextActive)
+    }
     if (account) {
-      fetch(`/api/chat/conversations/${id}`, { method: 'DELETE' }).catch((err) =>
+      fetch(apiUrl(`/api/chat/conversations/${id}`), { method: 'DELETE', credentials: 'include' }).catch((err) =>
         console.error('Không thể xóa cuộc trò chuyện:', err),
       )
     }
-  }, [account, setActiveIdAndPersist])
+  }, [account, activeId, setActiveIdAndPersist])
 
   const setSpecialty = useCallback((convId, specialtyId) => {
-    setConversations((prev) => {
-      const updated = prev.map((c) => (c.id === convId ? { ...c, specialtyId } : c))
-      if (account) {
-        const conv = updated.find((c) => c.id === convId)
-        if (conv) {
-          fetch('/api/chat/conversations', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-              id: conv.id,
-              title: conv.title,
-              specialtyId: conv.specialtyId,
-              messages: conv.messages,
-            }),
-          }).catch((err) => console.error('Không thể lưu chuyên khoa:', err))
-        }
-      }
-      return updated
-    })
-  }, [account])
+    const updated = conversationsRef.current.map((c) => (c.id === convId ? { ...c, specialtyId } : c))
+    setConversations(updated)
+    persistConversation(updated.find((c) => c.id === convId), undefined)
+  }, [persistConversation])
 
   const stopResponding = useCallback(() => {
     abortRef.current?.abort()
@@ -185,28 +202,12 @@ export function useChat(account) {
       if (baseMessages.length === 0) {
         const targetConvId = convId
         fetchSmartTitle(trimmed, lang).then((smartTitle) => {
-          if (smartTitle) {
-            setConversations((prev) => {
-              const updated = prev.map((c) => (c.id === targetConvId ? { ...c, title: smartTitle } : c))
-              if (account) {
-                const conv = updated.find((c) => c.id === targetConvId)
-                if (conv) {
-                  fetch('/api/chat/conversations', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                      id: conv.id,
-                      title: conv.title,
-                      specialtyId: conv.specialtyId,
-                      messages: conv.messages,
-                      lang,
-                    }),
-                  }).catch(() => {})
-                }
-              }
-              return updated
-            })
-          }
+          if (!smartTitle) return
+          setConversations((prev) =>
+            prev.map((c) => (c.id === targetConvId ? { ...c, title: smartTitle } : c)),
+          )
+          const conv = conversationsRef.current.find((c) => c.id === targetConvId)
+          persistConversation(conv ? { ...conv, title: smartTitle } : null, lang)
         })
       }
 
@@ -236,7 +237,7 @@ export function useChat(account) {
           lang,
           isSuggestionDemo: !!suggestionId,
           suggestionId,
-          conversationId: specialtyId === 'health_consultation' ? convId : undefined,
+          conversationId: specialtyId === DEFAULT_SPECIALTY_ID ? convId : undefined,
           signal: controller.signal,
           onToken: appendToken,
         })
@@ -245,43 +246,27 @@ export function useChat(account) {
           appendToken(lang === 'en' ? '\n\n_An error occurred while fetching the response. Please try again._' : '\n\n_Đã xảy ra lỗi khi lấy phản hồi. Vui lòng thử lại._')
         }
       } finally {
-        setConversations((prev) => {
-          const updated = prev.map((c) =>
-            c.id === convId
-              ? {
-                  ...c,
-                  messages: c.messages.map((m) =>
-                    m.id === assistantId ? { ...m, streaming: false } : m,
-                  ),
-                }
-              : c,
-          )
+        // Stream is over — safe to compute the final array outside an updater.
+        const updated = conversationsRef.current.map((c) =>
+          c.id === convId
+            ? {
+                ...c,
+                messages: c.messages.map((m) =>
+                  m.id === assistantId ? { ...m, streaming: false } : m,
+                ),
+              }
+            : c,
+        )
+        setConversations(updated)
 
-          // CHỈ LƯU VÀO MONGODB KHI TÀI KHOẢN ĐÃ ĐĂNG NHẬP (ACCOUNT != NULL)
-          if (account) {
-            const conv = updated.find((c) => c.id === convId)
-            if (conv) {
-              fetch('/api/chat/conversations', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                  id: conv.id,
-                  title: conv.title,
-                  specialtyId: conv.specialtyId,
-                  messages: conv.messages,
-                  lang,
-                }),
-              }).catch((err) => console.error('Không thể lưu cuộc trò chuyện:', err))
-            }
-          }
+        // CHỈ LƯU VÀO MONGODB KHI TÀI KHOẢN ĐÃ ĐĂNG NHẬP (ACCOUNT != NULL)
+        persistConversation(updated.find((c) => c.id === convId), lang)
 
-          return updated
-        })
         setIsResponding(false)
         abortRef.current = null
       }
     },
-    [activeId, activeConversation, isResponding, account, setActiveIdAndPersist],
+    [activeId, activeConversation, isResponding, persistConversation, setActiveIdAndPersist],
   )
 
   return {
