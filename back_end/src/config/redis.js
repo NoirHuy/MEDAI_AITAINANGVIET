@@ -4,6 +4,11 @@ import { auditLog } from '../utils/auditLog.js'
 
 const REDIS_ENABLED = env.redisEnabled
 
+// Never log the raw URL — REDIS_URL may embed credentials.
+function redactedUrl(url) {
+  return String(url || '').replace(/:\/\/([^:@/]+):[^@/]*@/, '://$1:***@')
+}
+
 const redisConfig = {
   url: env.redisUrl,
   socket: {
@@ -83,7 +88,7 @@ export async function connectRedis() {
       await client.connect()
       await client.ping()
       metrics.lastHealthCheck = new Date().toISOString()
-      console.log(`[redis] Ping successful. Connected to ${redisConfig.url}`)
+      console.log(`[redis] Ping successful. Connected to ${redactedUrl(redisConfig.url)}`)
       return true
     } catch (err) {
       metrics.connectionFailures++

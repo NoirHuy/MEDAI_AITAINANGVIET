@@ -158,4 +158,36 @@ npm run build        # production bundle -> dist/
 
 ---
 
+## 🚀 8. CHECKLIST GO-LIVE (TRƯỚC KHI MỞ CHO NGƯỜI DÙNG THẬT)
+
+### Bảo mật hạ tầng
+- [ ] Đặt `MONGO_ROOT_USER` / `MONGO_ROOT_PASS` / `REDIS_PASSWORD` mạnh trong root `.env`
+      (compose **từ chối khởi chạy** nếu thiếu — sinh bằng
+      `node -e "console.log(require('crypto').randomBytes(24).toString('hex'))"`,
+      chỉ dùng chữ-số để tránh lỗi URI-escape).
+- [ ] Đổi `NEO4J_AUTH` trong `.env` trước lần khởi tạo đầu tiên — backend **từ chối boot**
+      ở production nếu vẫn dùng placeholder `CHANGE_THIS_PASSWORD`.
+- [ ] Chạy production bằng overlay: `docker compose -f docker-compose.yml -f docker-compose.prod.yml up -d --build`
+      (tự bật `COOKIE_SECURE=true`, HTTPS qua Caddy).
+
+### Sao lưu & giám sát
+- [ ] Service `db-backup` dump MongoDB vào `./backups/` mỗi ngày (giữ 14 ngày).
+      **Sao chép thư mục này off-site định kỳ** (rclone/S3) — Docker volume không phải backup.
+- [ ] Trỏ uptime monitor (UptimeRobot/Better Stack…) vào `/api/monitoring/health`.
+- [ ] Chạy smoke test sau mỗi lần deploy: `BASE_URL=https://<domain> npm run smoke`.
+- [ ] (Tùy chọn) Gắn Sentry cho backend + frontend để bắt lỗi runtime.
+
+### Email verification (bắt buộc cho signup)
+- [ ] Cấu hình SMTP thật trong `back_end/.env`.
+- [ ] Thêm bản ghi **SPF, DKIM, DMARC** cho domain — nếu không mail xác minh sẽ rơi spam
+      và người dùng không thể đăng ký.
+
+### Thanh toán PayPal
+- [ ] Chuyển `PAYPAL_MODE=live` + cặp Client ID/Secret live.
+- [ ] Register webhook URL `https://<domain>/api/payments/paypal/webhook` trên PayPal Dashboard
+      và điền `PAYPAL_WEBHOOK_ID` khớp.
+- [ ] Test đủ flow: create → capture → refund/cancel trên môi trường live.
+
+---
+
 *MedAI — Infrastructure Resilience, AI Orchestration & Evidence-Based Clinical Systems.*

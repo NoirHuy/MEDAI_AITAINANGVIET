@@ -79,6 +79,13 @@ export const env = {
     if (!isProd && val === PLACEHOLDER_SECRET) {
       console.warn('[env] WARNING: Using insecure Neo4j password placeholder. Set NEO4J_PASSWORD in .env for any non-dev deployment.')
     }
+    // Well-known placeholder from docker-compose.yml — refuse it outside dev.
+    if (/change[_-]?this[_-]?password/i.test(val)) {
+      if (isProd) {
+        throw new Error('[env] NEO4J_PASSWORD is still the docker-compose placeholder. Rotate it before deploying.')
+      }
+      console.warn('[env] WARNING: NEO4J_PASSWORD uses the docker-compose placeholder. Change NEO4J_AUTH before real deployment.')
+    }
     return val
   },
   neo4jDatabase: (process.env.NEO4J_DATABASE || 'neo4j').trim(),

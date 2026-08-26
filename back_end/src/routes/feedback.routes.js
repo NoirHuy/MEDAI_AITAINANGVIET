@@ -1,10 +1,20 @@
 import { Router } from 'express'
+import crypto from 'node:crypto'
 import { FeedbackModel } from '../db/feedback.model.js'
+import { UserModel } from '../db/user.model.js'
 import { asyncHandler } from '../utils/asyncHandler.js'
 import { HttpError } from '../utils/httpError.js'
 import { requireAuth } from '../middleware/auth.js'
 
 const router = Router()
+
+// Pseudonymize client metadata: we only need abuse dedup, not the raw PII,
+// so store a salted hash instead of the plain IP address (ND13-friendly).
+const IP_HASH_SALT = process.env.FEEDBACK_IP_SALT || 'medchat247-feedback-salt'
+function hashIp(ip) {
+  if (!ip) return null
+  return crypto.createHash('sha256').update(`${IP_HASH_SALT}:${ip}`).digest('hex').slice(0, 32)
+}
 
 // ─── USER ROUTES ────────────────────────────────────────────────────────────
 
@@ -26,7 +36,6 @@ router.post(
     }
 
     // Lấy thông tin user từ DB
-    const { UserModel } = await import('../db/user.model.js')
     const user = await UserModel.findOne({ id: req.userId }).lean()
     if (!user) {
       throw new HttpError(404, 'Không tìm thấy tài khoản.')
@@ -43,7 +52,7 @@ router.post(
       priority: ['low', 'medium', 'high', 'urgent'].includes(priority) ? priority : 'medium',
       status: 'new',
       metadata: {
-        ip: req.ip || req.connection?.remoteAddress || null,
+        ipHash: hashIp(req.ip || req.connection?.remoteAddress),
         userAgent: req.get('User-Agent') || null,
       },
     })

@@ -330,7 +330,9 @@ export default function AuthModal({
           <>
             {isGoogleAuthConfigured() || fetchedGoogleClientId ? (
               <GoogleAuthButton onCredential={handleGoogleCredential} />
-            ) : (
+            ) : import.meta.env.DEV ? (
+              // Mock account picker — dev convenience only, never shipped to
+              // production builds.
               <button
                 className="google-btn"
                 onClick={() => {
@@ -349,7 +351,7 @@ export default function AuthModal({
                 <GoogleIcon />
                 <span>{isEn ? 'Continue with Google' : 'Tiếp tục sử dụng dịch vụ bằng Google'}</span>
               </button>
-            )}
+            ) : null}
 
             <div className="auth-modal__divider">
               <span>{isEn ? 'or' : 'hoặc'}</span>

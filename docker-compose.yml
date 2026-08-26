@@ -9,8 +9,11 @@ services:
       # Overrides whatever's in back_end/.env — inside Compose, the
       # frontend is reached at this origin, not the local dev ports.
       CLIENT_ORIGIN: http://localhost:8080
-      MONGODB_URI: ${MONGODB_URI:-mongodb://mongodb:27017/medchat}
+      # Root credentials are required (see MONGO_ROOT_* in .env.example).
+      # Keep the password alphanumeric to avoid URI-escaping issues.
+      MONGODB_URI: mongodb://${MONGO_ROOT_USER:?Set MONGO_ROOT_USER in .env}:${MONGO_ROOT_PASS:?Set MONGO_ROOT_PASS in .env}@mongodb:27017/medchat?authSource=admin
       NEO4J_URI: bolt://neo4j:7687
+      REDIS_URL: redis://:${REDIS_PASSWORD:?Set REDIS_PASSWORD in .env}@redis:6379
     volumes:
       - backend_data:/app/data
     restart: unless-stopped
@@ -19,6 +22,17 @@ services:
         condition: service_healthy
     ports:
       - '127.0.0.1:4000:4000'
+    healthcheck:
+      test: ["CMD-SHELL", "wget -q -O /dev/null http://127.0.0.1:$${PORT:-4000}/api/monitoring/health || exit 1"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 40s
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "5"
 
   frontend:
     build:
@@ -34,20 +48,64 @@ services:
       - ./back_end/.env
     environment:
       - PORT=7860
-      - MONGODB_URI=${MONGODB_URI:-mongodb://mongodb:27017/medchat}
-      - REDIS_URL=redis://redis:6379
+      - MONGODB_URI=mongodb://${MONGO_ROOT_USER:?Set MONGO_ROOT_USER in .env}:${MONGO_ROOT_PASS:?Set MONGO_ROOT_PASS in .env}@mongodb:27017/medchat?authSource=admin
+      - REDIS_URL=redis://:${REDIS_PASSWORD:?Set REDIS_PASSWORD in .env}@redis:6379
     ports:
       - '127.0.0.1:8080:7860'
     restart: unless-stopped
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "5"
 
   mongodb:
     image: mongo:8.0
     container_name: medchat-mongodb
+    # Root user is created on first start. NEVER deploy with the example
+    # values from .env.example — rotate them for any real deployment.
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: ${MONGO_ROOT_USER:?Set MONGO_ROOT_USER in .env}
+      MONGO_INITDB_ROOT_PASSWORD: ${MONGO_ROOT_PASS:?Set MONGO_ROOT_PASS in .env}
     ports:
       - '127.0.0.1:27018:27017'
     volumes:
       - mongodb_data:/data/db
     restart: unless-stopped
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+  # Daily MongoDB dump into ./backups (kept 14 days). Copy this folder
+  # off-site regularly — Docker volumes alone are not a backup strategy.
+  db-backup:
+    image: mongo:8.0
+    container_name: medchat-db-backup
+    depends_on:
+      - mongodb
+    environment:
+      MONGODB_URI: mongodb://${MONGO_ROOT_USER:?Set MONGO_ROOT_USER in .env}:${MONGO_ROOT_PASS:?Set MONGO_ROOT_PASS in .env}@mongodb:27017/medchat?authSource=admin
+    volumes:
+      - ./backups:/backups
+    restart: unless-stopped
+    entrypoint:
+      - /bin/sh
+      - -c
+      - |
+        while true; do
+          ts=$$(date +%Y%m%d_%H%M%S)
+          echo "[db-backup] dumping to /backups/medchat_$$ts.archive.gz"
+          mongodump --uri "$$MONGODB_URI" --archive=/backups/medchat_$$ts.archive.gz --gzip || echo "[db-backup] dump FAILED"
+          find /backups -name '*.archive.gz' -mtime +14 -delete 2>/dev/null || true
+          sleep 86400
+        done
+    logging:
+      driver: json-file
+      options:
+        max-size: "5m"
+        max-file: "2"
 
   ninerouter:
     image: decolua/9router:latest
@@ -64,7 +122,8 @@ services:
     image: neo4j:5.18-community
     container_name: medchat-neo4j
     environment:
-      # Rotate this password and set NEO4J_PASSWORD in back_end/.env
+      # Set NEO4J_AUTH in .env before first start. The backend refuses to boot
+      # in production when the well-known placeholder password is still used.
       - NEO4J_AUTH=${NEO4J_AUTH:-neo4j/CHANGE_THIS_PASSWORD}
       - NEO4J_PLUGINS=["apoc"]
       - NEO4J_dbms_security_procedures_unrestricted=apoc.*
@@ -84,6 +143,7 @@ services:
   redis:
     image: redis:7-alpine
     container_name: medchat-redis
+    command: ["redis-server", "--requirepass", "${REDIS_PASSWORD:?Set REDIS_PASSWORD in .env}"]
     restart: unless-stopped
     volumes:
       - redis_data:/data
@@ -94,4 +154,3 @@ volumes:
   ninerouter_data:
   neo4j_data:
   redis_data:
-

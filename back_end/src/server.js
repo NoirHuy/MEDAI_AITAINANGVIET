@@ -49,6 +49,21 @@ app.use((req, res, next) => {
   res.setHeader('X-Frame-Options', 'DENY')
   res.setHeader('Referrer-Policy', 'strict-origin-when-cross-origin')
   res.setHeader('Permissions-Policy', 'camera=(), microphone=(), geolocation=()')
+  // Allow-list everything the SPA actually loads: Google Identity Services
+  // (sign-in script + iframe) and PayPal SDK (script, frames, popups).
+  // style-src 'unsafe-inline' covers React inline style attributes.
+  res.setHeader('Content-Security-Policy', [
+    "default-src 'self'",
+    "script-src 'self' https://accounts.google.com https://www.paypal.com https://www.sandbox.paypal.com",
+    "style-src 'self' 'unsafe-inline'",
+    "img-src 'self' data: blob: https://ui-avatars.com https://lh3.googleusercontent.com",
+    'font-src \'self\' data:',
+    "connect-src 'self' https://accounts.google.com",
+    'frame-src https://accounts.google.com https://www.paypal.com https://www.sandbox.paypal.com',
+    "object-src 'none'",
+    "base-uri 'self'",
+    "frame-ancestors 'none'",
+  ].join('; '))
   next()
 })
 
