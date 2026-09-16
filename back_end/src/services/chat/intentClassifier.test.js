@@ -116,10 +116,38 @@ describe('detectIntent — symptom keyword path (rule-based, no LLM)', () => {
     expect(result.confidence).toBe(0.85)
   })
 
-  it('classifies denial of symptoms as symptom_query', async () => {
-    const result = await detectIntent('tôi không bị ho và không bị sốt', 'vi')
-    expect(result.type).toBe('symptom_query')
-    expect(result.confidence).toBe(0.85)
+  it('classifies clinical intake responses (age, sex, duration, location) as symptom_query', async () => {
+    const intakeInputs = [
+      'tôi là nam 22 tuổi',
+      'nữ 35 tuổi',
+      'bé trai 4 tuổi',
+      'khoảng 2 ngày nay',
+      'bị từ hôm qua',
+      'đau âm ỉ ở bên phải',
+      'quanh rốn',
+      'dạ không sốt',
+      'I am 22 years old male',
+      'for 3 days',
+      'lower right abdomen',
+    ]
+    for (const input of intakeInputs) {
+      const lang = input.includes('years') || input.includes('days') || input.includes('abdomen') ? 'en' : 'vi'
+      const result = await detectIntent(input, lang)
+      expect(result.type, `Failed for clinical intake: "${input}"`).toBe('symptom_query')
+      expect(result.confidence).toBe(0.85)
+    }
+  })
+
+  it('classifies user response in an ongoing consultation as symptom_query without refusal', async () => {
+    // 'vâng' matches clinical intake affirmation pattern (confidence = 0.85)
+    const resultIntake = await detectIntent('vâng', 'vi', { isOngoing: true })
+    expect(resultIntake.type).toBe('symptom_query')
+    expect(resultIntake.confidence).toBe(0.85)
+
+    // Arbitrary response in an ongoing consultation that doesn't match keywords (confidence = 0.80)
+    const resultOngoing = await detectIntent('ở chỗ này nè', 'vi', { isOngoing: true })
+    expect(resultOngoing.type).toBe('symptom_query')
+    expect(resultOngoing.confidence).toBe(0.80)
   })
 })
 

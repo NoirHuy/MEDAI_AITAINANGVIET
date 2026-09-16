@@ -128,6 +128,45 @@ export function classifyQuickSubtype(text) {
 }
 
 /**
+ * Clinical intake and demographic patterns (age, sex, duration, onset, locations, yes/no clarifications).
+ * Answers to clinical intake questions should always be treated as part of the medical consultation.
+ */
+const CLINICAL_INTAKE_PATTERNS_VI = [
+  // Tuổi / Giới tính / Nhân khẩu học
+  /\b(\d{1,3}\s*(tuổi|tháng|t|yo|năm tuổi))\b/i,
+  /\b(tôi|mình|em|cháu|bác|chú|cô|anh|chị|bé)\s+(\d{1,3})\s*(tuổi|tháng|t)?\b/i,
+  /\b(nam|nữ|trai|gái|đàn ông|phụ nữ)\b/i,
+  // Thời gian & Khởi phát
+  /\b(\d{1,3}\s*(ngày|tuần|tháng|năm|giờ|tiếng|phút)\s*(nay|rồi|trước|qua)?)\b/i,
+  /\b(hôm qua|sáng nay|tối qua|trưa nay|hôm kia|đêm qua|vừa mới|mới bị|bắt đầu|kéo dài|liên tục|từng cơn)\b/i,
+  // Vị trí & Tính chất cơn đau/cảm giác
+  /\b(quanh rốn|thượng vị|hạ vị|hạ sườn|bên phải|bên trái|ở bụng|ở ngực|ở đầu|ở họng|ở lưng|ở cổ|ở chân|ở tay)\b/i,
+  /\b(âm ỉ|quặn|nhói|buốt|rát|dữ dội|râm ran|châm chích|nặng|nhẹ)\b/i,
+  // Trả lời có/không, xác nhận, phủ nhận cho câu hỏi lâm sàng
+  /\b(có|không|chưa|vâng|đúng|dạ|rồi|ko|k|kô)\b/i,
+]
+
+const CLINICAL_INTAKE_PATTERNS_EN = [
+  // Age / Sex / Demographics
+  /\b(\d{1,3}\s*(years?\s*old|yo|months?\s*old))\b/i,
+  /\b(i\s*am|i'm)\s+(\d{1,3})\s*(years?\s*old|yo)?\b/i,
+  /\b(male|female|man|woman|boy|girl)\b/i,
+  // Temporal & Duration
+  /\b(\d{1,3}\s*(days?|weeks?|months?|years?|hours?|minutes?))\b/i,
+  /\b(yesterday|today|last night|this morning|started|for \d+|since)\b/i,
+  // Location & Character
+  /\b(left|right|upper|lower|abdomen|chest|head|throat|back|neck|arm|leg)\b/i,
+  /\b(dull|sharp|cramping|burning|throbbing|mild|severe|constant|intermittent)\b/i,
+  // Affirmation / Denial
+  /\b(yes|no|none|never|not yet|already)\b/i,
+]
+
+function hasClinicalIntakeKeywords(text, lang) {
+  const patterns = lang === 'en' ? CLINICAL_INTAKE_PATTERNS_EN : CLINICAL_INTAKE_PATTERNS_VI
+  return patterns.some((pattern) => pattern.test(text))
+}
+
+/**
  * Checks whether the text contains any symptom-related keywords.
  * @param {string} text
  * @param {string} lang
@@ -144,7 +183,7 @@ function hasSymptomKeywords(text, lang) {
  * approach is inconclusive.
  *
  * Returns:
- *  - 'symptom_query' if the user is describing/experiencing symptoms
+ *  - 'symptom_query' if the user is describing/experiencing symptoms or clinical intake
  *  - 'refusal' for all other cases (definitions, off-topic, etc.)
  *
  * @param {string} text
@@ -160,14 +199,14 @@ async function llmClassify(text, lang) {
   const systemPrompt = isEn
     ? `You are a medical intent classifier.
 Classify the user message into exactly ONE category:
-- SYMPTOM_QUERY: User describes, mentions, or denies symptoms. Examples: "I have a headache", "I don't have fever", "my stomach hurts"
-- REFUSAL: Everything else. Examples: "what is fever", "how does paracetamol work", "tell me about diabetes", "hi", "thanks"
+- SYMPTOM_QUERY: User describes, mentions, or denies symptoms, provides clinical intake info (age, sex, duration, location, medical history), or discusses health concerns. Examples: "I have a headache", "I don't have fever", "I am 22 years old male", "started yesterday", "lower right abdomen", "no vomiting"
+- REFUSAL: Non-medical off-topic requests completely unrelated to health or consultation. Examples: "write a poem", "python code", "solve 2+2", "translate to french", "who is the president"
 
 Output ONLY the category name, nothing else.`
     : `Bạn là bộ phân loại ý định y khoa.
 Phân loại tin nhắn của người dùng thành ĐÚNG MỘT loại:
-- SYMPTOM_QUERY: Người dùng mô tả, nhắc đến hoặc phủ nhận triệu chứng. Ví dụ: "tôi bị đau đầu", "tôi không bị sốt", "bụng tôi đau"
-- REFUSAL: Mọi thứ khác. Ví dụ: "sốt là gì", "thuốc paracetamol uống như thế nào", "cho tôi biết về tiểu đường", "hi", "cảm ơn"
+- SYMPTOM_QUERY: Người dùng mô tả, nhắc đến hoặc phủ nhận triệu chứng, cung cấp thông tin lâm sàng (tuổi, giới tính, thời gian, vị trí đau, tiền sử), hoặc hỏi đáp về sức khỏe. Ví dụ: "tôi bị đau đầu", "tôi không bị sốt", "tôi là nam 22 tuổi", "bị từ hôm qua", "ở bên phải bụng", "không nôn"
+- REFUSAL: Yêu cầu ngoài lề hoàn toàn không liên quan đến y tế hay sức khỏe. Ví dụ: "viết bài thơ", "code python", "tính 2+2", "dịch sang tiếng anh", "ai là tổng thống"
 
 Chỉ trả về tên loại, không thêm gì khác.`
 
@@ -196,21 +235,25 @@ Chỉ trả về tên loại, không thêm gì khác.`
  *
  * Decision order:
  *  1. Quick patterns (greeting / thanks / farewell / bot identity) → type: 'quick'
- *  2. Symptom keywords present → type: 'symptom_query'
- *  3. LLM classifies the remainder
+ *  2. Symptom or clinical intake keywords present → type: 'symptom_query'
+ *  3. In an ongoing consultation → type: 'symptom_query'
+ *  4. LLM classifies the remainder
  *     - SYMPTOM_QUERY → symptom_query
  *     - anything else → refusal
  *
  * @param {string} text         - The last user message content
  * @param {string} lang         - 'vi' | 'en'
+ * @param {Object} [options]
+ * @param {boolean} [options.isOngoing=false] - Whether this message is part of an ongoing chat
  * @returns {Promise<IntentResult>}
  */
-export async function detectIntent(text, lang = 'vi') {
+export async function detectIntent(text, lang = 'vi', options = {}) {
   if (!text || !text.trim()) {
     return { type: 'symptom_query', confidence: 1.0 }
   }
 
   const trimmed = text.trim()
+  const { isOngoing = false } = options
 
   // 1. Quick-response patterns
   const subtype = classifyQuickSubtype(trimmed)
@@ -218,12 +261,17 @@ export async function detectIntent(text, lang = 'vi') {
     return { type: 'quick', subtype, confidence: 1.0 }
   }
 
-  // 2. Symptom keyword heuristic — immediate SYMPTOM_QUERY
-  if (hasSymptomKeywords(trimmed, lang)) {
+  // 2. Symptom keyword or clinical intake heuristic — immediate SYMPTOM_QUERY
+  if (hasSymptomKeywords(trimmed, lang) || hasClinicalIntakeKeywords(trimmed, lang)) {
     return { type: 'symptom_query', confidence: 0.85 }
   }
 
-  // 3. LLM classification for ambiguous cases
+  // 3. Ongoing consultation context: user responses to assistant questions are clinical intake
+  if (isOngoing) {
+    return { type: 'symptom_query', confidence: 0.80 }
+  }
+
+  // 4. LLM classification for ambiguous cases
   const llmResult = await llmClassify(trimmed, lang)
   return { type: llmResult, confidence: 0.75 }
 }

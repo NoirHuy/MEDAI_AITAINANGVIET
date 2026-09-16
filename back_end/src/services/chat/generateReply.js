@@ -65,8 +65,10 @@ export async function generateReply({ messages, specialtyId, lang = 'vi', isSugg
   }
 
   // ── INTENT-BASED ROUTING ──────────────────────────────────────────────────────
-  const lastUserText = [...messages].reverse().find(m => m.role === 'user')?.content || ''
-  const intent = await detectIntent(lastUserText, lang)
+  const userMessages = messages.filter((m) => m.role === 'user')
+  const lastUserText = userMessages.at(-1)?.content || ''
+  const isOngoing = userMessages.length > 1
+  const intent = await detectIntent(lastUserText, lang, { isOngoing })
 
   // Fast path: quick responses (no LLM, no GraphRAG)
   if (intent.type === 'quick') {
@@ -75,7 +77,8 @@ export async function generateReply({ messages, specialtyId, lang = 'vi', isSugg
   }
 
   // Out-of-scope: refusal (no LLM, no GraphRAG)
-  if (intent.type === 'refusal') {
+  // Only refuse on the initial message of a consultation; never refuse during an ongoing consultation
+  if (intent.type === 'refusal' && !isOngoing) {
     const fullReplyText = await streamRefusalReply(lang, onChunk, signal)
     return { fullReplyText, memoriesUsed: [], performanceMeta: { intent: 'refusal' } }
   }

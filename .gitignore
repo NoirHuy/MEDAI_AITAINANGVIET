@@ -21,6 +21,9 @@ back_end/.env
 # Backend's JSON-file mock database (runtime data, not source)
 back_end/data/
 
+# Database backups
+backups/
+
 # Editor directories and files
 .vscode/*
 !.vscode/extensions.json

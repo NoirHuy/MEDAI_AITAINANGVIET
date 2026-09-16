@@ -26,9 +26,9 @@ vi.mock('../llm/streaming.js', () => ({
 }))
 
 vi.mock('./intentClassifier.js', () => ({
-  detectIntent: vi.fn(async (text) => {
+  detectIntent: vi.fn(async (text, lang, options = {}) => {
     if (text === 'chào bạn') return { type: 'quick', subtype: 'greeting' }
-    if (text === 'thơ lục bát') return { type: 'refusal' }
+    if (text === 'thơ lục bát' && !options?.isOngoing) return { type: 'refusal' }
     return { type: 'symptom_query' }
   }),
   streamQuickReply: vi.fn(async (lang, subtype, onChunk) => {
@@ -102,6 +102,25 @@ describe('generateReply - Guest vs Logged-in User Tiering', () => {
 
     expect(res.fullReplyText).toContain('Tôi chỉ hỗ trợ y tế.')
     expect(res.performanceMeta.intent).toBe('refusal')
+  })
+
+  it('does not refuse demographic answers when conversation is ongoing', async () => {
+    const chunks = []
+    const res = await generateReply({
+      messages: [
+        { role: 'user', content: 'tôi đau bụng' },
+        { role: 'assistant', content: 'Bạn cho biết tuổi và giới tính được không?' },
+        { role: 'user', content: 'tôi là nam 22 tuổi' },
+      ],
+      specialtyId: 'health_consultation',
+      lang: 'vi',
+      userId: null,
+      onChunk: (c) => chunks.push(c),
+    })
+
+    expect(res.fullReplyText).not.toContain('Tôi chỉ hỗ trợ y tế.')
+    expect(res.performanceMeta.intent).toBeUndefined()
+    expect(res.fullReplyText).toContain('Mock AI medical response.')
   })
 
   it('for Guest (userId = null): runs Basic LLM and appends Vietnamese CTA footer', async () => {
