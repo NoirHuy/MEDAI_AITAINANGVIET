@@ -1,6 +1,6 @@
 import { useState, memo } from 'react'
 import { PulseIcon } from './Icons'
-import TypingDots from './TypingDots'
+import ClinicalStatusIndicator from './ClinicalStatusIndicator'
 import './MessageBubble.css'
 
 // The regexes below deliberately match malformed emoji sequences (variation
@@ -60,7 +60,7 @@ export default memo(function MessageBubble({ role, content, streaming, lang = 'v
         >
           {cleanContent
             ? renderMessageContent(cleanContent)
-            : (streaming ? <TypingDots /> : null)
+            : (streaming ? <ClinicalStatusIndicator lang={lang} /> : null)
           }
           {streaming && cleanContent && <span className="message-cursor" />}
 
