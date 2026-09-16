@@ -81,20 +81,23 @@ export function isLocalOrPrivateIp(ip) {
   )
 }
 
-// ─── 2. CHAT & AI LLM RATE LIMITERS ────────────────────────────────────────
-
-// Giới hạn Khách vãng lai (Guest): Tối đa 20 câu hỏi / 15 phút (100 lượt cho dev/mạng nội bộ)
+// Giới hạn Khách vãng lai (Guest): Tối đa 5 câu hỏi / 1 giờ
 export const guestChatLimiter = buildLimiter({
-  windowMs: 15 * 60 * 1000,
-  max: (req) => (isDev || isLocalOrPrivateIp(req.ip) ? 100 : 20),
+  windowMs: 60 * 60 * 1000, // 1 giờ
+  max: 5,
   skip: (req) => !!req.userId, // Bỏ qua nếu đã đăng nhập tài khoản
   keyGenerator: (req) => String(req.headers['x-guest-session-id'] || req.ip),
   validate: { ip: false, xForwardedForHeader: false, keyGeneratorIpFallback: false },
   standardHeaders: true,
   legacyHeaders: false,
-  message: createRateLimitMessage(
-    'Vui lòng [Đăng nhập](#auth/signin) hoặc [Đăng ký tài khoản miễn phí](#auth/signup) để tiếp tục chat và trải nghiệm đầy đủ tính năng AI Y tế!'
-  ),
+  message: (req) => {
+    const isEn = req?.body?.lang === 'en'
+    return createRateLimitMessage(
+      isEn
+        ? 'You have used all 5 free questions for guests. Please [Sign In](#auth/signin) or [Create a free account](#auth/signup) to continue chatting and unlock full Medical AI features!'
+        : 'Bạn đã sử dụng hết 5 câu hỏi miễn phí dành cho khách vãng lai. Vui lòng [Đăng nhập](#auth/signin) hoặc [Đăng ký tài khoản miễn phí](#auth/signup) để tiếp tục chat và trải nghiệm đầy đủ tính năng AI Y tế!'
+    )
+  },
 }, 'guest_chat')
 
 // Giới hạn Thành viên đã đăng nhập: Tối đa 60 câu hỏi / 15 phút chống spam bot
