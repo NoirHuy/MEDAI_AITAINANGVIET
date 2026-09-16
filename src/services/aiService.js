@@ -37,10 +37,29 @@ export async function streamAssistantReply({ messages, specialtyId, lang, isSugg
   }
 }
 
+function getGuestSessionId() {
+  try {
+    let id = localStorage.getItem('medai_guest_id')
+    if (!id) {
+      id = 'g_' + Math.random().toString(36).slice(2, 11) + Date.now().toString(36)
+      localStorage.setItem('medai_guest_id', id)
+    }
+    return id
+  } catch {
+    return ''
+  }
+}
+
 async function streamFromBackend({ messages, specialtyId, lang, isSuggestionDemo, suggestionId, conversationId, signal, onToken, onStatus }) {
+  const headers = { 'Content-Type': 'application/json' }
+  const guestId = getGuestSessionId()
+  if (guestId) {
+    headers['X-Guest-Session-ID'] = guestId
+  }
+
   const res = await fetch(apiUrl('/api/chat'), {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
+    headers,
     credentials: 'include',
     signal,
     body: JSON.stringify({ messages, specialtyId, lang, isSuggestionDemo, suggestionId, conversationId }),

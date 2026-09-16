@@ -67,14 +67,29 @@ export const authGeneralLimiter = buildLimiter({
   message: createRateLimitMessage('Tần suất truy cập quá nhanh. Vui lòng thử lại sau.'),
 }, 'auth_general')
 
+export function isLocalOrPrivateIp(ip) {
+  if (!ip) return true
+  const clean = String(ip).replace(/^::ffff:/, '')
+  return (
+    clean === '127.0.0.1' ||
+    clean === '::1' ||
+    clean === 'localhost' ||
+    clean.startsWith('172.18.') ||
+    clean.startsWith('172.17.') ||
+    clean.startsWith('10.') ||
+    clean.startsWith('192.168.')
+  )
+}
+
 // ─── 2. CHAT & AI LLM RATE LIMITERS ────────────────────────────────────────
 
-// Giới hạn Khách vãng lai (Guest): Tối đa 5 câu hỏi / 1 giờ
+// Giới hạn Khách vãng lai (Guest): Tối đa 20 câu hỏi / 15 phút (100 lượt cho dev/mạng nội bộ)
 export const guestChatLimiter = buildLimiter({
-  windowMs: 60 * 60 * 1000, // 1 giờ
-  max: 5,
+  windowMs: 15 * 60 * 1000,
+  max: (req) => (isDev || isLocalOrPrivateIp(req.ip) ? 100 : 20),
   skip: (req) => !!req.userId, // Bỏ qua nếu đã đăng nhập tài khoản
-  validate: { xForwardedForHeader: false },
+  keyGenerator: (req) => String(req.headers['x-guest-session-id'] || req.ip),
+  validate: { ip: false, xForwardedForHeader: false, keyGeneratorIpFallback: false },
   standardHeaders: true,
   legacyHeaders: false,
   message: createRateLimitMessage(
