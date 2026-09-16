@@ -136,6 +136,10 @@ router.post(
           res.write(chunk)
           if (typeof res.flush === 'function') res.flush()
         },
+        onStatus: (stageKey) => {
+          res.write(`__STATUS__:${stageKey}\n`)
+          if (typeof res.flush === 'function') res.flush()
+        },
       })
 
       full = replyRes.fullReplyText || ''

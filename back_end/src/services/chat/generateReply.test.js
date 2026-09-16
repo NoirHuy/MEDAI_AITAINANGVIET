@@ -199,4 +199,32 @@ describe('generateReply - Guest vs Logged-in User Tiering', () => {
     expect(res.performanceMeta.isGuest).toBeUndefined()
     expect(res.fullReplyText).not.toContain(GUEST_CTA.vi)
   })
+
+  it('emits onStatus progression for guest user: intake -> composing', async () => {
+    const statuses = []
+    await generateReply({
+      messages: [{ role: 'user', content: 'Tôi bị đau họng' }],
+      specialtyId: 'health_consultation',
+      lang: 'vi',
+      userId: null,
+      onChunk: () => {},
+      onStatus: (s) => statuses.push(s),
+    })
+
+    expect(statuses).toEqual(['intake', 'composing'])
+  })
+
+  it('emits full real-time onStatus progression for logged-in GraphRAG user', async () => {
+    const statuses = []
+    await generateReply({
+      messages: [{ role: 'user', content: 'Tôi bị sốt cao kèm đau họng' }],
+      specialtyId: 'health_consultation',
+      lang: 'vi',
+      userId: 'user-123',
+      onChunk: () => {},
+      onStatus: (s) => statuses.push(s),
+    })
+
+    expect(statuses).toEqual(['intake', 'extracting', 'graph_query', 'evaluating', 'composing'])
+  })
 })

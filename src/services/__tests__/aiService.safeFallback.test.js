@@ -49,4 +49,49 @@ describe('streamAssistantReply', () => {
 
     expect(captured.toLowerCase()).toContain('emergency')
   })
+
+  it('parses and emits __STATUS__ markers while stripping them from text', async () => {
+    const encoder = new TextEncoder()
+    const chunks = [
+      encoder.encode('__STATUS__:intake\n'),
+      encoder.encode('__STATUS__:extracting\n'),
+      encoder.encode('__STATUS__:composing\nXin '),
+      encoder.encode('chào bạn!'),
+    ]
+
+    let readIndex = 0
+    const mockStream = {
+      getReader: () => ({
+        read: async () => {
+          if (readIndex < chunks.length) {
+            return { value: chunks[readIndex++], done: false }
+          }
+          return { value: undefined, done: true }
+        },
+        releaseLock: () => {},
+      }),
+    }
+
+    globalThis.fetch = vi.fn(async () => ({
+      ok: true,
+      status: 200,
+      body: mockStream,
+    }))
+
+    const capturedStatuses = []
+    let capturedText = ''
+
+    const result = await streamAssistantReply({
+      messages: [{ role: 'user', content: 'Chào' }],
+      specialtyId: 'health_consultation',
+      lang: 'vi',
+      onToken: (c) => { capturedText += c },
+      onStatus: (s) => capturedStatuses.push(s),
+    })
+
+    expect(capturedStatuses).toEqual(['intake', 'extracting', 'composing'])
+    expect(capturedText).toBe('Xin chào bạn!')
+    expect(capturedText).not.toContain('__STATUS__')
+    expect(result).toBe('Xin chào bạn!')
+  })
 })

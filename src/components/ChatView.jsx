@@ -82,6 +82,7 @@ export default function ChatView({
                 role={m.role}
                 content={m.content}
                 streaming={m.streaming}
+                pipelineStage={m.pipelineStage}
                 lang={lang}
                 onSend={onSend}
                 isLast={idx === messages.length - 1}

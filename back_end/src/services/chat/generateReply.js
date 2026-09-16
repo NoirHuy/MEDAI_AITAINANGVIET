@@ -39,7 +39,7 @@ export const GUEST_CTA = {
   en: '\n\n---\n💡 **Tip:** You are using the standard AI model. [Sign up for free](#auth/signup) to unlock the **Enhanced Medical AI Model** (powered by Knowledge Graph & Personal Clinical Memory).',
 }
 
-export async function generateReply({ messages, specialtyId, lang = 'vi', isSuggestionDemo = false, suggestionId = null, userId = null, sessionMemoryPaused = false, conversationId = null, onChunk, signal }) {
+export async function generateReply({ messages, specialtyId, lang = 'vi', isSuggestionDemo = false, suggestionId = null, userId = null, sessionMemoryPaused = false, conversationId = null, onChunk, onStatus, signal }) {
   const isEn = lang === 'en'
   const isGuest = !userId
   const performanceMeta = {}
@@ -85,6 +85,8 @@ export async function generateReply({ messages, specialtyId, lang = 'vi', isSugg
   // SYMPTOM_QUERY: fall through to existing pipeline below
   // ─────────────────────────────────────────────────────────────────────────────
 
+  onStatus?.('intake')
+
   // No API Key: hard error in production; dev-only mock via flag
   if (!env.llmApiKey) {
     const msg = '[generateReply] NINEROUTER_API is not configured. Set NINEROUTER_API in back_end/.env.'
@@ -100,6 +102,7 @@ export async function generateReply({ messages, specialtyId, lang = 'vi', isSugg
 
   // ── GUEST MODE: Basic LLM response without Enhanced GraphRAG / Knowledge Graph / Memory ──
   if (isGuest) {
+    onStatus?.('composing')
     const guestSystemPrompt = isEn
       ? `You are MedChat247, a helpful medical AI assistant providing general health consultation and symptom guidance.
 Provide clear, empathetic, and professional advice. Always remind the user to consult a doctor for a definitive diagnosis.`
@@ -166,6 +169,7 @@ Hãy cung cấp thông tin y tế hữu ích, rõ ràng và chu đáo. Luôn nh�
       auditLog('SCE_EXTRACTION', 'Info', 
         `Extracting SCE from ${messagesForExtraction.length} message(s) - ${previousSCE ? 'incremental' : 'full'} mode`)
       
+      onStatus?.('extracting')
       const extractedSCE = await measureStage('symptomExtractionMs', () =>
         extractSymptomsFromHistory(messagesForExtraction, firstCtx.allSymptoms, lang),
       )
@@ -173,6 +177,7 @@ Hãy cung cấp thông tin y tế hữu ích, rõ ràng và chu đáo. Luôn nh�
       if (specialtyId === 'health_consultation') {
         await setSCEState(conversationId, userMessageCount, sceResult)
       }
+      onStatus?.('graph_query')
       adaptiveCtx = await measureStage('graphRankingMs', () => computeAdaptiveContext(sceResult))
     } catch (err) {
       auditLog('Adaptive GraphRAG', 'Error', err.message, 'error')
@@ -192,6 +197,7 @@ Hãy cung cấp thông tin y tế hữu ích, rõ ràng và chu đáo. Luôn nh�
     const userMessages = messages.filter((m) => m.role === 'user')
     const turnCount = userMessages.length
 
+    onStatus?.('evaluating')
     const phaseInfo = evaluatePhase({ checklistStatus, sceResult, turnCount, isSuggestionDemo })
     const phase = phaseInfo.phase
 
@@ -214,6 +220,7 @@ Hãy cung cấp thông tin y tế hữu ích, rõ ràng và chu đáo. Luôn nh�
       ...messages
     ]
 
+    onStatus?.('composing')
     const maxTokens = phase === 1 ? 800 : 2500
     const fullReplyText = await measureStage('answerGenerationMs', () => callLLM({
       messages: chatMessages,
@@ -251,6 +258,7 @@ Hãy cung cấp thông tin y tế hữu ích, rõ ràng và chu đáo. Luôn nh�
     { role: 'system', content: systemPrompt },
     ...messages
   ]
+  onStatus?.('composing')
   const fullReplyText = await measureStage('answerGenerationMs', () => callLLM({
     messages: chatMessages,
     model: null,

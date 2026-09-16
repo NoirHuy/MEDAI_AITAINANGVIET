@@ -170,7 +170,7 @@ export function useChat(account) {
 
       const userMessage = { id: createId(), role: 'user', content: trimmed }
       const assistantId = createId()
-      const assistantMessage = { id: assistantId, role: 'assistant', content: '', streaming: true }
+      const assistantMessage = { id: assistantId, role: 'assistant', content: '', streaming: true, pipelineStage: 'intake' }
       const messagesForApi = [...baseMessages, userMessage]
 
       // Thêm cuộc hội thoại và tin nhắn đồng bộ vào state
@@ -230,6 +230,21 @@ export function useChat(account) {
         )
       }
 
+      const updateStatus = (stage) => {
+        setConversations((prev) =>
+          prev.map((c) =>
+            c.id === convId
+              ? {
+                  ...c,
+                  messages: c.messages.map((m) =>
+                    m.id === assistantId ? { ...m, pipelineStage: stage } : m,
+                  ),
+                }
+              : c,
+          ),
+        )
+      }
+
       try {
         await streamAssistantReply({
           messages: messagesForApi,
@@ -240,6 +255,7 @@ export function useChat(account) {
           conversationId: specialtyId === DEFAULT_SPECIALTY_ID ? convId : undefined,
           signal: controller.signal,
           onToken: appendToken,
+          onStatus: updateStatus,
         })
       } catch (err) {
         if (err?.name !== 'AbortError') {

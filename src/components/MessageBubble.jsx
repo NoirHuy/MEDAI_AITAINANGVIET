@@ -9,7 +9,7 @@ import './MessageBubble.css'
 // exactly the goal.
 /* eslint-disable eslint/no-misleading-character-class */
 
-export default memo(function MessageBubble({ role, content, streaming, lang = 'vi', onSend, isLast }) {
+export default memo(function MessageBubble({ role, content, streaming, pipelineStage, lang = 'vi', onSend, isLast }) {
   const isUser = role === 'user'
   const isEn = lang === 'en'
 
@@ -60,7 +60,7 @@ export default memo(function MessageBubble({ role, content, streaming, lang = 'v
         >
           {cleanContent
             ? renderMessageContent(cleanContent)
-            : (streaming ? <ClinicalStatusIndicator lang={lang} /> : null)
+            : (streaming ? <ClinicalStatusIndicator stage={pipelineStage} lang={lang} /> : null)
           }
           {streaming && cleanContent && <span className="message-cursor" />}
 

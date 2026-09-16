@@ -17,9 +17,9 @@ export async function fetchSmartTitle(text, lang = 'vi') {
   return text.trim().slice(0, 30)
 }
 
-export async function streamAssistantReply({ messages, specialtyId, lang, isSuggestionDemo, suggestionId, conversationId, signal, onToken }) {
+export async function streamAssistantReply({ messages, specialtyId, lang, isSuggestionDemo, suggestionId, conversationId, signal, onToken, onStatus }) {
   try {
-    return await streamFromBackend({ messages, specialtyId, lang, isSuggestionDemo, suggestionId, conversationId, signal, onToken })
+    return await streamFromBackend({ messages, specialtyId, lang, isSuggestionDemo, suggestionId, conversationId, signal, onToken, onStatus })
   } catch (err) {
     if (err.name === 'AbortError') throw err
     console.warn('Chat API unavailable:', err)
@@ -37,7 +37,7 @@ export async function streamAssistantReply({ messages, specialtyId, lang, isSugg
   }
 }
 
-async function streamFromBackend({ messages, specialtyId, lang, isSuggestionDemo, suggestionId, conversationId, signal, onToken }) {
+async function streamFromBackend({ messages, specialtyId, lang, isSuggestionDemo, suggestionId, conversationId, signal, onToken, onStatus }) {
   const res = await fetch(apiUrl('/api/chat'), {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
@@ -65,6 +65,7 @@ async function streamFromBackend({ messages, specialtyId, lang, isSuggestionDemo
   const reader = res.body.getReader()
   const decoder = new TextDecoder()
   let full = ''
+  let pendingBuffer = ''
   // Strip server-side control sequences so they never flash as raw text during streaming.
   // They're still accumulated in `full` and parsed by MessageBubble after streaming ends.
   const CONTROL_MARKER_RE = /(__MEMORIES_USED__:[\s\S]*$|\[SymptomChecklist:[\s\S]*?\])/g
@@ -75,21 +76,55 @@ async function streamFromBackend({ messages, specialtyId, lang, isSuggestionDemo
     if (visible) onToken(visible)
   }
 
+  const processChunkText = (text) => {
+    const combined = pendingBuffer + text
+    pendingBuffer = ''
+
+    // Match all complete __STATUS__:<stage>\n
+    const STATUS_RE = /__STATUS__:([a-zA-Z0-9_]+)\n/g
+    let lastIndex = 0
+    let match
+    let visibleAccum = ''
+
+    while ((match = STATUS_RE.exec(combined)) !== null) {
+      const before = combined.slice(lastIndex, match.index)
+      if (before) visibleAccum += before
+      onStatus?.(match[1])
+      lastIndex = match.index + match[0].length
+    }
+
+    const remainder = combined.slice(lastIndex)
+    if (remainder.startsWith('__STATUS__') || '__STATUS__'.startsWith(remainder)) {
+      pendingBuffer = remainder
+    } else {
+      visibleAccum += remainder
+    }
+
+    if (visibleAccum) {
+      full += visibleAccum
+      emitVisible(visibleAccum)
+    }
+  }
+
   try {
     while (true) {
       const { value, done } = await reader.read()
       if (done) break
       const chunk = decoder.decode(value, { stream: true })
       if (!chunk) continue
-      full += chunk
-      // Emit immediately for real-time streaming
-      emitVisible(chunk)
+      processChunkText(chunk)
     }
 
     const finalChunk = decoder.decode()
     if (finalChunk) {
-      full += finalChunk
-      emitVisible(finalChunk)
+      processChunkText(finalChunk)
+    }
+    if (pendingBuffer) {
+      if (!pendingBuffer.startsWith('__STATUS__')) {
+        full += pendingBuffer
+        emitVisible(pendingBuffer)
+      }
+      pendingBuffer = ''
     }
   } finally {
     reader.releaseLock()
