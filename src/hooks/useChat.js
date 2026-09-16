@@ -39,6 +39,13 @@ export function useChat(account) {
     conversationsRef.current = conversations
   }, [conversations])
 
+  const activeIdRef = useRef(activeId)
+  useEffect(() => {
+    activeIdRef.current = activeId
+  }, [activeId])
+
+  const prevAccountRef = useRef(account)
+
   // Abort any in-flight stream when the hook unmounts.
   useEffect(() => () => abortRef.current?.abort(), [])
 
@@ -54,35 +61,84 @@ export function useChat(account) {
 
   // Load conversations từ MongoDB khi tài khoản đã xác thực
   useEffect(() => {
+    const prevAccount = prevAccountRef.current
+    prevAccountRef.current = account
+
     if (!account) {
-      setConversations([])
+      if (prevAccount) {
+        // Đăng xuất: dọn sạch hội thoại tài khoản cũ và activeId
+        setConversations([])
+        conversationsRef.current = []
+        setActiveIdAndPersist(null)
+      }
       return
     }
 
     let cancelled = false
     fetch(apiUrl('/api/chat/conversations'), { credentials: 'include' })
       .then((res) => {
-        if (!res.ok) throw new Error()
+        if (!res.ok) throw new Error(`HTTP ${res.status}`)
         return res.json()
       })
       .then((data) => {
         if (cancelled || !data.conversations) return
-        // Never wipe local conversations that already carry user content —
-        // a slow server response must not discard messages typed meanwhile.
-        const hasLocalContent = conversationsRef.current.some((c) => c.messages.length > 0)
-        if (hasLocalContent && conversationsRef.current.length > 0) {
-          console.warn('Bỏ qua tải lịch sử: có hội thoại cục bộ chưa được lưu.')
-          return
-        }
-        setConversations(data.conversations)
-        if (data.conversations.length > 0) {
-          const savedId = localStorage.getItem(ACTIVE_CHAT_STORAGE_KEY)
-          const exists = data.conversations.some((c) => c.id === savedId)
-          if (savedId && exists) {
-            setActiveId(savedId)
-          } else {
-            setActiveIdAndPersist(data.conversations[0].id)
+        const serverList = data.conversations
+        const currentLocal = conversationsRef.current || []
+
+        // Tìm các cuộc trò chuyện cục bộ có nội dung chưa được lưu lên server (như khách chat trước khi login)
+        const unsavedLocals = currentLocal.filter(
+          (local) =>
+            Array.isArray(local.messages) &&
+            local.messages.some((m) => m.content && m.content.trim()) &&
+            !serverList.some((s) => s.id === local.id),
+        )
+
+        // Tự động lưu các cuộc trò chuyện này vào tài khoản vừa đăng nhập trên MongoDB
+        for (const conv of unsavedLocals) {
+          const validMessages = (conv.messages || [])
+            .filter((m) => m && (m.role === 'user' || m.role === 'assistant') && typeof m.content === 'string')
+            .map((m) => ({ id: m.id, role: m.role, content: m.content }))
+
+          if (validMessages.length > 0) {
+            fetch(apiUrl('/api/chat/conversations'), {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              credentials: 'include',
+              body: JSON.stringify({
+                id: conv.id,
+                title: conv.title || 'Cuộc trò chuyện mới',
+                specialtyId: conv.specialtyId || DEFAULT_SPECIALTY_ID,
+                messages: validMessages,
+                lang: localStorage.getItem('medai_lang') || 'vi',
+              }),
+            }).catch((err) => console.error('Không thể lưu cuộc trò chuyện cục bộ:', err))
           }
+        }
+
+        // Hợp nhất danh sách: các hội thoại vừa tạo cục bộ lên trước, tiếp đến serverList
+        // Nếu đã có trên server nhưng bản cục bộ có nhiều tin nhắn hơn, ưu tiên bản cục bộ
+        const merged = [
+          ...unsavedLocals,
+          ...serverList.map((serverConv) => {
+            const localMatch = currentLocal.find((c) => c.id === serverConv.id)
+            if (localMatch && (localMatch.messages?.length ?? 0) > (serverConv.messages?.length ?? 0)) {
+              return localMatch
+            }
+            return serverConv
+          }),
+        ]
+
+        setConversations(merged)
+        conversationsRef.current = merged
+
+        // Đảm bảo activeId trỏ đúng cuộc trò chuyện
+        const targetActive = activeIdRef.current || localStorage.getItem(ACTIVE_CHAT_STORAGE_KEY)
+        if (targetActive && merged.some((c) => c.id === targetActive)) {
+          setActiveIdAndPersist(targetActive)
+        } else if (merged.length > 0) {
+          setActiveIdAndPersist(merged[0].id)
+        } else {
+          setActiveIdAndPersist(null)
         }
       })
       .catch((err) => {
@@ -129,6 +185,7 @@ export function useChat(account) {
   const deleteConversation = useCallback((id) => {
     const remaining = conversationsRef.current.filter((c) => c.id !== id)
     setConversations(remaining)
+    conversationsRef.current = remaining
     const currentSaved = localStorage.getItem(ACTIVE_CHAT_STORAGE_KEY)
     if (currentSaved === id || activeId === id) {
       const nextActive = remaining.length > 0 ? remaining[0].id : null
