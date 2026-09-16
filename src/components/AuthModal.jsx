@@ -329,33 +329,37 @@ export default function AuthModal({
         ) : (
           <>
             {isGoogleAuthConfigured() || fetchedGoogleClientId ? (
-              <GoogleAuthButton onCredential={handleGoogleCredential} />
+              <>
+                <GoogleAuthButton onCredential={handleGoogleCredential} />
+                <div className="auth-modal__divider">
+                  <span>{isEn ? 'or' : 'hoặc'}</span>
+                </div>
+              </>
             ) : import.meta.env.DEV ? (
-              // Mock account picker — dev convenience only, never shipped to
-              // production builds.
-              <button
-                className="google-btn"
-                onClick={() => {
-                  setError(null)
-                  if (isGoogleAuthConfigured() && window.google?.accounts?.id) {
-                    window.google.accounts.id.initialize({
-                      client_id: getGoogleClientId(),
-                      callback: (res) => handleGoogleCredential(res.credential),
-                    })
-                    window.google.accounts.id.prompt()
-                  } else {
-                    setGooglePicker(true)
-                  }
-                }}
-              >
-                <GoogleIcon />
-                <span>{isEn ? 'Continue with Google' : 'Tiếp tục sử dụng dịch vụ bằng Google'}</span>
-              </button>
+              <>
+                <button
+                  className="google-btn"
+                  onClick={() => {
+                    setError(null)
+                    if (isGoogleAuthConfigured() && window.google?.accounts?.id) {
+                      window.google.accounts.id.initialize({
+                        client_id: getGoogleClientId(),
+                        callback: (res) => handleGoogleCredential(res.credential),
+                      })
+                      window.google.accounts.id.prompt()
+                    } else {
+                      setGooglePicker(true)
+                    }
+                  }}
+                >
+                  <GoogleIcon />
+                  <span>{isEn ? 'Continue with Google' : 'Tiếp tục sử dụng dịch vụ bằng Google'}</span>
+                </button>
+                <div className="auth-modal__divider">
+                  <span>{isEn ? 'or' : 'hoặc'}</span>
+                </div>
+              </>
             ) : null}
-
-            <div className="auth-modal__divider">
-              <span>{isEn ? 'or' : 'hoặc'}</span>
-            </div>
 
             <form className="auth-modal__form" onSubmit={handleFormSubmit} autoComplete="off">
               {tab === 'signup' && (

@@ -216,8 +216,8 @@ export function useChat(account) {
       setIsResponding(true)
 
       const appendToken = (chunk) => {
-        setConversations((prev) =>
-          prev.map((c) =>
+        setConversations((prev) => {
+          const updated = prev.map((c) =>
             c.id === convId
               ? {
                   ...c,
@@ -226,13 +226,15 @@ export function useChat(account) {
                   ),
                 }
               : c,
-          ),
-        )
+          )
+          conversationsRef.current = updated
+          return updated
+        })
       }
 
       const updateStatus = (stage) => {
-        setConversations((prev) =>
-          prev.map((c) =>
+        setConversations((prev) => {
+          const updated = prev.map((c) =>
             c.id === convId
               ? {
                   ...c,
@@ -241,8 +243,10 @@ export function useChat(account) {
                   ),
                 }
               : c,
-          ),
-        )
+          )
+          conversationsRef.current = updated
+          return updated
+        })
       }
 
       try {
@@ -262,21 +266,22 @@ export function useChat(account) {
           appendToken(lang === 'en' ? '\n\n_An error occurred while fetching the response. Please try again._' : '\n\n_Đã xảy ra lỗi khi lấy phản hồi. Vui lòng thử lại._')
         }
       } finally {
-        // Stream is over — safe to compute the final array outside an updater.
-        const updated = conversationsRef.current.map((c) =>
-          c.id === convId
-            ? {
-                ...c,
-                messages: c.messages.map((m) =>
-                  m.id === assistantId ? { ...m, streaming: false } : m,
-                ),
-              }
-            : c,
-        )
-        setConversations(updated)
-
-        // CHỈ LƯU VÀO MONGODB KHI TÀI KHOẢN ĐÃ ĐĂNG NHẬP (ACCOUNT != NULL)
-        persistConversation(updated.find((c) => c.id === convId), lang)
+        setConversations((prev) => {
+          const updated = prev.map((c) =>
+            c.id === convId
+              ? {
+                  ...c,
+                  messages: c.messages.map((m) =>
+                    m.id === assistantId ? { ...m, streaming: false } : m,
+                  ),
+                }
+              : c,
+          )
+          conversationsRef.current = updated
+          // CHỈ LƯU VÀO MONGODB KHI TÀI KHOẢN ĐÃ ĐĂNG NHẬP (ACCOUNT != NULL)
+          persistConversation(updated.find((c) => c.id === convId), lang)
+          return updated
+        })
 
         setIsResponding(false)
         abortRef.current = null

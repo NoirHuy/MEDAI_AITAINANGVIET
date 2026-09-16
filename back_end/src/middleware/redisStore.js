@@ -14,7 +14,7 @@ const MEMORY_PRUNE_THRESHOLD = 10_000
  * limiters are built during module load — before connectRedis() resolves — so
  * deciding there would permanently bind them to memory even when Redis is up.
  */
-export function createRedisStore(windowMs) {
+export function createRedisStore(windowMs, prefix = KEY_PREFIX) {
   const memoryHits = new Map()
 
   function pruneExpiredMemoryEntries(now) {
@@ -39,7 +39,7 @@ export function createRedisStore(windowMs) {
 
   return {
     async increment(key) {
-      const fullKey = `${KEY_PREFIX}${key}`
+      const fullKey = `${prefix}${key}`
       if (isRedisConnected()) {
         const count = await safeIncr(fullKey, Math.ceil(windowMs / 1000))
         if (count !== null) {
@@ -58,7 +58,7 @@ export function createRedisStore(windowMs) {
       if (entry && entry.totalHits > 0) entry.totalHits -= 1
       const client = getRedisClient()
       try {
-        await client.decr(`${KEY_PREFIX}${key}`)
+        await client.decr(`${prefix}${key}`)
       } catch {}
     },
 
@@ -66,7 +66,7 @@ export function createRedisStore(windowMs) {
       memoryHits.delete(key)
       const client = getRedisClient()
       try {
-        await client.del(`${KEY_PREFIX}${key}`)
+        await client.del(`${prefix}${key}`)
       } catch {}
     },
 

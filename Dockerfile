@@ -16,6 +16,9 @@ COPY . .
 ENV VITE_API_URL=""
 ENV NODE_ENV=production
 
+ARG VITE_GOOGLE_CLIENT_ID=""
+ENV VITE_GOOGLE_CLIENT_ID=$VITE_GOOGLE_CLIENT_ID
+
 # Build frontend static files to /app/dist
 RUN npm run build
 

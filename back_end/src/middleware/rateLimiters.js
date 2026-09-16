@@ -10,8 +10,8 @@ const createRateLimitMessage = (msg) => ({
 
 // Helper to build a limiter backed by the shared Redis store (with automatic
 // per-process in-memory fallback while Redis is unavailable).
-function buildLimiter(options) {
-  return rateLimit({ ...options, store: createRedisStore(options.windowMs) })
+function buildLimiter(options, name = 'default') {
+  return rateLimit({ ...options, store: createRedisStore(options.windowMs, `rl:${name}:`) })
 }
 
 // ─── 1. AUTH RATE LIMITERS ──────────────────────────────────────────────────
@@ -25,7 +25,7 @@ export const authSigninLimiter = buildLimiter({
   message: createRateLimitMessage(
     'Bạn đã nhập sai quá 5 lần. Để bảo vệ tài khoản, vui lòng thử lại sau 15 phút.'
   ),
-})
+}, 'auth_signin')
 
 // Chống Spam tạo tài khoản rác: Tối đa 3 lần đăng ký / 1 giờ
 export const authSignupLimiter = buildLimiter({
@@ -36,7 +36,7 @@ export const authSignupLimiter = buildLimiter({
   message: createRateLimitMessage(
     'Số lần đăng ký tài khoản từ thiết bị này đã đạt giới hạn. Vui lòng quay lại sau 1 giờ.'
   ),
-})
+}, 'auth_signup')
 
 // Đăng nhập Google OAuth: Tối đa 10 lần / 15 phút
 // Gui va xac minh ma OTP email: giam spam email va brute-force ma 6 chu so.
@@ -46,7 +46,7 @@ export const authEmailCodeLimiter = buildLimiter({
   standardHeaders: true,
   legacyHeaders: false,
   message: createRateLimitMessage('Ban da yeu cau hoac nhap ma qua nhieu lan. Vui long thu lai sau 15 phut.'),
-})
+}, 'auth_email')
 
 export const authGoogleLimiter = buildLimiter({
   windowMs: 15 * 60 * 1000,
@@ -56,7 +56,7 @@ export const authGoogleLimiter = buildLimiter({
   message: createRateLimitMessage(
     'Thao tác đăng nhập Google quá tần suất. Vui lòng thử lại sau ít phút.'
   ),
-})
+}, 'auth_google')
 
 // Lấy cấu hình & Signout: Tối đa 30 lần / 1 phút
 export const authGeneralLimiter = buildLimiter({
@@ -65,7 +65,7 @@ export const authGeneralLimiter = buildLimiter({
   standardHeaders: true,
   legacyHeaders: false,
   message: createRateLimitMessage('Tần suất truy cập quá nhanh. Vui lòng thử lại sau.'),
-})
+}, 'auth_general')
 
 // ─── 2. CHAT & AI LLM RATE LIMITERS ────────────────────────────────────────
 
@@ -80,7 +80,7 @@ export const guestChatLimiter = buildLimiter({
   message: createRateLimitMessage(
     'Vui lòng [Đăng nhập](#auth/signin) hoặc [Đăng ký tài khoản miễn phí](#auth/signup) để tiếp tục chat và trải nghiệm đầy đủ tính năng AI Y tế!'
   ),
-})
+}, 'guest_chat')
 
 // Giới hạn Thành viên đã đăng nhập: Tối đa 60 câu hỏi / 15 phút chống spam bot
 export const memberChatLimiter = buildLimiter({
@@ -94,7 +94,7 @@ export const memberChatLimiter = buildLimiter({
   message: createRateLimitMessage(
     'Bạn đã gửi quá nhiều yêu cầu trong thời gian ngắn. Vui lòng thử lại sau ít phút.'
   ),
-})
+}, 'member_chat')
 
 // Tạo tiêu đề tự động: Tối đa 20 lần / 15 phút
 export const chatTitleLimiter = buildLimiter({
@@ -103,7 +103,7 @@ export const chatTitleLimiter = buildLimiter({
   standardHeaders: true,
   legacyHeaders: false,
   message: createRateLimitMessage('Tần suất tạo tiêu đề tự động quá nhanh.'),
-})
+}, 'chat_title')
 
 // Lấy / Tạo / Xóa danh sách hội thoại: Tối đa 60 lần / 1 phút
 export const chatGeneralLimiter = buildLimiter({
@@ -112,7 +112,7 @@ export const chatGeneralLimiter = buildLimiter({
   standardHeaders: true,
   legacyHeaders: false,
   message: createRateLimitMessage('Thao tác hội thoại quá tần suất. Vui lòng thử lại.'),
-})
+}, 'chat_general')
 
 // ─── 3. ACCOUNT & PROFILE RATE LIMITERS ─────────────────────────────────────
 
@@ -123,7 +123,7 @@ export const accountPasswordLimiter = buildLimiter({
   standardHeaders: true,
   legacyHeaders: false,
   message: createRateLimitMessage('Số lần đổi mật khẩu vượt quá quy định. Vui lòng thử lại sau 15 phút.'),
-})
+}, 'account_password')
 
 // Cập nhật hồ sơ & Thẻ thanh toán: Tối đa 15 lần / 15 phút
 export const accountGeneralLimiter = buildLimiter({
@@ -132,7 +132,7 @@ export const accountGeneralLimiter = buildLimiter({
   standardHeaders: true,
   legacyHeaders: false,
   message: createRateLimitMessage('Thao tác cập nhật tài khoản quá nhanh. Vui lòng chờ ít phút.'),
-})
+}, 'account_general')
 
 // ─── 4. MEMORIES RATE LIMITERS ─────────────────────────────────────────────
 
@@ -143,7 +143,7 @@ export const memoriesLimiter = buildLimiter({
   standardHeaders: true,
   legacyHeaders: false,
   message: createRateLimitMessage('Thao tác cập nhật ký ức y tế quá nhanh.'),
-})
+}, 'memories')
 
 // ─── 5. PAYMENT RATE LIMITERS ──────────────────────────────────────────────
 
@@ -156,7 +156,7 @@ export const paymentLimiter = buildLimiter({
   message: createRateLimitMessage(
     'Khởi tạo đơn hàng thanh toán quá nhiều lần. Vui lòng thử lại sau 15 phút.'
   ),
-})
+}, 'payment')
 
 // ─── 6. ADMIN DASHBOARD RATE LIMITERS ──────────────────────────────────────
 
@@ -167,4 +167,4 @@ export const adminLimiter = buildLimiter({
   standardHeaders: true,
   legacyHeaders: false,
   message: createRateLimitMessage('Tần suất truy cập trang quản trị vượt quá giới hạn an toàn.'),
-})
+}, 'admin')
