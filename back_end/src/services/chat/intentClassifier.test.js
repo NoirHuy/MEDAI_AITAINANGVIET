@@ -79,6 +79,11 @@ describe('detectIntent — symptom keyword path (rule-based, no LLM)', () => {
     const inputs = [
       'tôi bị đau bụng',
       'đau đầu dữ dội',
+      'tôi nhứt đầu',
+      'tôi nhức đầu',
+      'nhức mỏi người',
+      'rát họng khó chịu',
+      'ợ chua và đầy bụng',
       'sốt 3 ngày rồi',
       'không ho, không sốt',
       'nghẹt mũi và đau họng',

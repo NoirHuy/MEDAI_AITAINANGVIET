@@ -83,7 +83,7 @@ QUY TẮC BẮT BUỘC:
   if (lower.includes('đau bụng') || lower.includes('dạ dày') || lower.includes('stomach') || lower.includes('abdominal')) {
     return isEn ? 'Consultation: Abdominal Symptoms' : 'Tư vấn triệu chứng đau bụng'
   }
-  if (lower.includes('đau đầu') || lower.includes('thái dương') || lower.includes('migraine') || lower.includes('headache')) {
+  if (lower.includes('đau đầu') || lower.includes('nhức đầu') || lower.includes('nhứt đầu') || lower.includes('thái dương') || lower.includes('migraine') || lower.includes('headache')) {
     return isEn ? 'Consultation: Headache Symptoms' : 'Tư vấn triệu chứng đau đầu'
   }
   if (lower.includes('sốt') || lower.includes('fever')) {

@@ -71,20 +71,56 @@ const QUICK_SUBTYPE_PATTERNS = [
  * Used as a fast heuristic before making the LLM classification call.
  */
 const SYMPTOM_KEYWORDS_VI = [
-  'đau', 'sốt', 'ho', 'khó thở', 'chóng mặt', 'buồn nôn', 'nôn',
-  'tiêu chảy', 'táo bón', 'đau đầu', 'đau bụng', 'nghẹt mũi',
-  'mệt mỏi', 'phát ban', 'sưng', 'chảy máu', 'bị ', 'bị bệnh',
-  'ngứa', 'chảy dịch', 'nổi mẩn', 'đau họng', 'khó nuốt', 'ói',
-  'đau ngực', 'đau lưng', 'chướng bụng', 'chán ăn',
-  'sụt cân', 'mất ngủ', 'lo âu', 'đau cơ', 'đau khớp',
+  // Cảm giác đau / nhức / mỏi
+  'đau', 'nhức', 'nhứt', 'mỏi', 'buốt', 'rát', 'nhói', 'quặn', 'âm ỉ', 'tê',
+  'tê bì', 'tê buốt', 'đau nhức', 'nhức mỏi', 'đau đầu', 'nhức đầu', 'nhứt đầu',
+  'đau bụng', 'đau họng', 'rát họng', 'rát cổ', 'đau ngực', 'tức ngực', 'nặng ngực',
+  'đau lưng', 'đau cơ', 'đau khớp', 'chuột rút', 'co rút', 'căng cơ',
+  // Sốt & Thân nhiệt
+  'sốt', 'nóng sốt', 'ớn lạnh', 'gai rét', 'rét run', 'lạnh run', 'vã mồ hôi', 'mồ hôi trộm',
+  // Hô hấp & Tai Mũi Họng
+  'ho', 'khó thở', 'thở dốc', 'thở gấp', 'khò khè', 'hụt hơi', 'nghẹt mũi', 'ngạt mũi',
+  'sổ mũi', 'chảy mũi', 'chảy nước mũi', 'hắt hơi', 'hắt xì', 'khó nuốt', 'nuốt vướng',
+  'khàn tiếng', 'khàn giọng', 'mất tiếng',
+  // Tiêu hóa
+  'buồn nôn', 'nôn', 'nôn nao', 'mắc ói', 'mắc nôn', 'ói', 'tiêu chảy', 'ỉa chảy',
+  'đi ngoài', 'đi phân lỏng', 'táo bón', 'chướng bụng', 'đầy hơi', 'đầy bụng', 'khó tiêu',
+  'ợ chua', 'ợ hơi', 'ợ nóng', 'trào ngược', 'cồn cào', 'chán ăn', 'sụt cân',
+  // Thần kinh & Toàn thân
+  'chóng mặt', 'choáng', 'choáng váng', 'hoa mắt', 'xây xẩm', 'chao đảo', 'mất thăng bằng',
+  'mệt mỏi', 'mệt', 'uể oải', 'lừ đừ', 'đuối', 'kiệt sức', 'mất ngủ', 'khó ngủ', 'lo âu',
+  'co giật', 'run tay', 'run chân', 'mất vị giác', 'mất khứu giác',
+  // Da & Dị ứng & Tiết niệu
+  'phát ban', 'sưng', 'chảy máu', 'chảy dịch', 'ngứa', 'ngứa ngáy', 'nổi mẩn', 'mề đay',
+  'nổi mề đay', 'nổi hột', 'nổi mụn', 'dị ứng', 'mụn nhọt', 'nổi hạch', 'sưng hạch',
+  'tiểu buốt', 'tiểu rắt', 'tiểu đêm', 'tiểu nhiều', 'tiểu ra máu', 'tiểu khó', 'đái buốt',
+  // Ngữ cảnh y tế chung
+  'bị ', 'bị bệnh', 'mắc bệnh', 'nhiễm bệnh', 'khám', 'thuốc', 'uống thuốc', 'bác sĩ',
+  'triệu chứng', 'dấu hiệu', 'tư vấn', 'sức khỏe',
 ]
 
 const SYMPTOM_KEYWORDS_EN = [
-  'pain', 'fever', 'cough', 'headache', 'nausea', 'vomit', 'diarrhea',
-  'dizzy', 'tired', 'fatigue', 'rash', 'swelling', 'bleeding', 'sick', 'ill',
-  'sore throat', 'chest pain', 'back pain', 'stomach pain', 'bloating',
-  'loss of appetite', 'weight loss', 'insomnia', 'anxiety', 'muscle pain',
-  'joint pain', 'shortness of breath',
+  // Pain / Aches
+  'pain', 'ache', 'aching', 'headache', 'toothache', 'stomachache', 'backache',
+  'sore', 'hurts', 'hurting', 'throbbing', 'cramp', 'cramps', 'stiff', 'stiffness',
+  'sore throat', 'chest pain', 'back pain', 'stomach pain', 'abdominal pain',
+  'muscle pain', 'joint pain',
+  // Fever / Temperature
+  'fever', 'feverish', 'chills', 'shivering', 'sweating', 'night sweats',
+  // Respiratory / ENT
+  'cough', 'coughing', 'sneezing', 'sneeze', 'runny nose', 'stuffy nose', 'congestion',
+  'shortness of breath', 'breathless', 'wheezing', 'difficulty swallowing', 'hoarse',
+  // Gastrointestinal
+  'nausea', 'nauseous', 'vomit', 'vomiting', 'diarrhea', 'constipation', 'bloating',
+  'indigestion', 'heartburn', 'acid reflux', 'loss of appetite', 'weight loss',
+  // Neuro / Systemic
+  'dizzy', 'dizziness', 'lightheaded', 'vertigo', 'faint', 'fainting',
+  'tired', 'fatigue', 'exhausted', 'weakness', 'insomnia', 'anxiety', 'numbness', 'tingling',
+  // Skin / Urinary
+  'rash', 'swelling', 'swollen', 'bleeding', 'itchy', 'itching', 'hives', 'allergies',
+  'burning urination', 'frequent urination',
+  // General
+  'sick', 'ill', 'symptom', 'symptoms', 'medicine', 'medication', 'doctor', 'consult',
 ]
 
 /**
@@ -141,7 +177,7 @@ const CLINICAL_INTAKE_PATTERNS_VI = [
   /\b(hôm qua|sáng nay|tối qua|trưa nay|hôm kia|đêm qua|vừa mới|mới bị|bắt đầu|kéo dài|liên tục|từng cơn)\b/i,
   // Vị trí & Tính chất cơn đau/cảm giác
   /\b(quanh rốn|thượng vị|hạ vị|hạ sườn|bên phải|bên trái|ở bụng|ở ngực|ở đầu|ở họng|ở lưng|ở cổ|ở chân|ở tay)\b/i,
-  /\b(âm ỉ|quặn|nhói|buốt|rát|dữ dội|râm ran|châm chích|nặng|nhẹ)\b/i,
+  /\b(nhức|nhứt|âm ỉ|quặn|nhói|buốt|rát|dữ dội|râm ran|châm chích|nặng|nhẹ|mỏi|tê|choáng|chóng mặt)\b/i,
   // Trả lời có/không, xác nhận, phủ nhận cho câu hỏi lâm sàng
   /\b(có|không|chưa|vâng|đúng|dạ|rồi|ko|k|kô)\b/i,
 ]
@@ -192,7 +228,7 @@ function hasSymptomKeywords(text, lang) {
  */
 async function llmClassify(text, lang) {
   if (!env.llmApiKey) {
-    return 'refusal'
+    return 'symptom_query'
   }
 
   const isEn = lang === 'en'
@@ -223,10 +259,18 @@ Chỉ trả về tên loại, không thêm gì khác.`
     })
 
     const normalized = (result || '').trim().toUpperCase()
-    return normalized.includes('SYMPTOM') ? 'symptom_query' : 'refusal'
+    return (
+      normalized.includes('SYMPTOM') ||
+      normalized.includes('TRIỆU CHỨNG') ||
+      normalized.includes('TRIEU CHUNG') ||
+      normalized.includes('Y TẾ') ||
+      normalized.includes('SỨC KHỎE')
+    ) ? 'symptom_query' : 'refusal'
   } catch {
-    // LLM failure: default to refusal (safer than routing to full pipeline)
-    return 'refusal'
+    // When LLM classification fails (timeout, network, or API key issue),
+    // default to symptom_query so the user's message is processed by the main
+    // clinical pipeline rather than being rejected with a false refusal.
+    return 'symptom_query'
   }
 }
 
