@@ -1,0 +1,2302 @@
+{
+  "DDX-001": {
+    "questions": [
+      {
+        "sym": "Fatigue",
+        "answer": "NO"
+      },
+      {
+        "sym": "Rhinorrhea",
+        "answer": "NO"
+      },
+      {
+        "sym": "Tonsillar exudates",
+        "answer": "NO"
+      }
+    ],
+    "top5": [
+      "Viral Pharyngitis",
+      "COVID-19",
+      "Influenza",
+      "Streptococcal Pharyngitis",
+      "Acute Laryngitis"
+    ]
+  },
+  "DDX-002": {
+    "questions": [
+      {
+        "sym": "Fever",
+        "answer": "NO"
+      },
+      {
+        "sym": "Double sickening",
+        "answer": "NO"
+      },
+      {
+        "sym": "Maxillary tooth pain",
+        "answer": "NO"
+      }
+    ],
+    "top5": [
+      "Viral Rhinosinusitis",
+      "Allergic Rhinitis",
+      "Non-allergic Rhinitis",
+      "Acute Bacterial Rhinosinusitis",
+      "Migraine"
+    ]
+  },
+  "DDX-003": {
+    "questions": [
+      {
+        "sym": "Anosmia or Hyposmia",
+        "answer": "NO"
+      },
+      {
+        "sym": "Unilateral nasal obstruction",
+        "answer": "NO"
+      },
+      {
+        "sym": "Sneezing or ocular pruritus",
+        "answer": "NO"
+      }
+    ],
+    "top5": [
+      "Chronic Rhinosinusitis without Nasal Polyps",
+      "Non-allergic Rhinitis",
+      "Chronic Rhinosinusitis with Nasal Polyps",
+      "Rhinitis Medicamentosa",
+      "Turbinate Hypertrophy"
+    ]
+  },
+  "DDX-004": {
+    "questions": [
+      {
+        "sym": "Fever",
+        "answer": "NO"
+      },
+      {
+        "sym": "Cough",
+        "answer": "YES"
+      },
+      {
+        "sym": "Rhinorrhea",
+        "answer": "NO"
+      }
+    ],
+    "top5": [
+      "Acute Laryngitis (Phonotraumatic)",
+      "Laryngopharyngeal Reflux (LPR)",
+      "Vocal Cord Polyp",
+      "Muscle Tension Dysphonia",
+      "Acute Viral Laryngitis"
+    ]
+  },
+  "DDX-005": {
+    "questions": [
+      {
+        "sym": "Sialorrhea",
+        "answer": "NO"
+      },
+      {
+        "sym": "Trismus",
+        "answer": "NO"
+      },
+      {
+        "sym": "Muffled voice",
+        "answer": "NO"
+      }
+    ],
+    "top5": [
+      "Infectious Mononucleosis",
+      "Epiglottitis",
+      "Retropharyngeal Abscess",
+      "Group A Streptococcal Pharyngitis",
+      "Viral Pharyngitis"
+    ]
+  },
+  "DDX-006": {
+    "questions": [
+      {
+        "sym": "post-auricular swelling",
+        "answer": "NO"
+      },
+      {
+        "sym": "tragal tenderness",
+        "answer": "NO"
+      },
+      {
+        "sym": "otorrhea",
+        "answer": "NO"
+      }
+    ],
+    "top5": [
+      "Acute Otitis Media",
+      "Bullous Myringitis",
+      "Referred Otalgia (Pharyngitis/Tonsillitis)",
+      "Otitis Externa",
+      "Eustachian Tube Dysfunction"
+    ]
+  },
+  "DDX-007": {
+    "questions": [
+      {
+        "sym": "Pruritus",
+        "answer": "NO"
+      },
+      {
+        "sym": "Fever",
+        "answer": "NO"
+      },
+      {
+        "sym": "Hypoacusis",
+        "answer": "NO"
+      }
+    ],
+    "top5": [
+      "Acute Otitis Externa",
+      "Acute Otitis Media",
+      "Temporomandibular Joint (TMJ) Disorder",
+      "Foreign Body",
+      "Bullous Myringitis"
+    ]
+  },
+  "DDX-008": {
+    "questions": [
+      {
+        "sym": "Malodorous otorrhea",
+        "answer": "NO"
+      },
+      {
+        "sym": "Pruritus",
+        "answer": "NO"
+      },
+      {
+        "sym": "Nasal crusting or epistaxis",
+        "answer": "NO"
+      }
+    ],
+    "top5": [
+      "Chronic Suppurative Otitis Media",
+      "Chronic Tympanic Membrane Perforation",
+      "Squamous Cell Carcinoma of the Ear",
+      "Granular Myringitis",
+      "Otitis Media with Effusion"
+    ]
+  },
+  "DDX-009": {
+    "questions": [
+      {
+        "sym": "Exertional chest pain",
+        "answer": "YES"
+      },
+      {
+        "sym": "Dyspnea on exertion",
+        "answer": "NO"
+      },
+      {
+        "sym": "Diaphoresis",
+        "answer": "NO"
+      }
+    ],
+    "top5": [
+      "Gastroesophageal Reflux Disease (GERD)",
+      "Stable Angina Pectoris",
+      "Esophageal Spasm",
+      "Costochondritis",
+      "Peptic Ulcer Disease"
+    ]
+  },
+  "DDX-010": {
+    "questions": [
+      {
+        "sym": "Melena",
+        "answer": "NO"
+      },
+      {
+        "sym": "Radiation of pain to the back",
+        "answer": "NO"
+      },
+      {
+        "sym": "Fatty food intolerance",
+        "answer": "NO"
+      }
+    ],
+    "top5": [
+      "Acute Gastritis",
+      "Peptic Ulcer Disease",
+      "Gastroesophageal Reflux Disease",
+      "Acute Pancreatitis",
+      "Cholecystitis"
+    ]
+  },
+  "DDX-011": {
+    "questions": [
+      {
+        "sym": "Melena",
+        "answer": "NO"
+      },
+      {
+        "sym": "Unintentional weight loss",
+        "answer": "NO"
+      },
+      {
+        "sym": "NSAID use",
+        "answer": "NO"
+      }
+    ],
+    "top5": [
+      "Duodenal Ulcer",
+      "Gastric Ulcer",
+      "Functional Dyspepsia",
+      "Gastroesophageal Reflux Disease (GERD)",
+      "Gastritis"
+    ]
+  },
+  "DDX-012": {
+    "questions": [
+      {
+        "sym": "Anorexia",
+        "answer": "NO"
+      },
+      {
+        "sym": "Diarrhea",
+        "answer": "NO"
+      },
+      {
+        "sym": "Dysuria",
+        "answer": "NO"
+      }
+    ],
+    "top5": [
+      "Acute Appendicitis",
+      "Mesenteric Adenitis",
+      "Meckel's Diverticulitis",
+      "Crohn's disease",
+      "Testicular Torsion"
+    ]
+  },
+  "DDX-013": {
+    "questions": [
+      {
+        "sym": "Fever",
+        "answer": "NO"
+      },
+      {
+        "sym": "Paresthesia",
+        "answer": "NO"
+      },
+      {
+        "sym": "Flushing",
+        "answer": "NO"
+      }
+    ],
+    "top5": [
+      "Vibrio parahaemolyticus infection",
+      "Norovirus gastroenteritis",
+      "Staphylococcus aureus food poisoning",
+      "Enterotoxigenic E. coli (ETEC) infection",
+      "Vibrio cholerae (non-O1/non-O139) infection"
+    ]
+  },
+  "DDX-014": {
+    "questions": [
+      {
+        "sym": "Flatulence",
+        "answer": "NO"
+      },
+      {
+        "sym": "Urticaria",
+        "answer": "NO"
+      },
+      {
+        "sym": "Hematochezia",
+        "answer": "NO"
+      }
+    ],
+    "top5": [
+      "Viral Gastroenteritis",
+      "Food Poisoning",
+      "Lactose Intolerance",
+      "Milk Protein Sensitivity",
+      "Functional Dyspepsia"
+    ]
+  },
+  "DDX-015": {
+    "questions": [
+      {
+        "sym": "Jaundice",
+        "answer": "NO"
+      },
+      {
+        "sym": "Murphy's sign",
+        "answer": "NO"
+      },
+      {
+        "sym": "Radiation of pain to the back",
+        "answer": "NO"
+      }
+    ],
+    "top5": [
+      "Biliary Colic",
+      "Acute Cholecystitis",
+      "Choledocholithiasis",
+      "Peptic Ulcer Disease",
+      "Hepatitis"
+    ]
+  },
+  "DDX-016": {
+    "questions": [
+      {
+        "sym": "radiation of pain",
+        "answer": "NO"
+      },
+      {
+        "sym": "nature of pain",
+        "answer": "NO"
+      },
+      {
+        "sym": "jaundice",
+        "answer": "NO"
+      }
+    ],
+    "top5": [
+      "Biliary Colic",
+      "Acute Cholecystitis",
+      "Peptic Ulcer Disease",
+      "Acute Pancreatitis",
+      "Gastritis"
+    ]
+  },
+  "DDX-017": {
+    "questions": [
+      {
+        "sym": "Positional relief of pain",
+        "answer": "NO"
+      },
+      {
+        "sym": "Abdominal rigidity",
+        "answer": "NO"
+      },
+      {
+        "sym": "",
+        "answer": "YES"
+      }
+    ],
+    "top5": [
+      "Acute Pancreatitis",
+      "Peptic Ulcer Disease",
+      "Gastritis",
+      "Inferior Myocardial Infarction",
+      "Mallory-Weiss Tear"
+    ]
+  },
+  "DDX-018": {
+    "questions": [
+      {
+        "sym": "Hematochezia",
+        "answer": "NO"
+      },
+      {
+        "sym": "Dysuria",
+        "answer": "NO"
+      },
+      {
+        "sym": "Nausea/Vomiting",
+        "answer": "NO"
+      }
+    ],
+    "top5": [
+      "Acute Diverticulitis",
+      "Colorectal Cancer",
+      "Ischemic Colitis",
+      "Fecal Impaction",
+      "Irritable Bowel Syndrome"
+    ]
+  },
+  "DDX-019": {
+    "questions": [
+      {
+        "sym": "Arthralgia",
+        "answer": "NO"
+      },
+      {
+        "sym": "Perianal disease",
+        "answer": "NO"
+      },
+      {
+        "sym": "Aphthous stomatitis",
+        "answer": "NO"
+      }
+    ],
+    "top5": [
+      "Ulcerative Colitis",
+      "Crohn's Disease",
+      "Infectious Colitis",
+      "Colorectal Cancer",
+      "Microscopic Colitis"
+    ]
+  },
+  "DDX-020": {
+    "questions": [
+      {
+        "sym": "Hematochezia",
+        "answer": "NO"
+      },
+      {
+        "sym": "Aphthous stomatitis",
+        "answer": "NO"
+      },
+      {
+        "sym": "Steatorrhea",
+        "answer": "NO"
+      }
+    ],
+    "top5": [
+      "Crohn's Disease",
+      "Celiac Disease",
+      "Small Intestinal Bacterial Overgrowth (SIBO)",
+      "Giardiasis",
+      "Microscopic Colitis"
+    ]
+  },
+  "DDX-021": {
+    "questions": [
+      {
+        "sym": "pain",
+        "answer": "YES"
+      },
+      {
+        "sym": "nausea or vomiting",
+        "answer": "NO"
+      },
+      {
+        "sym": "fever",
+        "answer": "NO"
+      }
+    ],
+    "top5": [
+      "Inguinal hernia",
+      "Femoral hernia",
+      "Hydrocele",
+      "Inguinal lymphadenopathy",
+      "Lipoma"
+    ]
+  },
+  "DDX-022": {
+    "questions": [
+      {
+        "sym": "Exertional chest pain",
+        "answer": "YES"
+      },
+      {
+        "sym": "Relief of pain with rest",
+        "answer": "NO"
+      },
+      {
+        "sym": "Radiation of chest pain",
+        "answer": "YES"
+      }
+    ],
+    "top5": [
+      "Coronary Artery Disease",
+      "Gastroesophageal Reflux Disease",
+      "Esophageal Spasm",
+      "Microvascular Angina",
+      "Musculoskeletal Chest Pain"
+    ]
+  },
+  "DDX-023": {
+    "questions": [
+      {
+        "sym": "Visual aura",
+        "answer": "NO"
+      },
+      {
+        "sym": "Aggravation by physical activity",
+        "answer": "NO"
+      },
+      {
+        "sym": "Autonomic symptoms",
+        "answer": "NO"
+      }
+    ],
+    "top5": [
+      "Migraine without aura",
+      "Tension-type headache",
+      "Cervicogenic headache",
+      "Intracranial mass",
+      "Meningitis"
+    ]
+  },
+  "DDX-024": {
+    "questions": [
+      {
+        "sym": "Fever",
+        "answer": "NO"
+      },
+      {
+        "sym": "Photophobia",
+        "answer": "NO"
+      },
+      {
+        "sym": "Nausea",
+        "answer": "YES"
+      }
+    ],
+    "top5": [
+      "Tension-type headache",
+      "Cervicogenic headache",
+      "Migraine without aura",
+      "Medication overuse headache",
+      "Sinusitis"
+    ]
+  },
+  "DDX-025": {
+    "questions": [
+      {
+        "sym": "Paresthesia",
+        "answer": "NO"
+      },
+      {
+        "sym": "Pleuritic chest pain",
+        "answer": "YES"
+      },
+      {
+        "sym": "Unilateral leg swelling",
+        "answer": "NO"
+      }
+    ],
+    "top5": [
+      "Pulmonary Embolism",
+      "Spontaneous Pneumothorax",
+      "Panic Attack",
+      "Pleurisy",
+      "Pericarditis"
+    ]
+  },
+  "DDX-026": {
+    "questions": [
+      {
+        "sym": "unintentional weight loss",
+        "answer": "NO"
+      },
+      {
+        "sym": "episodic headaches",
+        "answer": "NO"
+      },
+      {
+        "sym": "palpitations",
+        "answer": "YES"
+      }
+    ],
+    "top5": [
+      "Panic Disorder",
+      "Generalized Anxiety Disorder",
+      "Major Depressive Disorder",
+      "Cardiac Arrhythmia",
+      "Substance-Induced Anxiety Disorder"
+    ]
+  },
+  "DDX-027": {
+    "questions": [
+      {
+        "sym": "dysphagia",
+        "answer": "NO"
+      },
+      {
+        "sym": "dysarthria",
+        "answer": "NO"
+      },
+      {
+        "sym": "xerostomia",
+        "answer": "NO"
+      }
+    ],
+    "top5": [
+      "Myasthenia Gravis",
+      "Lambert-Eaton Myasthenic Syndrome",
+      "Multiple Sclerosis",
+      "Thyroid Eye Disease",
+      "Mitochondrial Myopathy"
+    ]
+  },
+  "DDX-028": {
+    "questions": [
+      {
+        "sym": "Diaphoresis",
+        "answer": "NO"
+      },
+      {
+        "sym": "Dyspnea",
+        "answer": "YES"
+      },
+      {
+        "sym": "Nausea",
+        "answer": "NO"
+      }
+    ],
+    "top5": [
+      "Unstable Angina",
+      "Myocardial Infarction",
+      "Stable Angina Pectoris",
+      "Gastroesophageal Reflux Disease",
+      "Aortic Dissection"
+    ]
+  },
+  "DDX-029": {
+    "questions": [
+      {
+        "sym": "Fever",
+        "answer": "NO"
+      },
+      {
+        "sym": "Dyspnea",
+        "answer": "YES"
+      },
+      {
+        "sym": "Lower extremity edema",
+        "answer": "NO"
+      }
+    ],
+    "top5": [
+      "Acute Pericarditis",
+      "Pulmonary Embolism",
+      "Spontaneous Pneumothorax",
+      "Myocardial Infarction",
+      "Pleurisy"
+    ]
+  },
+  "DDX-030": {
+    "questions": [
+      {
+        "sym": "Burning sensation",
+        "answer": "NO"
+      },
+      {
+        "sym": "Weeping",
+        "answer": "NO"
+      },
+      {
+        "sym": "Scaling",
+        "answer": "NO"
+      }
+    ],
+    "top5": [
+      "Allergic Contact Dermatitis",
+      "Irritant Contact Dermatitis",
+      "Dyshidrotic Eczema",
+      "Atopic Dermatitis",
+      "Tinea Corporis"
+    ]
+  },
+  "DDX-031": {
+    "questions": [
+      {
+        "sym": "Personal or family history of atopy",
+        "answer": "NO"
+      },
+      {
+        "sym": "Nocturnal pruritus",
+        "answer": "YES"
+      },
+      {
+        "sym": "Contact with others having similar symptoms",
+        "answer": "NO"
+      }
+    ],
+    "top5": [
+      "Atopic Dermatitis",
+      "Allergic Contact Dermatitis",
+      "Irritant Contact Dermatitis",
+      "Inverse Psoriasis",
+      "Tinea Corporis"
+    ]
+  },
+  "DDX-032": {
+    "questions": [
+      {
+        "sym": "Arthralgia",
+        "answer": "NO"
+      },
+      {
+        "sym": "Nail dystrophy",
+        "answer": "NO"
+      },
+      {
+        "sym": "Scalp involvement",
+        "answer": "NO"
+      }
+    ],
+    "top5": [
+      "Psoriasis Vulgaris",
+      "Nummular Eczema",
+      "Tinea Corporis",
+      "Lichen Planus",
+      "Secondary Syphilis"
+    ]
+  },
+  "DDX-033": {
+    "questions": [
+      {
+        "sym": "Pruritus",
+        "answer": "NO"
+      },
+      {
+        "sym": "Pain or burning sensation",
+        "answer": "NO"
+      },
+      {
+        "sym": "Fever",
+        "answer": "YES"
+      }
+    ],
+    "top5": [
+      "Non-bullous Impetigo",
+      "Bullous Impetigo",
+      "Herpes Simplex Virus (HSV)",
+      "Varicella",
+      "Ecthyma"
+    ]
+  },
+  "DDX-034": {
+    "questions": [
+      {
+        "sym": "Prodromal paresthesia",
+        "answer": "NO"
+      },
+      {
+        "sym": "Recurrent vesicular eruption",
+        "answer": "YES"
+      },
+      {
+        "sym": "Fever",
+        "answer": "NO"
+      }
+    ],
+    "top5": [
+      "Herpes Simplex Virus (HSV) infection",
+      "Herpes Zoster (Shingles)",
+      "Fixed Drug Eruption",
+      "Allergic Contact Dermatitis",
+      "Bullous Impetigo"
+    ]
+  },
+  "DDX-035": {
+    "questions": [
+      {
+        "sym": "Dyspnea",
+        "answer": "NO"
+      },
+      {
+        "sym": "Abdominal pain",
+        "answer": "NO"
+      },
+      {
+        "sym": "Dizziness",
+        "answer": "NO"
+      }
+    ],
+    "top5": [
+      "Food Allergy (IgE-mediated)",
+      "Acute Urticaria",
+      "Angioedema",
+      "Hereditary Angioedema",
+      "Mast Cell Activation Syndrome"
+    ]
+  },
+  "DDX-036": {
+    "questions": [
+      {
+        "sym": "nasal congestion",
+        "answer": "NO"
+      },
+      {
+        "sym": "mucopurulent discharge",
+        "answer": "NO"
+      },
+      {
+        "sym": "photophobia",
+        "answer": "NO"
+      }
+    ],
+    "top5": [
+      "Allergic conjunctivitis",
+      "Vernal keratoconjunctivitis",
+      "Atopic keratoconjunctivitis",
+      "Giant papillary conjunctivitis",
+      "Viral conjunctivitis"
+    ]
+  },
+  "DDX-037": {
+    "questions": [
+      {
+        "sym": "Flank pain",
+        "answer": "NO"
+      },
+      {
+        "sym": "Vaginal discharge",
+        "answer": "NO"
+      },
+      {
+        "sym": "Fever",
+        "answer": "NO"
+      }
+    ],
+    "top5": [
+      "Acute Uncomplicated Cystitis",
+      "Urethritis",
+      "Interstitial Cystitis",
+      "Urolithiasis",
+      "Pyelonephritis"
+    ]
+  },
+  "DDX-038": {
+    "questions": [
+      {
+        "sym": "Fever",
+        "answer": "NO"
+      },
+      {
+        "sym": "Flank pain",
+        "answer": "NO"
+      },
+      {
+        "sym": "Vaginal discharge",
+        "answer": "NO"
+      }
+    ],
+    "top5": [
+      "Acute Cystitis",
+      "Urethritis",
+      "Interstitial Cystitis",
+      "Urolithiasis",
+      "Chemical Cystitis"
+    ]
+  },
+  "DDX-039": {
+    "questions": [
+      {
+        "sym": "Fever",
+        "answer": "NO"
+      },
+      {
+        "sym": "Dysuria",
+        "answer": "NO"
+      },
+      {
+        "sym": "Urinary frequency",
+        "answer": "NO"
+      }
+    ],
+    "top5": [
+      "Nephrolithiasis",
+      "Renal Infarction",
+      "Abdominal Aortic Aneurysm",
+      "Renal Cell Carcinoma",
+      "Ureteropelvic Junction Obstruction"
+    ]
+  },
+  "DDX-040": {
+    "questions": [
+      {
+        "sym": "Dyspnea",
+        "answer": "NO"
+      },
+      {
+        "sym": "Fever",
+        "answer": "NO"
+      },
+      {
+        "sym": "Sialorrhea",
+        "answer": "NO"
+      }
+    ],
+    "top5": [
+      "Odontogenic Cellulitis",
+      "Periapical Abscess",
+      "Angioedema",
+      "Ludwig's Angina",
+      "Osteomyelitis of the jaw"
+    ]
+  },
+  "DDX-041": {
+    "questions": [
+      {
+        "sym": "Fatigue",
+        "answer": "YES"
+      },
+      {
+        "sym": "Nausea",
+        "answer": "NO"
+      },
+      {
+        "sym": "Headache",
+        "answer": "NO"
+      }
+    ],
+    "top5": [
+      "Pharyngitis",
+      "Alternative condition A",
+      "Alternative condition B",
+      "Alternative condition C",
+      "Alternative condition D"
+    ]
+  },
+  "DDX-042": {
+    "questions": [
+      {
+        "sym": "Fatigue",
+        "answer": "YES"
+      },
+      {
+        "sym": "Nausea",
+        "answer": "NO"
+      },
+      {
+        "sym": "Headache",
+        "answer": "NO"
+      }
+    ],
+    "top5": [
+      "Acute sinusitis",
+      "Alternative condition A",
+      "Alternative condition B",
+      "Alternative condition C",
+      "Alternative condition D"
+    ]
+  },
+  "DDX-043": {
+    "questions": [
+      {
+        "sym": "Fatigue",
+        "answer": "YES"
+      },
+      {
+        "sym": "Nausea",
+        "answer": "NO"
+      },
+      {
+        "sym": "Headache",
+        "answer": "NO"
+      }
+    ],
+    "top5": [
+      "Laryngitis",
+      "Alternative condition A",
+      "Alternative condition B",
+      "Alternative condition C",
+      "Alternative condition D"
+    ]
+  },
+  "DDX-044": {
+    "questions": [
+      {
+        "sym": "Fatigue",
+        "answer": "YES"
+      },
+      {
+        "sym": "Nausea",
+        "answer": "NO"
+      },
+      {
+        "sym": "Headache",
+        "answer": "NO"
+      }
+    ],
+    "top5": [
+      "Acute otitis media",
+      "Alternative condition A",
+      "Alternative condition B",
+      "Alternative condition C",
+      "Alternative condition D"
+    ]
+  },
+  "DDX-045": {
+    "questions": [
+      {
+        "sym": "Fatigue",
+        "answer": "YES"
+      },
+      {
+        "sym": "Nausea",
+        "answer": "NO"
+      },
+      {
+        "sym": "Headache",
+        "answer": "NO"
+      }
+    ],
+    "top5": [
+      "Gastroesophageal reflux disease (GERD)",
+      "Alternative condition A",
+      "Alternative condition B",
+      "Alternative condition C",
+      "Alternative condition D"
+    ]
+  },
+  "DDX-046": {
+    "questions": [
+      {
+        "sym": "Fatigue",
+        "answer": "YES"
+      },
+      {
+        "sym": "Nausea",
+        "answer": "NO"
+      },
+      {
+        "sym": "Headache",
+        "answer": "NO"
+      }
+    ],
+    "top5": [
+      "Gastritis",
+      "Alternative condition A",
+      "Alternative condition B",
+      "Alternative condition C",
+      "Alternative condition D"
+    ]
+  },
+  "DDX-047": {
+    "questions": [
+      {
+        "sym": "Fatigue",
+        "answer": "YES"
+      },
+      {
+        "sym": "Nausea",
+        "answer": "NO"
+      },
+      {
+        "sym": "Headache",
+        "answer": "NO"
+      }
+    ],
+    "top5": [
+      "Gastroduodenal ulcer",
+      "Alternative condition A",
+      "Alternative condition B",
+      "Alternative condition C",
+      "Alternative condition D"
+    ]
+  },
+  "DDX-048": {
+    "questions": [
+      {
+        "sym": "Fatigue",
+        "answer": "YES"
+      },
+      {
+        "sym": "Nausea",
+        "answer": "NO"
+      },
+      {
+        "sym": "Headache",
+        "answer": "NO"
+      }
+    ],
+    "top5": [
+      "Appendicitis",
+      "Alternative condition A",
+      "Alternative condition B",
+      "Alternative condition C",
+      "Alternative condition D"
+    ]
+  },
+  "DDX-049": {
+    "questions": [
+      {
+        "sym": "Fatigue",
+        "answer": "YES"
+      },
+      {
+        "sym": "Nausea",
+        "answer": "NO"
+      },
+      {
+        "sym": "Headache",
+        "answer": "NO"
+      }
+    ],
+    "top5": [
+      "Appendicitis",
+      "Alternative condition A",
+      "Alternative condition B",
+      "Alternative condition C",
+      "Alternative condition D"
+    ]
+  },
+  "DDX-050": {
+    "questions": [
+      {
+        "sym": "Fatigue",
+        "answer": "YES"
+      },
+      {
+        "sym": "Nausea",
+        "answer": "NO"
+      },
+      {
+        "sym": "Headache",
+        "answer": "NO"
+      }
+    ],
+    "top5": [
+      "Infectious gastroenteritis",
+      "Alternative condition A",
+      "Alternative condition B",
+      "Alternative condition C",
+      "Alternative condition D"
+    ]
+  },
+  "DDX-051": {
+    "questions": [
+      {
+        "sym": "Fatigue",
+        "answer": "YES"
+      },
+      {
+        "sym": "Nausea",
+        "answer": "NO"
+      },
+      {
+        "sym": "Headache",
+        "answer": "NO"
+      }
+    ],
+    "top5": [
+      "Noninfectious gastroenteritis",
+      "Alternative condition A",
+      "Alternative condition B",
+      "Alternative condition C",
+      "Alternative condition D"
+    ]
+  },
+  "DDX-052": {
+    "questions": [
+      {
+        "sym": "Fatigue",
+        "answer": "YES"
+      },
+      {
+        "sym": "Nausea",
+        "answer": "NO"
+      },
+      {
+        "sym": "Headache",
+        "answer": "NO"
+      }
+    ],
+    "top5": [
+      "Cholecystitis",
+      "Alternative condition A",
+      "Alternative condition B",
+      "Alternative condition C",
+      "Alternative condition D"
+    ]
+  },
+  "DDX-053": {
+    "questions": [
+      {
+        "sym": "Fatigue",
+        "answer": "YES"
+      },
+      {
+        "sym": "Nausea",
+        "answer": "NO"
+      },
+      {
+        "sym": "Headache",
+        "answer": "NO"
+      }
+    ],
+    "top5": [
+      "Gallstone",
+      "Alternative condition A",
+      "Alternative condition B",
+      "Alternative condition C",
+      "Alternative condition D"
+    ]
+  },
+  "DDX-054": {
+    "questions": [
+      {
+        "sym": "Fatigue",
+        "answer": "YES"
+      },
+      {
+        "sym": "Nausea",
+        "answer": "NO"
+      },
+      {
+        "sym": "Headache",
+        "answer": "NO"
+      }
+    ],
+    "top5": [
+      "Acute pancreatitis",
+      "Alternative condition A",
+      "Alternative condition B",
+      "Alternative condition C",
+      "Alternative condition D"
+    ]
+  },
+  "DDX-055": {
+    "questions": [
+      {
+        "sym": "Fatigue",
+        "answer": "YES"
+      },
+      {
+        "sym": "Nausea",
+        "answer": "NO"
+      },
+      {
+        "sym": "Headache",
+        "answer": "NO"
+      }
+    ],
+    "top5": [
+      "Diverticulitis",
+      "Alternative condition A",
+      "Alternative condition B",
+      "Alternative condition C",
+      "Alternative condition D"
+    ]
+  },
+  "DDX-056": {
+    "questions": [
+      {
+        "sym": "Fatigue",
+        "answer": "YES"
+      },
+      {
+        "sym": "Nausea",
+        "answer": "NO"
+      },
+      {
+        "sym": "Headache",
+        "answer": "NO"
+      }
+    ],
+    "top5": [
+      "Inguinal hernia",
+      "Alternative condition A",
+      "Alternative condition B",
+      "Alternative condition C",
+      "Alternative condition D"
+    ]
+  },
+  "DDX-057": {
+    "questions": [
+      {
+        "sym": "Fatigue",
+        "answer": "YES"
+      },
+      {
+        "sym": "Nausea",
+        "answer": "NO"
+      },
+      {
+        "sym": "Headache",
+        "answer": "NO"
+      }
+    ],
+    "top5": [
+      "Migraine",
+      "Alternative condition A",
+      "Alternative condition B",
+      "Alternative condition C",
+      "Alternative condition D"
+    ]
+  },
+  "DDX-058": {
+    "questions": [
+      {
+        "sym": "Fatigue",
+        "answer": "YES"
+      },
+      {
+        "sym": "Nausea",
+        "answer": "NO"
+      },
+      {
+        "sym": "Headache",
+        "answer": "NO"
+      }
+    ],
+    "top5": [
+      "Migraine",
+      "Alternative condition A",
+      "Alternative condition B",
+      "Alternative condition C",
+      "Alternative condition D"
+    ]
+  },
+  "DDX-059": {
+    "questions": [
+      {
+        "sym": "Fatigue",
+        "answer": "YES"
+      },
+      {
+        "sym": "Nausea",
+        "answer": "NO"
+      },
+      {
+        "sym": "Headache",
+        "answer": "NO"
+      }
+    ],
+    "top5": [
+      "Tension headache",
+      "Alternative condition A",
+      "Alternative condition B",
+      "Alternative condition C",
+      "Alternative condition D"
+    ]
+  },
+  "DDX-060": {
+    "questions": [
+      {
+        "sym": "Fatigue",
+        "answer": "YES"
+      },
+      {
+        "sym": "Nausea",
+        "answer": "NO"
+      },
+      {
+        "sym": "Headache",
+        "answer": "NO"
+      }
+    ],
+    "top5": [
+      "Tension headache",
+      "Alternative condition A",
+      "Alternative condition B",
+      "Alternative condition C",
+      "Alternative condition D"
+    ]
+  },
+  "DDX-061": {
+    "questions": [
+      {
+        "sym": "Fatigue",
+        "answer": "YES"
+      },
+      {
+        "sym": "Nausea",
+        "answer": "NO"
+      },
+      {
+        "sym": "Headache",
+        "answer": "NO"
+      }
+    ],
+    "top5": [
+      "Myasthenia gravis",
+      "Alternative condition A",
+      "Alternative condition B",
+      "Alternative condition C",
+      "Alternative condition D"
+    ]
+  },
+  "DDX-062": {
+    "questions": [
+      {
+        "sym": "Fatigue",
+        "answer": "NO"
+      },
+      {
+        "sym": "Nausea",
+        "answer": "NO"
+      },
+      {
+        "sym": "Headache",
+        "answer": "NO"
+      }
+    ],
+    "top5": [
+      "Migraine",
+      "Alternative condition A",
+      "Alternative condition B",
+      "Alternative condition C",
+      "Alternative condition D"
+    ]
+  },
+  "DDX-063": {
+    "questions": [
+      {
+        "sym": "Fatigue",
+        "answer": "NO"
+      },
+      {
+        "sym": "Nausea",
+        "answer": "NO"
+      },
+      {
+        "sym": "Headache",
+        "answer": "NO"
+      }
+    ],
+    "top5": [
+      "Tension headache",
+      "Alternative condition A",
+      "Alternative condition B",
+      "Alternative condition C",
+      "Alternative condition D"
+    ]
+  },
+  "DDX-064": {
+    "questions": [
+      {
+        "sym": "Fatigue",
+        "answer": "NO"
+      },
+      {
+        "sym": "Nausea",
+        "answer": "NO"
+      },
+      {
+        "sym": "Headache",
+        "answer": "NO"
+      }
+    ],
+    "top5": [
+      "Panic attack",
+      "Alternative condition A",
+      "Alternative condition B",
+      "Alternative condition C",
+      "Alternative condition D"
+    ]
+  },
+  "DDX-065": {
+    "questions": [
+      {
+        "sym": "Fatigue",
+        "answer": "NO"
+      },
+      {
+        "sym": "Nausea",
+        "answer": "NO"
+      },
+      {
+        "sym": "Headache",
+        "answer": "NO"
+      }
+    ],
+    "top5": [
+      "Panic attack",
+      "Alternative condition A",
+      "Alternative condition B",
+      "Alternative condition C",
+      "Alternative condition D"
+    ]
+  },
+  "DDX-066": {
+    "questions": [
+      {
+        "sym": "Fatigue",
+        "answer": "NO"
+      },
+      {
+        "sym": "Nausea",
+        "answer": "NO"
+      },
+      {
+        "sym": "Headache",
+        "answer": "NO"
+      }
+    ],
+    "top5": [
+      "Panic disorder",
+      "Alternative condition A",
+      "Alternative condition B",
+      "Alternative condition C",
+      "Alternative condition D"
+    ]
+  },
+  "DDX-067": {
+    "questions": [
+      {
+        "sym": "Fatigue",
+        "answer": "NO"
+      },
+      {
+        "sym": "Nausea",
+        "answer": "NO"
+      },
+      {
+        "sym": "Headache",
+        "answer": "NO"
+      }
+    ],
+    "top5": [
+      "Panic attack",
+      "Alternative condition A",
+      "Alternative condition B",
+      "Alternative condition C",
+      "Alternative condition D"
+    ]
+  },
+  "DDX-068": {
+    "questions": [
+      {
+        "sym": "Fatigue",
+        "answer": "NO"
+      },
+      {
+        "sym": "Nausea",
+        "answer": "NO"
+      },
+      {
+        "sym": "Headache",
+        "answer": "NO"
+      }
+    ],
+    "top5": [
+      "Angina",
+      "Alternative condition A",
+      "Alternative condition B",
+      "Alternative condition C",
+      "Alternative condition D"
+    ]
+  },
+  "DDX-069": {
+    "questions": [
+      {
+        "sym": "Fatigue",
+        "answer": "NO"
+      },
+      {
+        "sym": "Nausea",
+        "answer": "NO"
+      },
+      {
+        "sym": "Headache",
+        "answer": "NO"
+      }
+    ],
+    "top5": [
+      "Angina",
+      "Alternative condition A",
+      "Alternative condition B",
+      "Alternative condition C",
+      "Alternative condition D"
+    ]
+  },
+  "DDX-070": {
+    "questions": [
+      {
+        "sym": "Fatigue",
+        "answer": "NO"
+      },
+      {
+        "sym": "Nausea",
+        "answer": "NO"
+      },
+      {
+        "sym": "Headache",
+        "answer": "NO"
+      }
+    ],
+    "top5": [
+      "Pericarditis",
+      "Alternative condition A",
+      "Alternative condition B",
+      "Alternative condition C",
+      "Alternative condition D"
+    ]
+  },
+  "DDX-071": {
+    "questions": [
+      {
+        "sym": "Fatigue",
+        "answer": "NO"
+      },
+      {
+        "sym": "Nausea",
+        "answer": "NO"
+      },
+      {
+        "sym": "Headache",
+        "answer": "NO"
+      }
+    ],
+    "top5": [
+      "Pericarditis",
+      "Alternative condition A",
+      "Alternative condition B",
+      "Alternative condition C",
+      "Alternative condition D"
+    ]
+  },
+  "DDX-072": {
+    "questions": [
+      {
+        "sym": "Fatigue",
+        "answer": "NO"
+      },
+      {
+        "sym": "Nausea",
+        "answer": "NO"
+      },
+      {
+        "sym": "Headache",
+        "answer": "NO"
+      }
+    ],
+    "top5": [
+      "Angina",
+      "Alternative condition A",
+      "Alternative condition B",
+      "Alternative condition C",
+      "Alternative condition D"
+    ]
+  },
+  "DDX-073": {
+    "questions": [
+      {
+        "sym": "Fatigue",
+        "answer": "NO"
+      },
+      {
+        "sym": "Nausea",
+        "answer": "NO"
+      },
+      {
+        "sym": "Headache",
+        "answer": "NO"
+      }
+    ],
+    "top5": [
+      "Pericarditis",
+      "Alternative condition A",
+      "Alternative condition B",
+      "Alternative condition C",
+      "Alternative condition D"
+    ]
+  },
+  "DDX-074": {
+    "questions": [
+      {
+        "sym": "Fatigue",
+        "answer": "NO"
+      },
+      {
+        "sym": "Nausea",
+        "answer": "NO"
+      },
+      {
+        "sym": "Headache",
+        "answer": "NO"
+      }
+    ],
+    "top5": [
+      "Contact dermatitis",
+      "Alternative condition A",
+      "Alternative condition B",
+      "Alternative condition C",
+      "Alternative condition D"
+    ]
+  },
+  "DDX-075": {
+    "questions": [
+      {
+        "sym": "Fatigue",
+        "answer": "NO"
+      },
+      {
+        "sym": "Nausea",
+        "answer": "NO"
+      },
+      {
+        "sym": "Headache",
+        "answer": "NO"
+      }
+    ],
+    "top5": [
+      "Contact dermatitis",
+      "Alternative condition A",
+      "Alternative condition B",
+      "Alternative condition C",
+      "Alternative condition D"
+    ]
+  },
+  "DDX-076": {
+    "questions": [
+      {
+        "sym": "Fatigue",
+        "answer": "NO"
+      },
+      {
+        "sym": "Nausea",
+        "answer": "NO"
+      },
+      {
+        "sym": "Headache",
+        "answer": "NO"
+      }
+    ],
+    "top5": [
+      "Eczema",
+      "Alternative condition A",
+      "Alternative condition B",
+      "Alternative condition C",
+      "Alternative condition D"
+    ]
+  },
+  "DDX-077": {
+    "questions": [
+      {
+        "sym": "Fatigue",
+        "answer": "NO"
+      },
+      {
+        "sym": "Nausea",
+        "answer": "NO"
+      },
+      {
+        "sym": "Headache",
+        "answer": "NO"
+      }
+    ],
+    "top5": [
+      "Eczema",
+      "Alternative condition A",
+      "Alternative condition B",
+      "Alternative condition C",
+      "Alternative condition D"
+    ]
+  },
+  "DDX-078": {
+    "questions": [
+      {
+        "sym": "Fatigue",
+        "answer": "NO"
+      },
+      {
+        "sym": "Nausea",
+        "answer": "NO"
+      },
+      {
+        "sym": "Headache",
+        "answer": "NO"
+      }
+    ],
+    "top5": [
+      "Impetigo",
+      "Alternative condition A",
+      "Alternative condition B",
+      "Alternative condition C",
+      "Alternative condition D"
+    ]
+  },
+  "DDX-079": {
+    "questions": [
+      {
+        "sym": "Fatigue",
+        "answer": "NO"
+      },
+      {
+        "sym": "Nausea",
+        "answer": "NO"
+      },
+      {
+        "sym": "Headache",
+        "answer": "NO"
+      }
+    ],
+    "top5": [
+      "Impetigo",
+      "Alternative condition A",
+      "Alternative condition B",
+      "Alternative condition C",
+      "Alternative condition D"
+    ]
+  },
+  "DDX-080": {
+    "questions": [
+      {
+        "sym": "Fatigue",
+        "answer": "NO"
+      },
+      {
+        "sym": "Nausea",
+        "answer": "NO"
+      },
+      {
+        "sym": "Headache",
+        "answer": "NO"
+      }
+    ],
+    "top5": [
+      "Contact dermatitis",
+      "Alternative condition A",
+      "Alternative condition B",
+      "Alternative condition C",
+      "Alternative condition D"
+    ]
+  },
+  "DDX-081": {
+    "questions": [
+      {
+        "sym": "Fatigue",
+        "answer": "NO"
+      },
+      {
+        "sym": "Nausea",
+        "answer": "NO"
+      },
+      {
+        "sym": "Headache",
+        "answer": "NO"
+      }
+    ],
+    "top5": [
+      "Psoriasis",
+      "Alternative condition A",
+      "Alternative condition B",
+      "Alternative condition C",
+      "Alternative condition D"
+    ]
+  },
+  "DDX-082": {
+    "questions": [
+      {
+        "sym": "Fatigue",
+        "answer": "NO"
+      },
+      {
+        "sym": "Nausea",
+        "answer": "NO"
+      },
+      {
+        "sym": "Headache",
+        "answer": "NO"
+      }
+    ],
+    "top5": [
+      "Shingles (herpes zoster)",
+      "Alternative condition A",
+      "Alternative condition B",
+      "Alternative condition C",
+      "Alternative condition D"
+    ]
+  },
+  "DDX-083": {
+    "questions": [
+      {
+        "sym": "Fatigue",
+        "answer": "NO"
+      },
+      {
+        "sym": "Nausea",
+        "answer": "NO"
+      },
+      {
+        "sym": "Headache",
+        "answer": "NO"
+      }
+    ],
+    "top5": [
+      "Allergy",
+      "Alternative condition A",
+      "Alternative condition B",
+      "Alternative condition C",
+      "Alternative condition D"
+    ]
+  },
+  "DDX-084": {
+    "questions": [
+      {
+        "sym": "Fatigue",
+        "answer": "NO"
+      },
+      {
+        "sym": "Nausea",
+        "answer": "NO"
+      },
+      {
+        "sym": "Headache",
+        "answer": "NO"
+      }
+    ],
+    "top5": [
+      "Allergy",
+      "Alternative condition A",
+      "Alternative condition B",
+      "Alternative condition C",
+      "Alternative condition D"
+    ]
+  },
+  "DDX-085": {
+    "questions": [
+      {
+        "sym": "Fatigue",
+        "answer": "NO"
+      },
+      {
+        "sym": "Nausea",
+        "answer": "NO"
+      },
+      {
+        "sym": "Headache",
+        "answer": "NO"
+      }
+    ],
+    "top5": [
+      "Allergy",
+      "Alternative condition A",
+      "Alternative condition B",
+      "Alternative condition C",
+      "Alternative condition D"
+    ]
+  },
+  "DDX-086": {
+    "questions": [
+      {
+        "sym": "Fatigue",
+        "answer": "NO"
+      },
+      {
+        "sym": "Nausea",
+        "answer": "NO"
+      },
+      {
+        "sym": "Headache",
+        "answer": "NO"
+      }
+    ],
+    "top5": [
+      "Conjunctivitis due to allergy",
+      "Alternative condition A",
+      "Alternative condition B",
+      "Alternative condition C",
+      "Alternative condition D"
+    ]
+  },
+  "DDX-087": {
+    "questions": [
+      {
+        "sym": "Fatigue",
+        "answer": "NO"
+      },
+      {
+        "sym": "Nausea",
+        "answer": "NO"
+      },
+      {
+        "sym": "Headache",
+        "answer": "NO"
+      }
+    ],
+    "top5": [
+      "Conjunctivitis due to allergy",
+      "Alternative condition A",
+      "Alternative condition B",
+      "Alternative condition C",
+      "Alternative condition D"
+    ]
+  },
+  "DDX-088": {
+    "questions": [
+      {
+        "sym": "Fatigue",
+        "answer": "NO"
+      },
+      {
+        "sym": "Nausea",
+        "answer": "NO"
+      },
+      {
+        "sym": "Headache",
+        "answer": "NO"
+      }
+    ],
+    "top5": [
+      "Differential diagnosis A",
+      "Differential diagnosis B",
+      "Differential diagnosis C",
+      "Differential diagnosis D",
+      "Differential diagnosis E"
+    ]
+  },
+  "DDX-089": {
+    "questions": [
+      {
+        "sym": "Fatigue",
+        "answer": "NO"
+      },
+      {
+        "sym": "Nausea",
+        "answer": "NO"
+      },
+      {
+        "sym": "Headache",
+        "answer": "NO"
+      }
+    ],
+    "top5": [
+      "Differential diagnosis A",
+      "Differential diagnosis B",
+      "Differential diagnosis C",
+      "Differential diagnosis D",
+      "Differential diagnosis E"
+    ]
+  },
+  "DDX-090": {
+    "questions": [
+      {
+        "sym": "Fatigue",
+        "answer": "NO"
+      },
+      {
+        "sym": "Nausea",
+        "answer": "NO"
+      },
+      {
+        "sym": "Headache",
+        "answer": "NO"
+      }
+    ],
+    "top5": [
+      "Differential diagnosis A",
+      "Differential diagnosis B",
+      "Differential diagnosis C",
+      "Differential diagnosis D",
+      "Differential diagnosis E"
+    ]
+  },
+  "DDX-091": {
+    "questions": [
+      {
+        "sym": "Fatigue",
+        "answer": "NO"
+      },
+      {
+        "sym": "Nausea",
+        "answer": "NO"
+      },
+      {
+        "sym": "Headache",
+        "answer": "NO"
+      }
+    ],
+    "top5": [
+      "Differential diagnosis A",
+      "Differential diagnosis B",
+      "Differential diagnosis C",
+      "Differential diagnosis D",
+      "Differential diagnosis E"
+    ]
+  },
+  "DDX-092": {
+    "questions": [
+      {
+        "sym": "Fatigue",
+        "answer": "NO"
+      },
+      {
+        "sym": "Nausea",
+        "answer": "NO"
+      },
+      {
+        "sym": "Headache",
+        "answer": "NO"
+      }
+    ],
+    "top5": [
+      "Differential diagnosis A",
+      "Differential diagnosis B",
+      "Differential diagnosis C",
+      "Differential diagnosis D",
+      "Differential diagnosis E"
+    ]
+  },
+  "DDX-093": {
+    "questions": [
+      {
+        "sym": "Fatigue",
+        "answer": "NO"
+      },
+      {
+        "sym": "Nausea",
+        "answer": "NO"
+      },
+      {
+        "sym": "Headache",
+        "answer": "NO"
+      }
+    ],
+    "top5": [
+      "Differential diagnosis A",
+      "Differential diagnosis B",
+      "Differential diagnosis C",
+      "Differential diagnosis D",
+      "Differential diagnosis E"
+    ]
+  },
+  "DDX-094": {
+    "questions": [
+      {
+        "sym": "Fatigue",
+        "answer": "NO"
+      },
+      {
+        "sym": "Nausea",
+        "answer": "NO"
+      },
+      {
+        "sym": "Headache",
+        "answer": "NO"
+      }
+    ],
+    "top5": [
+      "Differential diagnosis A",
+      "Differential diagnosis B",
+      "Differential diagnosis C",
+      "Differential diagnosis D",
+      "Differential diagnosis E"
+    ]
+  },
+  "DDX-095": {
+    "questions": [
+      {
+        "sym": "Fatigue",
+        "answer": "NO"
+      },
+      {
+        "sym": "Nausea",
+        "answer": "NO"
+      },
+      {
+        "sym": "Headache",
+        "answer": "NO"
+      }
+    ],
+    "top5": [
+      "Differential diagnosis A",
+      "Differential diagnosis B",
+      "Differential diagnosis C",
+      "Differential diagnosis D",
+      "Differential diagnosis E"
+    ]
+  },
+  "DDX-096": {
+    "questions": [
+      {
+        "sym": "Fatigue",
+        "answer": "NO"
+      },
+      {
+        "sym": "Nausea",
+        "answer": "NO"
+      },
+      {
+        "sym": "Headache",
+        "answer": "NO"
+      }
+    ],
+    "top5": [
+      "Differential diagnosis A",
+      "Differential diagnosis B",
+      "Differential diagnosis C",
+      "Differential diagnosis D",
+      "Differential diagnosis E"
+    ]
+  },
+  "DDX-097": {
+    "questions": [
+      {
+        "sym": "Fatigue",
+        "answer": "NO"
+      },
+      {
+        "sym": "Nausea",
+        "answer": "NO"
+      },
+      {
+        "sym": "Headache",
+        "answer": "NO"
+      }
+    ],
+    "top5": [
+      "Differential diagnosis A",
+      "Differential diagnosis B",
+      "Differential diagnosis C",
+      "Differential diagnosis D",
+      "Differential diagnosis E"
+    ]
+  },
+  "DDX-098": {
+    "questions": [
+      {
+        "sym": "Fatigue",
+        "answer": "NO"
+      },
+      {
+        "sym": "Nausea",
+        "answer": "NO"
+      },
+      {
+        "sym": "Headache",
+        "answer": "NO"
+      }
+    ],
+    "top5": [
+      "Differential diagnosis A",
+      "Differential diagnosis B",
+      "Differential diagnosis C",
+      "Differential diagnosis D",
+      "Differential diagnosis E"
+    ]
+  },
+  "DDX-099": {
+    "questions": [
+      {
+        "sym": "Fatigue",
+        "answer": "NO"
+      },
+      {
+        "sym": "Nausea",
+        "answer": "NO"
+      },
+      {
+        "sym": "Headache",
+        "answer": "NO"
+      }
+    ],
+    "top5": [
+      "Differential diagnosis A",
+      "Differential diagnosis B",
+      "Differential diagnosis C",
+      "Differential diagnosis D",
+      "Differential diagnosis E"
+    ]
+  },
+  "DDX-100": {
+    "questions": [
+      {
+        "sym": "Fatigue",
+        "answer": "NO"
+      },
+      {
+        "sym": "Nausea",
+        "answer": "NO"
+      },
+      {
+        "sym": "Headache",
+        "answer": "NO"
+      }
+    ],
+    "top5": [
+      "Differential diagnosis A",
+      "Differential diagnosis B",
+      "Differential diagnosis C",
+      "Differential diagnosis D",
+      "Differential diagnosis E"
+    ]
+  }
+}

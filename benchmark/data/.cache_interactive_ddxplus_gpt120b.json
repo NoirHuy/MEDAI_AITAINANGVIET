@@ -1,0 +1,2302 @@
+{
+  "DDX-001": {
+    "questions": [
+      {
+        "sym": "tonsillar exudates",
+        "answer": "NO"
+      },
+      {
+        "sym": "nasal congestion",
+        "answer": "NO"
+      },
+      {
+        "sym": "anterior cervical lymphadenopathy",
+        "answer": "NO"
+      }
+    ],
+    "top5": [
+      "Acute viral pharyngitis (common cold)",
+      "COVID-19 infection",
+      "Mycoplasma pneumoniae infection",
+      "Group A Streptococcal pharyngitis",
+      "Acute laryngitis"
+    ]
+  },
+  "DDX-002": {
+    "questions": [
+      {
+        "sym": "fever",
+        "answer": "NO"
+      },
+      {
+        "sym": "postural worsening of facial pain",
+        "answer": "NO"
+      },
+      {
+        "sym": "sneezing",
+        "answer": "NO"
+      }
+    ],
+    "top5": [
+      "Acute viral rhinosinusitis",
+      "Acute bacterial sinusitis",
+      "Nonallergic rhinitis (vasomotor rhinitis)",
+      "Allergic rhinitis",
+      "COVID-19 infection"
+    ]
+  },
+  "DDX-003": {
+    "questions": [
+      {
+        "sym": "Anosmia",
+        "answer": "NO"
+      },
+      {
+        "sym": "Allergic rhinitis (sneezing and ocular pruritus)",
+        "answer": "NO"
+      },
+      {
+        "sym": "Purulent nasal discharge",
+        "answer": "YES"
+      }
+    ],
+    "top5": [
+      "Chronic bacterial rhinosinusitis (chronic sinusitis)",
+      "Acute bacterial sinusitis (subacute sinusitis)",
+      "Odontogenic sinusitis (dental infection–related sinusitis)",
+      "Non‑invasive fungal sinusitis (allergic fungal sinusitis)",
+      "Chronic rhinosinusitis with nasal polyps"
+    ]
+  },
+  "DDX-004": {
+    "questions": [
+      {
+        "sym": "Fever",
+        "answer": "NO"
+      },
+      {
+        "sym": "Odynophagia",
+        "answer": "NO"
+      },
+      {
+        "sym": "Cough",
+        "answer": "YES"
+      }
+    ],
+    "top5": [
+      "Acute viral laryngitis (phonotrauma)",
+      "Laryngopharyngeal reflux (GERD)",
+      "Upper airway cough syndrome/post‑nasal drip (allergic rhinitis)",
+      "Acute bronchitis",
+      "Vocal cord nodule or polyp"
+    ]
+  },
+  "DDX-005": {
+    "questions": [
+      {
+        "sym": "drooling",
+        "answer": "NO"
+      },
+      {
+        "sym": "trismus",
+        "answer": "NO"
+      },
+      {
+        "sym": "neck pain or limited neck extension",
+        "answer": "NO"
+      }
+    ],
+    "top5": [
+      "Epiglottitis",
+      "Streptococcal tonsillitis",
+      "Adenoviral pharyngitis",
+      "Laryngotracheobronchitis (croup)",
+      "Peritonsillar abscess"
+    ]
+  },
+  "DDX-006": {
+    "questions": [
+      {
+        "sym": "otorrhea",
+        "answer": "NO"
+      },
+      {
+        "sym": "postauricular tenderness",
+        "answer": "NO"
+      },
+      {
+        "sym": "conductive hearing loss",
+        "answer": "NO"
+      }
+    ],
+    "top5": [
+      "Acute otitis media",
+      "Acute otitis externa",
+      "Acute mastoiditis",
+      "Eustachian tube dysfunction secondary to upper respiratory infection",
+      "Acute bacterial sinusitis with referred otalgia"
+    ]
+  },
+  "DDX-007": {
+    "questions": [
+      {
+        "sym": "aural pruritus",
+        "answer": "NO"
+      },
+      {
+        "sym": "purulent otorrhea",
+        "answer": "YES"
+      },
+      {
+        "sym": "conductive hearing loss",
+        "answer": "NO"
+      }
+    ],
+    "top5": [
+      "Acute bacterial otitis externa (swimmer's ear)",
+      "Acute otitis media with perforated tympanic membrane",
+      "Malignant (necrotizing) otitis externa",
+      "Acute fungal otitis externa (otomycosis)",
+      "Acute mastoiditis"
+    ]
+  },
+  "DDX-008": {
+    "questions": [
+      {
+        "sym": "facial nerve palsy",
+        "answer": "NO"
+      },
+      {
+        "sym": "malodorous otorrhea",
+        "answer": "NO"
+      },
+      {
+        "sym": "pain exacerbated by pinna manipulation (external auditory canal tenderness)",
+        "answer": "NO"
+      }
+    ],
+    "top5": [
+      "Chronic suppurative otitis media (non‑cholesteatomatous)",
+      "Cholesteatoma (unsafe chronic otitis media)",
+      "Eustachian tube dysfunction with otitis media with effusion",
+      "Middle ear neoplasm (e.g., glomus tympanicum)",
+      "Allergic rhinitis–related eustachian tube dysfunction"
+    ]
+  },
+  "DDX-009": {
+    "questions": [
+      {
+        "sym": "exertional chest pain (angina)",
+        "answer": "YES"
+      },
+      {
+        "sym": "radiating chest pain (to left arm/jaw/back)",
+        "answer": "YES"
+      },
+      {
+        "sym": "diaphoresis",
+        "answer": "NO"
+      }
+    ],
+    "top5": [
+      "Gastroesophageal reflux disease (GERD)",
+      "Coronary artery disease (stable angina)",
+      "Diffuse esophageal spasm",
+      "Costochondritis (musculoskeletal chest wall pain)",
+      "Panic attack / anxiety‑related chest pain"
+    ]
+  },
+  "DDX-010": {
+    "questions": [
+      {
+        "sym": "Hematemesis",
+        "answer": "YES"
+      },
+      {
+        "sym": "Melena",
+        "answer": "NO"
+      },
+      {
+        "sym": "Abdominal guarding/rebound tenderness",
+        "answer": "NO"
+      }
+    ],
+    "top5": [
+      "Bleeding peptic ulcer (gastric ulcer)",
+      "NSAID‑induced erosive gastritis",
+      "Mallory‑Weiss tear",
+      "Acute gastritis",
+      "Acute pancreatitis"
+    ]
+  },
+  "DDX-011": {
+    "questions": [
+      {
+        "sym": "melena",
+        "answer": "NO"
+      },
+      {
+        "sym": "epigastric pain radiating to the back",
+        "answer": "NO"
+      },
+      {
+        "sym": "heartburn (acid reflux)",
+        "answer": "NO"
+      }
+    ],
+    "top5": [
+      "Duodenal ulcer (peptic ulcer disease)",
+      "Gastric ulcer",
+      "Helicobacter pylori‑associated gastritis",
+      "NSAID‑induced gastritis/ulcer",
+      "Functional dyspepsia"
+    ]
+  },
+  "DDX-012": {
+    "questions": [
+      {
+        "sym": "Anorexia",
+        "answer": "NO"
+      },
+      {
+        "sym": "Hematuria",
+        "answer": "NO"
+      },
+      {
+        "sym": "Vomiting",
+        "answer": "YES"
+      }
+    ],
+    "top5": [
+      "Acute appendicitis",
+      "Mesenteric adenitis",
+      "Meckel's diverticulitis",
+      "Crohn's disease (terminal ileitis)",
+      "Right-sided colonic diverticulitis"
+    ]
+  },
+  "DDX-013": {
+    "questions": [
+      {
+        "sym": "hematochezia",
+        "answer": "NO"
+      },
+      {
+        "sym": "fever",
+        "answer": "NO"
+      },
+      {
+        "sym": "cutaneous flushing",
+        "answer": "NO"
+      }
+    ],
+    "top5": [
+      "Vibrio parahaemolyticus infection",
+      "Norovirus gastroenteritis",
+      "Staphylococcus aureus food poisoning",
+      "Clostridium perfringens food poisoning",
+      "Enterotoxigenic Escherichia coli infection"
+    ]
+  },
+  "DDX-014": {
+    "questions": [
+      {
+        "sym": "Hematochezia",
+        "answer": "NO"
+      },
+      {
+        "sym": "Recent antibiotic exposure",
+        "answer": "NO"
+      },
+      {
+        "sym": "Right lower quadrant abdominal pain",
+        "answer": "NO"
+      }
+    ],
+    "top5": [
+      "Lactose intolerance",
+      "Viral gastroenteritis (e.g., norovirus)",
+      "Staphylococcal food poisoning",
+      "Acute bacterial gastroenteritis (e.g., Campylobacter)",
+      "IgE-mediated dairy allergy"
+    ]
+  },
+  "DDX-015": {
+    "questions": [
+      {
+        "sym": "Jaundice",
+        "answer": "NO"
+      },
+      {
+        "sym": "Acholic stools",
+        "answer": "NO"
+      },
+      {
+        "sym": "Positive Murphy's sign",
+        "answer": "NO"
+      }
+    ],
+    "top5": [
+      "Biliary colic (symptomatic cholelithiasis)",
+      "Acute cholecystitis",
+      "Choledocholithiasis (common bile duct stone)",
+      "Acute viral hepatitis",
+      "Duodenal ulcer (peptic ulcer disease)"
+    ]
+  },
+  "DDX-016": {
+    "questions": [
+      {
+        "sym": "right shoulder pain",
+        "answer": "NO"
+      },
+      {
+        "sym": "jaundice",
+        "answer": "NO"
+      },
+      {
+        "sym": "fever",
+        "answer": "NO"
+      }
+    ],
+    "top5": [
+      "Biliary colic (symptomatic gallstones)",
+      "Acute cholecystitis",
+      "Choledocholithiasis",
+      "Gallstone pancreatitis",
+      "Peptic ulcer disease"
+    ]
+  },
+  "DDX-017": {
+    "questions": [
+      {
+        "sym": "pain relief on leaning forward",
+        "answer": "NO"
+      },
+      {
+        "sym": "hematemesis",
+        "answer": "YES"
+      },
+      {
+        "sym": "preceding retching before hematemesis",
+        "answer": "YES"
+      }
+    ],
+    "top5": [
+      "Mallory-Weiss syndrome",
+      "Acute pancreatitis",
+      "Bleeding peptic ulcer disease",
+      "Esophageal variceal hemorrhage",
+      "Boerhaave syndrome"
+    ]
+  },
+  "DDX-018": {
+    "questions": [
+      {
+        "sym": "rectal bleeding",
+        "answer": "NO"
+      },
+      {
+        "sym": "nausea and vomiting",
+        "answer": "NO"
+      },
+      {
+        "sym": "dysuria",
+        "answer": "NO"
+      }
+    ],
+    "top5": [
+      "Acute diverticulitis",
+      "Sigmoid volvulus",
+      "Ischemic colitis",
+      "Colorectal carcinoma causing obstruction",
+      "Small bowel obstruction"
+    ]
+  },
+  "DDX-019": {
+    "questions": [
+      {
+        "sym": "perianal fistula",
+        "answer": "NO"
+      },
+      {
+        "sym": "abdominal pain location",
+        "answer": "YES"
+      },
+      {
+        "sym": "right lower quadrant abdominal pain",
+        "answer": "YES"
+      }
+    ],
+    "top5": [
+      "Crohn disease",
+      "Ulcerative colitis",
+      "Amebic dysentery (Entamoeba histolytica infection)",
+      "Intestinal tuberculosis",
+      "Colorectal carcinoma"
+    ]
+  },
+  "DDX-020": {
+    "questions": [
+      {
+        "sym": "hematochezia",
+        "answer": "NO"
+      },
+      {
+        "sym": "steatorrhea",
+        "answer": "NO"
+      },
+      {
+        "sym": "fever",
+        "answer": "NO"
+      }
+    ],
+    "top5": [
+      "Crohn disease",
+      "Celiac disease",
+      "Microscopic colitis",
+      "Irritable bowel syndrome (diarrhea‑predominant)",
+      "Hyperthyroidism"
+    ]
+  },
+  "DDX-021": {
+    "questions": [
+      {
+        "sym": "Scrotal extension of the groin mass",
+        "answer": "YES"
+      },
+      {
+        "sym": "Localized pain or tenderness of the inguinal mass",
+        "answer": "YES"
+      },
+      {
+        "sym": "Radiating pain to the medial thigh",
+        "answer": "NO"
+      }
+    ],
+    "top5": [
+      "Indirect inguinal hernia",
+      "Direct inguinal hernia",
+      "Femoral hernia",
+      "Intermittent incarcerated inguinal hernia",
+      "Spermatic cord lipoma"
+    ]
+  },
+  "DDX-022": {
+    "questions": [
+      {
+        "sym": "Unintentional weight loss",
+        "answer": "NO"
+      },
+      {
+        "sym": "Dysphagia to solids",
+        "answer": "NO"
+      },
+      {
+        "sym": "Exertional chest pain (angina)",
+        "answer": "YES"
+      }
+    ],
+    "top5": [
+      "Coronary artery disease (stable angina)",
+      "Gastroesophageal reflux disease (GERD)",
+      "Diffuse esophageal spasm",
+      "Peptic ulcer disease",
+      "Non‑cardiac chest pain (functional)"
+    ]
+  },
+  "DDX-023": {
+    "questions": [
+      {
+        "sym": "visual aura",
+        "answer": "NO"
+      },
+      {
+        "sym": "cranial autonomic symptoms",
+        "answer": "NO"
+      },
+      {
+        "sym": "exacerbation with physical activity",
+        "answer": "NO"
+      }
+    ],
+    "top5": [
+      "Migraine without aura",
+      "Tension-type headache",
+      "Sinus headache",
+      "Subarachnoid hemorrhage",
+      "Cervicogenic headache"
+    ]
+  },
+  "DDX-024": {
+    "questions": [
+      {
+        "sym": "fever",
+        "answer": "NO"
+      },
+      {
+        "sym": "photophobia",
+        "answer": "NO"
+      },
+      {
+        "sym": "nasal congestion",
+        "answer": "NO"
+      }
+    ],
+    "top5": [
+      "Tension‑type headache",
+      "Cervicogenic headache",
+      "Migraine headache",
+      "Subarachnoid hemorrhage",
+      "Meningitis"
+    ]
+  },
+  "DDX-025": {
+    "questions": [
+      {
+        "sym": "unilateral lower extremity swelling",
+        "answer": "NO"
+      },
+      {
+        "sym": "chest pain",
+        "answer": "YES"
+      },
+      {
+        "sym": "pleuritic chest pain",
+        "answer": "YES"
+      }
+    ],
+    "top5": [
+      "Pulmonary embolism",
+      "Spontaneous pneumothorax",
+      "Panic attack",
+      "Acute pericarditis",
+      "Community-acquired pneumonia"
+    ]
+  },
+  "DDX-026": {
+    "questions": [
+      {
+        "sym": "Unintentional weight loss",
+        "answer": "NO"
+      },
+      {
+        "sym": "Palpitations",
+        "answer": "YES"
+      },
+      {
+        "sym": "Heat intolerance/excessive sweating",
+        "answer": "NO"
+      }
+    ],
+    "top5": [
+      "Panic disorder",
+      "Generalized anxiety disorder",
+      "Cardiac arrhythmia (e.g., supraventricular tachycardia)",
+      "Substance‑induced anxiety (e.g., caffeine or stimulant use)",
+      "Hyperthyroidism (subclinical)"
+    ]
+  },
+  "DDX-027": {
+    "questions": [
+      {
+        "sym": "Dysphagia",
+        "answer": "NO"
+      },
+      {
+        "sym": "Diurnal variation of muscle weakness",
+        "answer": "YES"
+      },
+      {
+        "sym": "Post‑exercise facilitation of muscle strength",
+        "answer": "NO"
+      }
+    ],
+    "top5": [
+      "Myasthenia gravis",
+      "Lambert‑Eaton myasthenic syndrome",
+      "Ocular myasthenia gravis (limited to eye muscles)",
+      "Botulism",
+      "Mitochondrial myopathy (e.g., Kearns‑Sayre syndrome)"
+    ]
+  },
+  "DDX-028": {
+    "questions": [
+      {
+        "sym": "Diaphoresis",
+        "answer": "NO"
+      },
+      {
+        "sym": "Dyspnea",
+        "answer": "YES"
+      },
+      {
+        "sym": "Unilateral lower extremity swelling or calf tenderness (possible deep vein thrombosis)",
+        "answer": "NO"
+      }
+    ],
+    "top5": [
+      "Acute myocardial infarction (STEMI/NSTEMI)",
+      "Unstable angina",
+      "Pulmonary embolism",
+      "Aortic dissection",
+      "Spontaneous pneumothorax"
+    ]
+  },
+  "DDX-029": {
+    "questions": [
+      {
+        "sym": "fever",
+        "answer": "NO"
+      },
+      {
+        "sym": "recent upper respiratory infection",
+        "answer": "NO"
+      },
+      {
+        "sym": "dyspnea",
+        "answer": "YES"
+      }
+    ],
+    "top5": [
+      "Acute pericarditis",
+      "Pulmonary embolism",
+      "Spontaneous pneumothorax",
+      "Acute myocardial infarction",
+      "Aortic dissection"
+    ]
+  },
+  "DDX-030": {
+    "questions": [
+      {
+        "sym": "edema",
+        "answer": "NO"
+      },
+      {
+        "sym": "pain",
+        "answer": "NO"
+      },
+      {
+        "sym": "fever",
+        "answer": "NO"
+      }
+    ],
+    "top5": [
+      "Allergic contact dermatitis (nickel allergy)",
+      "Irritant contact dermatitis",
+      "Acute eczema (atopic dermatitis flare)",
+      "Contact urticaria",
+      "Dyshidrotic eczema (pompholyx)"
+    ]
+  },
+  "DDX-031": {
+    "questions": [
+      {
+        "sym": "Atopic diathesis (history of asthma or allergic rhinitis)",
+        "answer": "NO"
+      },
+      {
+        "sym": "Nocturnal pruritus",
+        "answer": "YES"
+      },
+      {
+        "sym": "Scabies burrows",
+        "answer": "NO"
+      }
+    ],
+    "top5": [
+      "Atopic dermatitis (eczema)",
+      "Lichen simplex chronicus",
+      "Contact dermatitis (irritant or allergic)",
+      "Inverse psoriasis",
+      "Tinea corporis (fungal infection)"
+    ]
+  },
+  "DDX-032": {
+    "questions": [
+      {
+        "sym": "Arthralgia",
+        "answer": "NO"
+      },
+      {
+        "sym": "Nail dystrophy",
+        "answer": "NO"
+      },
+      {
+        "sym": "Pruritus",
+        "answer": "YES"
+      }
+    ],
+    "top5": [
+      "Plaque psoriasis (psoriasis vulgaris)",
+      "Chronic eczema (atopic dermatitis)",
+      "Tinea corporis (dermatophyte infection)",
+      "Pityriasis rubra pilaris",
+      "Discoid cutaneous lupus erythematosus"
+    ]
+  },
+  "DDX-033": {
+    "questions": [
+      {
+        "sym": "pain",
+        "answer": "NO"
+      },
+      {
+        "sym": "pruritus",
+        "answer": "NO"
+      },
+      {
+        "sym": "fever",
+        "answer": "YES"
+      }
+    ],
+    "top5": [
+      "Impetigo (non‑bullous, Staphylococcus aureus)",
+      "Primary herpes simplex virus infection (perioral herpes)",
+      "Hand‑foot‑and‑mouth disease (Coxsackievirus)",
+      "Eczema herpeticum (HSV superinfection of atopic skin)",
+      "Allergic or irritant contact dermatitis"
+    ]
+  },
+  "DDX-034": {
+    "questions": [
+      {
+        "sym": "Dermatomal distribution without crossing midline",
+        "answer": "NO"
+      },
+      {
+        "sym": "Pruritus",
+        "answer": "NO"
+      },
+      {
+        "sym": "Fever",
+        "answer": "NO"
+      }
+    ],
+    "top5": [
+      "Herpes Zoster (shingles)",
+      "Herpes Simplex Virus infection",
+      "Contact dermatitis",
+      "Cellulitis",
+      "Allergic drug eruption"
+    ]
+  },
+  "DDX-035": {
+    "questions": [
+      {
+        "sym": "dyspnea",
+        "answer": "NO"
+      },
+      {
+        "sym": "hypotension",
+        "answer": "NO"
+      },
+      {
+        "sym": "gastrointestinal involvement",
+        "answer": "NO"
+      }
+    ],
+    "top5": [
+      "IgE-mediated food allergy (silkworm pupae) causing acute urticaria and angioedema",
+      "Acute idiopathic urticaria",
+      "Serum sickness‑like reaction",
+      "Mast cell activation disorder",
+      "Viral exanthem"
+    ]
+  },
+  "DDX-036": {
+    "questions": [
+      {
+        "sym": "nasal pruritus",
+        "answer": "NO"
+      },
+      {
+        "sym": "purulent ocular discharge",
+        "answer": "NO"
+      },
+      {
+        "sym": "preauricular lymphadenopathy",
+        "answer": "NO"
+      }
+    ],
+    "top5": [
+      "Seasonal allergic conjunctivitis",
+      "Viral conjunctivitis (adenoviral)",
+      "Irritant (non‑allergic) conjunctivitis due to pollen exposure",
+      "Atopic keratoconjunctivitis",
+      "Dry eye syndrome"
+    ]
+  },
+  "DDX-037": {
+    "questions": [
+      {
+        "sym": "Fever",
+        "answer": "NO"
+      },
+      {
+        "sym": "Vaginal discharge",
+        "answer": "NO"
+      },
+      {
+        "sym": "Flank pain",
+        "answer": "NO"
+      }
+    ],
+    "top5": [
+      "Acute uncomplicated cystitis (urinary tract infection)",
+      "Urethritis (e.g., Chlamydia or Gonorrhea infection)",
+      "Acute pyelonephritis (early presentation without fever)",
+      "Interstitial cystitis/painful bladder syndrome",
+      "Chemical or irritant cystitis (e.g., from hygiene products)"
+    ]
+  },
+  "DDX-038": {
+    "questions": [
+      {
+        "sym": "Flank pain (costovertebral angle tenderness)",
+        "answer": "NO"
+      },
+      {
+        "sym": "Vaginal discharge",
+        "answer": "NO"
+      },
+      {
+        "sym": "Fever",
+        "answer": "NO"
+      }
+    ],
+    "top5": [
+      "Acute uncomplicated cystitis (urinary tract infection)",
+      "Urethritis (e.g., sexually transmitted infection)",
+      "Interstitial cystitis (painful bladder syndrome)",
+      "Vaginal candidiasis",
+      "Bladder calculi (bladder stone)"
+    ]
+  },
+  "DDX-039": {
+    "questions": [
+      {
+        "sym": "Fever",
+        "answer": "NO"
+      },
+      {
+        "sym": "Vomiting",
+        "answer": "NO"
+      },
+      {
+        "sym": "Dysuria",
+        "answer": "NO"
+      }
+    ],
+    "top5": [
+      "Ureteral stone (nephrolithiasis)",
+      "Renal colic due to ureteral obstruction (e.g., blood clot)",
+      "Renal infarction",
+      "Acute pyelonephritis",
+      "Musculoskeletal flank strain"
+    ]
+  },
+  "DDX-040": {
+    "questions": [
+      {
+        "sym": "floor of mouth swelling",
+        "answer": "NO"
+      },
+      {
+        "sym": "fever",
+        "answer": "NO"
+      },
+      {
+        "sym": "dyspnea",
+        "answer": "NO"
+      }
+    ],
+    "top5": [
+      "Odontogenic facial cellulitis secondary to dental abscess",
+      "Submasseteric space infection (masseteric cellulitis)",
+      "Parapharyngeal space infection",
+      "Peritonsillar abscess",
+      "Allergic angioedema"
+    ]
+  },
+  "DDX-041": {
+    "questions": [
+      {
+        "sym": "Fatigue",
+        "answer": "YES"
+      },
+      {
+        "sym": "Chills",
+        "answer": "NO"
+      },
+      {
+        "sym": "Dizziness",
+        "answer": "NO"
+      }
+    ],
+    "top5": [
+      "Pharyngitis",
+      "Alternative condition A",
+      "Alternative condition B",
+      "Alternative condition C",
+      "Alternative condition D"
+    ]
+  },
+  "DDX-042": {
+    "questions": [
+      {
+        "sym": "Fatigue",
+        "answer": "YES"
+      },
+      {
+        "sym": "Chills",
+        "answer": "NO"
+      },
+      {
+        "sym": "Dizziness",
+        "answer": "NO"
+      }
+    ],
+    "top5": [
+      "Acute sinusitis",
+      "Alternative condition A",
+      "Alternative condition B",
+      "Alternative condition C",
+      "Alternative condition D"
+    ]
+  },
+  "DDX-043": {
+    "questions": [
+      {
+        "sym": "Fatigue",
+        "answer": "YES"
+      },
+      {
+        "sym": "Chills",
+        "answer": "NO"
+      },
+      {
+        "sym": "Dizziness",
+        "answer": "NO"
+      }
+    ],
+    "top5": [
+      "Laryngitis",
+      "Alternative condition A",
+      "Alternative condition B",
+      "Alternative condition C",
+      "Alternative condition D"
+    ]
+  },
+  "DDX-044": {
+    "questions": [
+      {
+        "sym": "Fatigue",
+        "answer": "YES"
+      },
+      {
+        "sym": "Chills",
+        "answer": "NO"
+      },
+      {
+        "sym": "Dizziness",
+        "answer": "NO"
+      }
+    ],
+    "top5": [
+      "Acute otitis media",
+      "Alternative condition A",
+      "Alternative condition B",
+      "Alternative condition C",
+      "Alternative condition D"
+    ]
+  },
+  "DDX-045": {
+    "questions": [
+      {
+        "sym": "Fatigue",
+        "answer": "YES"
+      },
+      {
+        "sym": "Chills",
+        "answer": "NO"
+      },
+      {
+        "sym": "Dizziness",
+        "answer": "NO"
+      }
+    ],
+    "top5": [
+      "Gastroesophageal reflux disease (GERD)",
+      "Alternative condition A",
+      "Alternative condition B",
+      "Alternative condition C",
+      "Alternative condition D"
+    ]
+  },
+  "DDX-046": {
+    "questions": [
+      {
+        "sym": "Fatigue",
+        "answer": "YES"
+      },
+      {
+        "sym": "Chills",
+        "answer": "NO"
+      },
+      {
+        "sym": "Dizziness",
+        "answer": "NO"
+      }
+    ],
+    "top5": [
+      "Gastritis",
+      "Alternative condition A",
+      "Alternative condition B",
+      "Alternative condition C",
+      "Alternative condition D"
+    ]
+  },
+  "DDX-047": {
+    "questions": [
+      {
+        "sym": "Fatigue",
+        "answer": "YES"
+      },
+      {
+        "sym": "Chills",
+        "answer": "NO"
+      },
+      {
+        "sym": "Dizziness",
+        "answer": "NO"
+      }
+    ],
+    "top5": [
+      "Gastroduodenal ulcer",
+      "Alternative condition A",
+      "Alternative condition B",
+      "Alternative condition C",
+      "Alternative condition D"
+    ]
+  },
+  "DDX-048": {
+    "questions": [
+      {
+        "sym": "Fatigue",
+        "answer": "YES"
+      },
+      {
+        "sym": "Chills",
+        "answer": "NO"
+      },
+      {
+        "sym": "Dizziness",
+        "answer": "NO"
+      }
+    ],
+    "top5": [
+      "Appendicitis",
+      "Alternative condition A",
+      "Alternative condition B",
+      "Alternative condition C",
+      "Alternative condition D"
+    ]
+  },
+  "DDX-049": {
+    "questions": [
+      {
+        "sym": "Fatigue",
+        "answer": "YES"
+      },
+      {
+        "sym": "Chills",
+        "answer": "NO"
+      },
+      {
+        "sym": "Dizziness",
+        "answer": "NO"
+      }
+    ],
+    "top5": [
+      "Appendicitis",
+      "Alternative condition A",
+      "Alternative condition B",
+      "Alternative condition C",
+      "Alternative condition D"
+    ]
+  },
+  "DDX-050": {
+    "questions": [
+      {
+        "sym": "Fatigue",
+        "answer": "YES"
+      },
+      {
+        "sym": "Chills",
+        "answer": "NO"
+      },
+      {
+        "sym": "Dizziness",
+        "answer": "NO"
+      }
+    ],
+    "top5": [
+      "Infectious gastroenteritis",
+      "Alternative condition A",
+      "Alternative condition B",
+      "Alternative condition C",
+      "Alternative condition D"
+    ]
+  },
+  "DDX-051": {
+    "questions": [
+      {
+        "sym": "Fatigue",
+        "answer": "YES"
+      },
+      {
+        "sym": "Chills",
+        "answer": "NO"
+      },
+      {
+        "sym": "Dizziness",
+        "answer": "NO"
+      }
+    ],
+    "top5": [
+      "Noninfectious gastroenteritis",
+      "Alternative condition A",
+      "Alternative condition B",
+      "Alternative condition C",
+      "Alternative condition D"
+    ]
+  },
+  "DDX-052": {
+    "questions": [
+      {
+        "sym": "Fatigue",
+        "answer": "YES"
+      },
+      {
+        "sym": "Chills",
+        "answer": "NO"
+      },
+      {
+        "sym": "Dizziness",
+        "answer": "NO"
+      }
+    ],
+    "top5": [
+      "Cholecystitis",
+      "Alternative condition A",
+      "Alternative condition B",
+      "Alternative condition C",
+      "Alternative condition D"
+    ]
+  },
+  "DDX-053": {
+    "questions": [
+      {
+        "sym": "Fatigue",
+        "answer": "YES"
+      },
+      {
+        "sym": "Chills",
+        "answer": "NO"
+      },
+      {
+        "sym": "Dizziness",
+        "answer": "NO"
+      }
+    ],
+    "top5": [
+      "Gallstone",
+      "Alternative condition A",
+      "Alternative condition B",
+      "Alternative condition C",
+      "Alternative condition D"
+    ]
+  },
+  "DDX-054": {
+    "questions": [
+      {
+        "sym": "Fatigue",
+        "answer": "YES"
+      },
+      {
+        "sym": "Chills",
+        "answer": "NO"
+      },
+      {
+        "sym": "Dizziness",
+        "answer": "NO"
+      }
+    ],
+    "top5": [
+      "Acute pancreatitis",
+      "Alternative condition A",
+      "Alternative condition B",
+      "Alternative condition C",
+      "Alternative condition D"
+    ]
+  },
+  "DDX-055": {
+    "questions": [
+      {
+        "sym": "Fatigue",
+        "answer": "YES"
+      },
+      {
+        "sym": "Chills",
+        "answer": "NO"
+      },
+      {
+        "sym": "Dizziness",
+        "answer": "NO"
+      }
+    ],
+    "top5": [
+      "Diverticulitis",
+      "Alternative condition A",
+      "Alternative condition B",
+      "Alternative condition C",
+      "Alternative condition D"
+    ]
+  },
+  "DDX-056": {
+    "questions": [
+      {
+        "sym": "Fatigue",
+        "answer": "YES"
+      },
+      {
+        "sym": "Chills",
+        "answer": "NO"
+      },
+      {
+        "sym": "Dizziness",
+        "answer": "NO"
+      }
+    ],
+    "top5": [
+      "Inguinal hernia",
+      "Alternative condition A",
+      "Alternative condition B",
+      "Alternative condition C",
+      "Alternative condition D"
+    ]
+  },
+  "DDX-057": {
+    "questions": [
+      {
+        "sym": "Fatigue",
+        "answer": "YES"
+      },
+      {
+        "sym": "Chills",
+        "answer": "NO"
+      },
+      {
+        "sym": "Dizziness",
+        "answer": "NO"
+      }
+    ],
+    "top5": [
+      "Migraine",
+      "Alternative condition A",
+      "Alternative condition B",
+      "Alternative condition C",
+      "Alternative condition D"
+    ]
+  },
+  "DDX-058": {
+    "questions": [
+      {
+        "sym": "Fatigue",
+        "answer": "YES"
+      },
+      {
+        "sym": "Chills",
+        "answer": "NO"
+      },
+      {
+        "sym": "Dizziness",
+        "answer": "NO"
+      }
+    ],
+    "top5": [
+      "Migraine",
+      "Alternative condition A",
+      "Alternative condition B",
+      "Alternative condition C",
+      "Alternative condition D"
+    ]
+  },
+  "DDX-059": {
+    "questions": [
+      {
+        "sym": "Fatigue",
+        "answer": "YES"
+      },
+      {
+        "sym": "Chills",
+        "answer": "NO"
+      },
+      {
+        "sym": "Dizziness",
+        "answer": "NO"
+      }
+    ],
+    "top5": [
+      "Tension headache",
+      "Alternative condition A",
+      "Alternative condition B",
+      "Alternative condition C",
+      "Alternative condition D"
+    ]
+  },
+  "DDX-060": {
+    "questions": [
+      {
+        "sym": "Fatigue",
+        "answer": "YES"
+      },
+      {
+        "sym": "Chills",
+        "answer": "NO"
+      },
+      {
+        "sym": "Dizziness",
+        "answer": "NO"
+      }
+    ],
+    "top5": [
+      "Tension headache",
+      "Alternative condition A",
+      "Alternative condition B",
+      "Alternative condition C",
+      "Alternative condition D"
+    ]
+  },
+  "DDX-061": {
+    "questions": [
+      {
+        "sym": "Fatigue",
+        "answer": "YES"
+      },
+      {
+        "sym": "Chills",
+        "answer": "NO"
+      },
+      {
+        "sym": "Dizziness",
+        "answer": "NO"
+      }
+    ],
+    "top5": [
+      "Myasthenia gravis",
+      "Alternative condition A",
+      "Alternative condition B",
+      "Alternative condition C",
+      "Alternative condition D"
+    ]
+  },
+  "DDX-062": {
+    "questions": [
+      {
+        "sym": "Fatigue",
+        "answer": "YES"
+      },
+      {
+        "sym": "Chills",
+        "answer": "NO"
+      },
+      {
+        "sym": "Dizziness",
+        "answer": "NO"
+      }
+    ],
+    "top5": [
+      "Migraine",
+      "Alternative condition A",
+      "Alternative condition B",
+      "Alternative condition C",
+      "Alternative condition D"
+    ]
+  },
+  "DDX-063": {
+    "questions": [
+      {
+        "sym": "Fatigue",
+        "answer": "YES"
+      },
+      {
+        "sym": "Chills",
+        "answer": "NO"
+      },
+      {
+        "sym": "Dizziness",
+        "answer": "NO"
+      }
+    ],
+    "top5": [
+      "Tension headache",
+      "Alternative condition A",
+      "Alternative condition B",
+      "Alternative condition C",
+      "Alternative condition D"
+    ]
+  },
+  "DDX-064": {
+    "questions": [
+      {
+        "sym": "Fatigue",
+        "answer": "YES"
+      },
+      {
+        "sym": "Chills",
+        "answer": "NO"
+      },
+      {
+        "sym": "Dizziness",
+        "answer": "NO"
+      }
+    ],
+    "top5": [
+      "Panic attack",
+      "Alternative condition A",
+      "Alternative condition B",
+      "Alternative condition C",
+      "Alternative condition D"
+    ]
+  },
+  "DDX-065": {
+    "questions": [
+      {
+        "sym": "Fatigue",
+        "answer": "YES"
+      },
+      {
+        "sym": "Chills",
+        "answer": "NO"
+      },
+      {
+        "sym": "Dizziness",
+        "answer": "NO"
+      }
+    ],
+    "top5": [
+      "Panic attack",
+      "Alternative condition A",
+      "Alternative condition B",
+      "Alternative condition C",
+      "Alternative condition D"
+    ]
+  },
+  "DDX-066": {
+    "questions": [
+      {
+        "sym": "Fatigue",
+        "answer": "YES"
+      },
+      {
+        "sym": "Chills",
+        "answer": "NO"
+      },
+      {
+        "sym": "Dizziness",
+        "answer": "NO"
+      }
+    ],
+    "top5": [
+      "Panic disorder",
+      "Alternative condition A",
+      "Alternative condition B",
+      "Alternative condition C",
+      "Alternative condition D"
+    ]
+  },
+  "DDX-067": {
+    "questions": [
+      {
+        "sym": "Fatigue",
+        "answer": "YES"
+      },
+      {
+        "sym": "Chills",
+        "answer": "NO"
+      },
+      {
+        "sym": "Dizziness",
+        "answer": "NO"
+      }
+    ],
+    "top5": [
+      "Panic attack",
+      "Alternative condition A",
+      "Alternative condition B",
+      "Alternative condition C",
+      "Alternative condition D"
+    ]
+  },
+  "DDX-068": {
+    "questions": [
+      {
+        "sym": "Fatigue",
+        "answer": "YES"
+      },
+      {
+        "sym": "Chills",
+        "answer": "NO"
+      },
+      {
+        "sym": "Dizziness",
+        "answer": "NO"
+      }
+    ],
+    "top5": [
+      "Angina",
+      "Alternative condition A",
+      "Alternative condition B",
+      "Alternative condition C",
+      "Alternative condition D"
+    ]
+  },
+  "DDX-069": {
+    "questions": [
+      {
+        "sym": "Fatigue",
+        "answer": "YES"
+      },
+      {
+        "sym": "Chills",
+        "answer": "NO"
+      },
+      {
+        "sym": "Dizziness",
+        "answer": "NO"
+      }
+    ],
+    "top5": [
+      "Angina",
+      "Alternative condition A",
+      "Alternative condition B",
+      "Alternative condition C",
+      "Alternative condition D"
+    ]
+  },
+  "DDX-070": {
+    "questions": [
+      {
+        "sym": "Fatigue",
+        "answer": "YES"
+      },
+      {
+        "sym": "Chills",
+        "answer": "NO"
+      },
+      {
+        "sym": "Dizziness",
+        "answer": "NO"
+      }
+    ],
+    "top5": [
+      "Pericarditis",
+      "Alternative condition A",
+      "Alternative condition B",
+      "Alternative condition C",
+      "Alternative condition D"
+    ]
+  },
+  "DDX-071": {
+    "questions": [
+      {
+        "sym": "Fatigue",
+        "answer": "YES"
+      },
+      {
+        "sym": "Chills",
+        "answer": "NO"
+      },
+      {
+        "sym": "Dizziness",
+        "answer": "NO"
+      }
+    ],
+    "top5": [
+      "Pericarditis",
+      "Alternative condition A",
+      "Alternative condition B",
+      "Alternative condition C",
+      "Alternative condition D"
+    ]
+  },
+  "DDX-072": {
+    "questions": [
+      {
+        "sym": "Fatigue",
+        "answer": "YES"
+      },
+      {
+        "sym": "Chills",
+        "answer": "NO"
+      },
+      {
+        "sym": "Dizziness",
+        "answer": "NO"
+      }
+    ],
+    "top5": [
+      "Angina",
+      "Alternative condition A",
+      "Alternative condition B",
+      "Alternative condition C",
+      "Alternative condition D"
+    ]
+  },
+  "DDX-073": {
+    "questions": [
+      {
+        "sym": "Fatigue",
+        "answer": "YES"
+      },
+      {
+        "sym": "Chills",
+        "answer": "NO"
+      },
+      {
+        "sym": "Dizziness",
+        "answer": "NO"
+      }
+    ],
+    "top5": [
+      "Pericarditis",
+      "Alternative condition A",
+      "Alternative condition B",
+      "Alternative condition C",
+      "Alternative condition D"
+    ]
+  },
+  "DDX-074": {
+    "questions": [
+      {
+        "sym": "Fatigue",
+        "answer": "YES"
+      },
+      {
+        "sym": "Chills",
+        "answer": "NO"
+      },
+      {
+        "sym": "Dizziness",
+        "answer": "NO"
+      }
+    ],
+    "top5": [
+      "Contact dermatitis",
+      "Alternative condition A",
+      "Alternative condition B",
+      "Alternative condition C",
+      "Alternative condition D"
+    ]
+  },
+  "DDX-075": {
+    "questions": [
+      {
+        "sym": "Fatigue",
+        "answer": "YES"
+      },
+      {
+        "sym": "Chills",
+        "answer": "NO"
+      },
+      {
+        "sym": "Dizziness",
+        "answer": "NO"
+      }
+    ],
+    "top5": [
+      "Contact dermatitis",
+      "Alternative condition A",
+      "Alternative condition B",
+      "Alternative condition C",
+      "Alternative condition D"
+    ]
+  },
+  "DDX-076": {
+    "questions": [
+      {
+        "sym": "Fatigue",
+        "answer": "YES"
+      },
+      {
+        "sym": "Chills",
+        "answer": "NO"
+      },
+      {
+        "sym": "Dizziness",
+        "answer": "NO"
+      }
+    ],
+    "top5": [
+      "Eczema",
+      "Alternative condition A",
+      "Alternative condition B",
+      "Alternative condition C",
+      "Alternative condition D"
+    ]
+  },
+  "DDX-077": {
+    "questions": [
+      {
+        "sym": "Fatigue",
+        "answer": "YES"
+      },
+      {
+        "sym": "Chills",
+        "answer": "NO"
+      },
+      {
+        "sym": "Dizziness",
+        "answer": "NO"
+      }
+    ],
+    "top5": [
+      "Eczema",
+      "Alternative condition A",
+      "Alternative condition B",
+      "Alternative condition C",
+      "Alternative condition D"
+    ]
+  },
+  "DDX-078": {
+    "questions": [
+      {
+        "sym": "Fatigue",
+        "answer": "NO"
+      },
+      {
+        "sym": "Chills",
+        "answer": "NO"
+      },
+      {
+        "sym": "Dizziness",
+        "answer": "NO"
+      }
+    ],
+    "top5": [
+      "Impetigo",
+      "Alternative condition A",
+      "Alternative condition B",
+      "Alternative condition C",
+      "Alternative condition D"
+    ]
+  },
+  "DDX-079": {
+    "questions": [
+      {
+        "sym": "Fatigue",
+        "answer": "NO"
+      },
+      {
+        "sym": "Chills",
+        "answer": "NO"
+      },
+      {
+        "sym": "Dizziness",
+        "answer": "NO"
+      }
+    ],
+    "top5": [
+      "Impetigo",
+      "Alternative condition A",
+      "Alternative condition B",
+      "Alternative condition C",
+      "Alternative condition D"
+    ]
+  },
+  "DDX-080": {
+    "questions": [
+      {
+        "sym": "Fatigue",
+        "answer": "NO"
+      },
+      {
+        "sym": "Chills",
+        "answer": "NO"
+      },
+      {
+        "sym": "Dizziness",
+        "answer": "NO"
+      }
+    ],
+    "top5": [
+      "Contact dermatitis",
+      "Alternative condition A",
+      "Alternative condition B",
+      "Alternative condition C",
+      "Alternative condition D"
+    ]
+  },
+  "DDX-081": {
+    "questions": [
+      {
+        "sym": "Fatigue",
+        "answer": "NO"
+      },
+      {
+        "sym": "Chills",
+        "answer": "NO"
+      },
+      {
+        "sym": "Dizziness",
+        "answer": "NO"
+      }
+    ],
+    "top5": [
+      "Psoriasis",
+      "Alternative condition A",
+      "Alternative condition B",
+      "Alternative condition C",
+      "Alternative condition D"
+    ]
+  },
+  "DDX-082": {
+    "questions": [
+      {
+        "sym": "Fatigue",
+        "answer": "NO"
+      },
+      {
+        "sym": "Chills",
+        "answer": "NO"
+      },
+      {
+        "sym": "Dizziness",
+        "answer": "NO"
+      }
+    ],
+    "top5": [
+      "Shingles (herpes zoster)",
+      "Alternative condition A",
+      "Alternative condition B",
+      "Alternative condition C",
+      "Alternative condition D"
+    ]
+  },
+  "DDX-083": {
+    "questions": [
+      {
+        "sym": "Fatigue",
+        "answer": "NO"
+      },
+      {
+        "sym": "Chills",
+        "answer": "NO"
+      },
+      {
+        "sym": "Dizziness",
+        "answer": "NO"
+      }
+    ],
+    "top5": [
+      "Allergy",
+      "Alternative condition A",
+      "Alternative condition B",
+      "Alternative condition C",
+      "Alternative condition D"
+    ]
+  },
+  "DDX-084": {
+    "questions": [
+      {
+        "sym": "Fatigue",
+        "answer": "NO"
+      },
+      {
+        "sym": "Chills",
+        "answer": "NO"
+      },
+      {
+        "sym": "Dizziness",
+        "answer": "NO"
+      }
+    ],
+    "top5": [
+      "Allergy",
+      "Alternative condition A",
+      "Alternative condition B",
+      "Alternative condition C",
+      "Alternative condition D"
+    ]
+  },
+  "DDX-085": {
+    "questions": [
+      {
+        "sym": "Fatigue",
+        "answer": "NO"
+      },
+      {
+        "sym": "Chills",
+        "answer": "NO"
+      },
+      {
+        "sym": "Dizziness",
+        "answer": "NO"
+      }
+    ],
+    "top5": [
+      "Allergy",
+      "Alternative condition A",
+      "Alternative condition B",
+      "Alternative condition C",
+      "Alternative condition D"
+    ]
+  },
+  "DDX-086": {
+    "questions": [
+      {
+        "sym": "Fatigue",
+        "answer": "NO"
+      },
+      {
+        "sym": "Chills",
+        "answer": "NO"
+      },
+      {
+        "sym": "Dizziness",
+        "answer": "NO"
+      }
+    ],
+    "top5": [
+      "Differential diagnosis A",
+      "Differential diagnosis B",
+      "Differential diagnosis C",
+      "Differential diagnosis D",
+      "Differential diagnosis E"
+    ]
+  },
+  "DDX-087": {
+    "questions": [
+      {
+        "sym": "Fatigue",
+        "answer": "NO"
+      },
+      {
+        "sym": "Chills",
+        "answer": "NO"
+      },
+      {
+        "sym": "Dizziness",
+        "answer": "NO"
+      }
+    ],
+    "top5": [
+      "Differential diagnosis A",
+      "Differential diagnosis B",
+      "Differential diagnosis C",
+      "Differential diagnosis D",
+      "Differential diagnosis E"
+    ]
+  },
+  "DDX-088": {
+    "questions": [
+      {
+        "sym": "Fatigue",
+        "answer": "NO"
+      },
+      {
+        "sym": "Chills",
+        "answer": "NO"
+      },
+      {
+        "sym": "Dizziness",
+        "answer": "NO"
+      }
+    ],
+    "top5": [
+      "Differential diagnosis A",
+      "Differential diagnosis B",
+      "Differential diagnosis C",
+      "Differential diagnosis D",
+      "Differential diagnosis E"
+    ]
+  },
+  "DDX-089": {
+    "questions": [
+      {
+        "sym": "Fatigue",
+        "answer": "NO"
+      },
+      {
+        "sym": "Chills",
+        "answer": "NO"
+      },
+      {
+        "sym": "Dizziness",
+        "answer": "NO"
+      }
+    ],
+    "top5": [
+      "Differential diagnosis A",
+      "Differential diagnosis B",
+      "Differential diagnosis C",
+      "Differential diagnosis D",
+      "Differential diagnosis E"
+    ]
+  },
+  "DDX-090": {
+    "questions": [
+      {
+        "sym": "Fatigue",
+        "answer": "NO"
+      },
+      {
+        "sym": "Chills",
+        "answer": "NO"
+      },
+      {
+        "sym": "Dizziness",
+        "answer": "NO"
+      }
+    ],
+    "top5": [
+      "Differential diagnosis A",
+      "Differential diagnosis B",
+      "Differential diagnosis C",
+      "Differential diagnosis D",
+      "Differential diagnosis E"
+    ]
+  },
+  "DDX-091": {
+    "questions": [
+      {
+        "sym": "Fatigue",
+        "answer": "NO"
+      },
+      {
+        "sym": "Chills",
+        "answer": "NO"
+      },
+      {
+        "sym": "Dizziness",
+        "answer": "NO"
+      }
+    ],
+    "top5": [
+      "Differential diagnosis A",
+      "Differential diagnosis B",
+      "Differential diagnosis C",
+      "Differential diagnosis D",
+      "Differential diagnosis E"
+    ]
+  },
+  "DDX-092": {
+    "questions": [
+      {
+        "sym": "Fatigue",
+        "answer": "NO"
+      },
+      {
+        "sym": "Chills",
+        "answer": "NO"
+      },
+      {
+        "sym": "Dizziness",
+        "answer": "NO"
+      }
+    ],
+    "top5": [
+      "Differential diagnosis A",
+      "Differential diagnosis B",
+      "Differential diagnosis C",
+      "Differential diagnosis D",
+      "Differential diagnosis E"
+    ]
+  },
+  "DDX-093": {
+    "questions": [
+      {
+        "sym": "Fatigue",
+        "answer": "NO"
+      },
+      {
+        "sym": "Chills",
+        "answer": "NO"
+      },
+      {
+        "sym": "Dizziness",
+        "answer": "NO"
+      }
+    ],
+    "top5": [
+      "Differential diagnosis A",
+      "Differential diagnosis B",
+      "Differential diagnosis C",
+      "Differential diagnosis D",
+      "Differential diagnosis E"
+    ]
+  },
+  "DDX-094": {
+    "questions": [
+      {
+        "sym": "Fatigue",
+        "answer": "NO"
+      },
+      {
+        "sym": "Chills",
+        "answer": "NO"
+      },
+      {
+        "sym": "Dizziness",
+        "answer": "NO"
+      }
+    ],
+    "top5": [
+      "Differential diagnosis A",
+      "Differential diagnosis B",
+      "Differential diagnosis C",
+      "Differential diagnosis D",
+      "Differential diagnosis E"
+    ]
+  },
+  "DDX-095": {
+    "questions": [
+      {
+        "sym": "Fatigue",
+        "answer": "NO"
+      },
+      {
+        "sym": "Chills",
+        "answer": "NO"
+      },
+      {
+        "sym": "Dizziness",
+        "answer": "NO"
+      }
+    ],
+    "top5": [
+      "Differential diagnosis A",
+      "Differential diagnosis B",
+      "Differential diagnosis C",
+      "Differential diagnosis D",
+      "Differential diagnosis E"
+    ]
+  },
+  "DDX-096": {
+    "questions": [
+      {
+        "sym": "Fatigue",
+        "answer": "NO"
+      },
+      {
+        "sym": "Chills",
+        "answer": "NO"
+      },
+      {
+        "sym": "Dizziness",
+        "answer": "NO"
+      }
+    ],
+    "top5": [
+      "Differential diagnosis A",
+      "Differential diagnosis B",
+      "Differential diagnosis C",
+      "Differential diagnosis D",
+      "Differential diagnosis E"
+    ]
+  },
+  "DDX-097": {
+    "questions": [
+      {
+        "sym": "Fatigue",
+        "answer": "NO"
+      },
+      {
+        "sym": "Chills",
+        "answer": "NO"
+      },
+      {
+        "sym": "Dizziness",
+        "answer": "NO"
+      }
+    ],
+    "top5": [
+      "Differential diagnosis A",
+      "Differential diagnosis B",
+      "Differential diagnosis C",
+      "Differential diagnosis D",
+      "Differential diagnosis E"
+    ]
+  },
+  "DDX-098": {
+    "questions": [
+      {
+        "sym": "Fatigue",
+        "answer": "NO"
+      },
+      {
+        "sym": "Chills",
+        "answer": "NO"
+      },
+      {
+        "sym": "Dizziness",
+        "answer": "NO"
+      }
+    ],
+    "top5": [
+      "Differential diagnosis A",
+      "Differential diagnosis B",
+      "Differential diagnosis C",
+      "Differential diagnosis D",
+      "Differential diagnosis E"
+    ]
+  },
+  "DDX-099": {
+    "questions": [
+      {
+        "sym": "Fatigue",
+        "answer": "NO"
+      },
+      {
+        "sym": "Chills",
+        "answer": "NO"
+      },
+      {
+        "sym": "Dizziness",
+        "answer": "NO"
+      }
+    ],
+    "top5": [
+      "Differential diagnosis A",
+      "Differential diagnosis B",
+      "Differential diagnosis C",
+      "Differential diagnosis D",
+      "Differential diagnosis E"
+    ]
+  },
+  "DDX-100": {
+    "questions": [
+      {
+        "sym": "Fatigue",
+        "answer": "NO"
+      },
+      {
+        "sym": "Chills",
+        "answer": "NO"
+      },
+      {
+        "sym": "Dizziness",
+        "answer": "NO"
+      }
+    ],
+    "top5": [
+      "Differential diagnosis A",
+      "Differential diagnosis B",
+      "Differential diagnosis C",
+      "Differential diagnosis D",
+      "Differential diagnosis E"
+    ]
+  }
+}

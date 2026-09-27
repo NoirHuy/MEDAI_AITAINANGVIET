@@ -1,0 +1,2935 @@
+[
+  {
+    "case_id": "DDX-001",
+    "specialty": "Tai Mũi Họng",
+    "clinical_scenario_vi": "Bệnh nhân nam 21 tuổi, đau rát họng dữ dội khi nuốt, sốt nhẹ 38 độ, ho khan.",
+    "clinical_scenario_en": "21-year-old male presenting with severe sore throat, painful swallowing, low-grade fever (38°C), and dry cough.",
+    "demographics": {
+      "age": 21,
+      "sex": "male"
+    },
+    "temporal": {
+      "onset": "acute",
+      "durationValue": 2,
+      "durationUnit": "days"
+    },
+    "chief_complaint": "sore-throat",
+    "symptoms": [
+      "sore-throat",
+      "difficulty-in-swallowing",
+      "fever",
+      "cough"
+    ],
+    "excluded_symptoms": [
+      "heartburn",
+      "ear-pain"
+    ],
+    "ground_truth": {
+      "disease_id": "pharyngitis",
+      "disease_name": "Pharyngitis",
+      "ddxplus_pathology": "Viral pharyngitis"
+    }
+  },
+  {
+    "case_id": "DDX-002",
+    "specialty": "Tai Mũi Họng",
+    "clinical_scenario_vi": "Bệnh nhân nữ 34 tuổi, nghẹt mũi đặc vàng, nhức trán và nặng mặt 4 ngày nay sau đợt cảm lạnh.",
+    "clinical_scenario_en": "34-year-old female with thick yellow nasal discharge, frontal headache, and facial fullness for 4 days post-cold.",
+    "demographics": {
+      "age": 34,
+      "sex": "female"
+    },
+    "temporal": {
+      "onset": "acute",
+      "durationValue": 4,
+      "durationUnit": "days"
+    },
+    "chief_complaint": "nasal-congestion",
+    "symptoms": [
+      "nasal-congestion",
+      "headache",
+      "sore-throat",
+      "cough"
+    ],
+    "excluded_symptoms": [
+      "ear-pain",
+      "vomiting"
+    ],
+    "ground_truth": {
+      "disease_id": "acute-sinusitis",
+      "disease_name": "Acute sinusitis",
+      "ddxplus_pathology": "Acute rhinosinusitis"
+    }
+  },
+  {
+    "case_id": "DDX-003",
+    "specialty": "Tai Mũi Họng",
+    "clinical_scenario_vi": "Bệnh nhân nam 45 tuổi, nghẹt mũi dai dẳng kéo dài 2 tháng, nhức đầu âm ỉ, chảy dịch mũi sau.",
+    "clinical_scenario_en": "45-year-old male with persistent nasal blockage for 2 months, dull facial pressure, and post-nasal drip.",
+    "demographics": {
+      "age": 45,
+      "sex": "male"
+    },
+    "temporal": {
+      "onset": "chronic",
+      "durationValue": 8,
+      "durationUnit": "weeks"
+    },
+    "chief_complaint": "nasal-congestion",
+    "symptoms": [
+      "nasal-congestion",
+      "headache",
+      "cough"
+    ],
+    "excluded_symptoms": [
+      "fever",
+      "sharp-chest-pain"
+    ],
+    "ground_truth": {
+      "disease_id": "chronic-sinusitis",
+      "disease_name": "Chronic sinusitis",
+      "ddxplus_pathology": "Chronic rhinosinusitis"
+    }
+  },
+  {
+    "case_id": "DDX-004",
+    "specialty": "Tai Mũi Họng",
+    "clinical_scenario_vi": "Bệnh nhân nữ 28 tuổi (giáo viên), khàn tiếng mất giọng sau khi nói nhiều, đau họng nhẹ, ho khan.",
+    "clinical_scenario_en": "28-year-old female teacher presenting with sudden hoarseness, voice loss after overuse, and mild throat irritation.",
+    "demographics": {
+      "age": 28,
+      "sex": "female"
+    },
+    "temporal": {
+      "onset": "acute",
+      "durationValue": 3,
+      "durationUnit": "days"
+    },
+    "chief_complaint": "hoarse-voice",
+    "symptoms": [
+      "hoarse-voice",
+      "sore-throat",
+      "cough"
+    ],
+    "excluded_symptoms": [
+      "ear-pain",
+      "shortness-of-breath"
+    ],
+    "ground_truth": {
+      "disease_id": "laryngitis",
+      "disease_name": "Laryngitis",
+      "ddxplus_pathology": "Acute laryngitis"
+    }
+  },
+  {
+    "case_id": "DDX-005",
+    "specialty": "Tai Mũi Họng",
+    "clinical_scenario_vi": "Bệnh nhân nam 15 tuổi, amidan sưng to đỏ có chấm mủ, đau họng buốt, nuốt nghẹn, thở khò khè.",
+    "clinical_scenario_en": "15-year-old male with markedly swollen and erythematous tonsils, severe throat pain, difficulty swallowing, and stridor.",
+    "demographics": {
+      "age": 15,
+      "sex": "male"
+    },
+    "temporal": {
+      "onset": "acute",
+      "durationValue": 2,
+      "durationUnit": "days"
+    },
+    "chief_complaint": "sore-throat",
+    "symptoms": [
+      "sore-throat",
+      "swollen-or-red-tonsils",
+      "abnormal-breathing-sounds"
+    ],
+    "excluded_symptoms": [
+      "diarrhea",
+      "heartburn"
+    ],
+    "ground_truth": {
+      "disease_id": "tonsillitis",
+      "disease_name": "Tonsillitis",
+      "ddxplus_pathology": "Acute tonsillitis"
+    }
+  },
+  {
+    "case_id": "DDX-006",
+    "specialty": "Tai Mũi Họng",
+    "clinical_scenario_vi": "Bé gái 4 tuổi, quấy khóc, giật tai phải liên tục, kêu đau tai nhói kèm sốt cao 39 độ sau viêm hô hấp trên.",
+    "clinical_scenario_en": "4-year-old girl, irritable and pulling right ear, complaining of severe sharp otalgia with high fever (39°C) after URTI.",
+    "demographics": {
+      "age": 4,
+      "sex": "female"
+    },
+    "temporal": {
+      "onset": "acute",
+      "durationValue": 1,
+      "durationUnit": "days"
+    },
+    "chief_complaint": "ear-pain",
+    "symptoms": [
+      "ear-pain",
+      "fever",
+      "cough"
+    ],
+    "excluded_symptoms": [
+      "diarrhea",
+      "skin-rash"
+    ],
+    "ground_truth": {
+      "disease_id": "acute-otitis-media",
+      "disease_name": "Acute otitis media",
+      "ddxplus_pathology": "Acute otitis media"
+    }
+  },
+  {
+    "case_id": "DDX-007",
+    "specialty": "Tai Mũi Họng",
+    "clinical_scenario_vi": "Bệnh nhân nam 26 tuổi, đau tai dữ dội khi kéo vành tai hoặc ấn nắp tai sau khi đi bơi, chảy ít dịch tai.",
+    "clinical_scenario_en": "26-year-old male with acute severe otalgia exacerbated by tragus manipulation after swimming, mild ear discharge.",
+    "demographics": {
+      "age": 26,
+      "sex": "male"
+    },
+    "temporal": {
+      "onset": "acute",
+      "durationValue": 2,
+      "durationUnit": "days"
+    },
+    "chief_complaint": "ear-pain",
+    "symptoms": [
+      "ear-pain",
+      "fluid-in-ear",
+      "redness-in-ear"
+    ],
+    "excluded_symptoms": [
+      "fever",
+      "cough"
+    ],
+    "ground_truth": {
+      "disease_id": "otitis-externa-swimmer-s-ear",
+      "disease_name": "Otitis externa (swimmer's ear)",
+      "ddxplus_pathology": "Otitis externa"
+    }
+  },
+  {
+    "case_id": "DDX-008",
+    "specialty": "Tai Mũi Họng",
+    "clinical_scenario_vi": "Bệnh nhân nữ 52 tuổi, tai phải chảy dịch tái đi tái lại, đỏ trong tai, nghe kém nhẹ, thỉnh thoảng đau tai.",
+    "clinical_scenario_en": "52-year-old female with recurrent right ear discharge, tympanic membrane erythema, and mild conductive hearing loss.",
+    "demographics": {
+      "age": 52,
+      "sex": "female"
+    },
+    "temporal": {
+      "onset": "chronic",
+      "durationValue": 12,
+      "durationUnit": "weeks"
+    },
+    "chief_complaint": "ear-pain",
+    "symptoms": [
+      "redness-in-ear",
+      "ear-pain",
+      "nasal-congestion"
+    ],
+    "excluded_symptoms": [
+      "fever",
+      "vomiting"
+    ],
+    "ground_truth": {
+      "disease_id": "chronic-otitis-media",
+      "disease_name": "Chronic otitis media",
+      "ddxplus_pathology": "Chronic otitis media"
+    }
+  },
+  {
+    "case_id": "DDX-009",
+    "specialty": "Tiêu Hóa",
+    "clinical_scenario_vi": "Bệnh nhân nam 42 tuổi, nóng rát cồn cào sau xương ức lan lên cổ họng, ợ chua trào ngược sau bữa ăn, tăng khi nằm.",
+    "clinical_scenario_en": "42-year-old male with retrosternal burning radiating to throat, acid regurgitation post-meals, worse when supine.",
+    "demographics": {
+      "age": 42,
+      "sex": "male"
+    },
+    "temporal": {
+      "onset": "chronic",
+      "durationValue": 3,
+      "durationUnit": "weeks"
+    },
+    "chief_complaint": "sharp-chest-pain",
+    "symptoms": [
+      "sharp-chest-pain",
+      "sharp-abdominal-pain",
+      "vomiting"
+    ],
+    "excluded_symptoms": [
+      "ear-pain",
+      "cough"
+    ],
+    "ground_truth": {
+      "disease_id": "gastroesophageal-reflux-disease-gerd",
+      "disease_name": "Gastroesophageal reflux disease (GERD)",
+      "ddxplus_pathology": "GERD"
+    }
+  },
+  {
+    "case_id": "DDX-010",
+    "specialty": "Tiêu Hóa",
+    "clinical_scenario_vi": "Bệnh nhân nữ 31 tuổi, đau quặn rát vùng thượng vị, buồn nôn, nôn mửa sau khi dùng thuốc giảm đau kháng viêm NSAID.",
+    "clinical_scenario_en": "31-year-old female with acute epigastric burning pain, nausea, and vomiting following NSAID analgesic use.",
+    "demographics": {
+      "age": 31,
+      "sex": "female"
+    },
+    "temporal": {
+      "onset": "acute",
+      "durationValue": 2,
+      "durationUnit": "days"
+    },
+    "chief_complaint": "sharp-abdominal-pain",
+    "symptoms": [
+      "sharp-abdominal-pain",
+      "vomiting",
+      "nausea"
+    ],
+    "excluded_symptoms": [
+      "cough",
+      "ear-pain"
+    ],
+    "ground_truth": {
+      "disease_id": "gastritis",
+      "disease_name": "Gastritis",
+      "ddxplus_pathology": "Acute gastritis"
+    }
+  },
+  {
+    "case_id": "DDX-011",
+    "specialty": "Tiêu Hóa",
+    "clinical_scenario_vi": "Bệnh nhân nam 50 tuổi, đau cồn cào rát bỏng vùng thượng vị lúc đói và ban đêm, ăn vào đỡ đau, ợ chua buồn nôn.",
+    "clinical_scenario_en": "50-year-old male with burning epigastric gnawing pain when fasting or nocturnal, relieved by food intake.",
+    "demographics": {
+      "age": 50,
+      "sex": "male"
+    },
+    "temporal": {
+      "onset": "chronic",
+      "durationValue": 4,
+      "durationUnit": "weeks"
+    },
+    "chief_complaint": "sharp-abdominal-pain",
+    "symptoms": [
+      "sharp-abdominal-pain",
+      "vomiting",
+      "nausea"
+    ],
+    "excluded_symptoms": [
+      "ear-pain",
+      "diarrhea"
+    ],
+    "ground_truth": {
+      "disease_id": "gastroduodenal-ulcer",
+      "disease_name": "Gastroduodenal ulcer",
+      "ddxplus_pathology": "Peptic ulcer disease"
+    }
+  },
+  {
+    "case_id": "DDX-012",
+    "specialty": "Tiêu Hóa",
+    "clinical_scenario_vi": "Bệnh nhân nam 23 tuổi, ban đầu đau quanh rốn sau chuyển khu trú hố chậu phải dữ dội, sốt nhẹ, buồn nôn.",
+    "clinical_scenario_en": "23-year-old male with periumbilical pain migrating to right lower quadrant with local guarding, nausea, and low fever.",
+    "demographics": {
+      "age": 23,
+      "sex": "male"
+    },
+    "temporal": {
+      "onset": "acute",
+      "durationValue": 18,
+      "durationUnit": "hours"
+    },
+    "chief_complaint": "lower-abdominal-pain",
+    "symptoms": [
+      "sharp-abdominal-pain",
+      "lower-abdominal-pain",
+      "vomiting"
+    ],
+    "excluded_symptoms": [
+      "cough",
+      "ear-pain"
+    ],
+    "ground_truth": {
+      "disease_id": "appendicitis",
+      "disease_name": "Appendicitis",
+      "ddxplus_pathology": "Acute appendicitis"
+    }
+  },
+  {
+    "case_id": "DDX-013",
+    "specialty": "Tiêu Hóa",
+    "clinical_scenario_vi": "Bệnh nhân nữ 29 tuổi, tiêu chảy tóe nước 7-8 lần/ngày sau khi ăn hải sản, nôn mửa liên tục kèm sốt và đau bụng quặn.",
+    "clinical_scenario_en": "29-year-old female with profuse watery diarrhea 7-8 times/day after seafood, continuous vomiting, and abdominal cramps.",
+    "demographics": {
+      "age": 29,
+      "sex": "female"
+    },
+    "temporal": {
+      "onset": "acute",
+      "durationValue": 1,
+      "durationUnit": "days"
+    },
+    "chief_complaint": "diarrhea",
+    "symptoms": [
+      "vomiting",
+      "diarrhea",
+      "nausea"
+    ],
+    "excluded_symptoms": [
+      "cough",
+      "ear-pain"
+    ],
+    "ground_truth": {
+      "disease_id": "infectious-gastroenteritis",
+      "disease_name": "Infectious gastroenteritis",
+      "ddxplus_pathology": "Infectious gastroenteritis"
+    }
+  },
+  {
+    "case_id": "DDX-014",
+    "specialty": "Tiêu Hóa",
+    "clinical_scenario_vi": "Bệnh nhân nam 35 tuổi, đau quặn bụng nôn ói và đi ngoài phân lỏng sau khi uống sữa do không dung nạp lactose, không sốt.",
+    "clinical_scenario_en": "35-year-old male with abdominal cramping, bloating, nausea, and watery diarrhea after dairy intake without fever.",
+    "demographics": {
+      "age": 35,
+      "sex": "male"
+    },
+    "temporal": {
+      "onset": "acute",
+      "durationValue": 12,
+      "durationUnit": "hours"
+    },
+    "chief_complaint": "vomiting",
+    "symptoms": [
+      "vomiting",
+      "diarrhea",
+      "nausea"
+    ],
+    "excluded_symptoms": [
+      "fever",
+      "cough"
+    ],
+    "ground_truth": {
+      "disease_id": "noninfectious-gastroenteritis",
+      "disease_name": "Noninfectious gastroenteritis",
+      "ddxplus_pathology": "Noninfectious gastroenteritis"
+    }
+  },
+  {
+    "case_id": "DDX-015",
+    "specialty": "Tiêu Hóa",
+    "clinical_scenario_vi": "Bệnh nhân nữ 44 tuổi béo phì, đau dữ dội hạ sườn phải lan lên bả vai phải sau bữa ăn nhiều dầu mỡ, sốt nhẹ, buồn nôn.",
+    "clinical_scenario_en": "44-year-old female with severe right upper quadrant colic pain radiating to right scapula after fatty meal, fever, nausea.",
+    "demographics": {
+      "age": 44,
+      "sex": "female"
+    },
+    "temporal": {
+      "onset": "acute",
+      "durationValue": 1,
+      "durationUnit": "days"
+    },
+    "chief_complaint": "upper-abdominal-pain",
+    "symptoms": [
+      "sharp-abdominal-pain",
+      "upper-abdominal-pain",
+      "nausea"
+    ],
+    "excluded_symptoms": [
+      "cough",
+      "ear-pain"
+    ],
+    "ground_truth": {
+      "disease_id": "cholecystitis",
+      "disease_name": "Cholecystitis",
+      "ddxplus_pathology": "Acute cholecystitis"
+    }
+  },
+  {
+    "case_id": "DDX-016",
+    "specialty": "Tiêu Hóa",
+    "clinical_scenario_vi": "Bệnh nhân nữ 46 tuổi, xuất hiện từng cơn đau quặn gan dữ dội hạ sườn phải sau khi ăn tiệc, buồn nôn, không sốt.",
+    "clinical_scenario_en": "46-year-old female with acute severe biliary colic in right hypochondrium after a rich banquet, nausea, afebrile.",
+    "demographics": {
+      "age": 46,
+      "sex": "female"
+    },
+    "temporal": {
+      "onset": "acute",
+      "durationValue": 4,
+      "durationUnit": "hours"
+    },
+    "chief_complaint": "sharp-abdominal-pain",
+    "symptoms": [
+      "sharp-abdominal-pain",
+      "upper-abdominal-pain",
+      "nausea"
+    ],
+    "excluded_symptoms": [
+      "diarrhea",
+      "cough"
+    ],
+    "ground_truth": {
+      "disease_id": "gallstone",
+      "disease_name": "Gallstone",
+      "ddxplus_pathology": "Gallstones (Cholelithiasis)"
+    }
+  },
+  {
+    "case_id": "DDX-017",
+    "specialty": "Tiêu Hóa",
+    "clinical_scenario_vi": "Bệnh nhân nam 40 tuổi có tiền sử uống rượu bia nhiều, đau bụng dữ dội thượng vị xuyên thẳng ra sau lưng, nôn liên tục không đỡ đau.",
+    "clinical_scenario_en": "40-year-old male with history of heavy alcohol intake presenting with agonizing epigastric pain radiating to back, intractable vomiting.",
+    "demographics": {
+      "age": 40,
+      "sex": "male"
+    },
+    "temporal": {
+      "onset": "acute",
+      "durationValue": 10,
+      "durationUnit": "hours"
+    },
+    "chief_complaint": "sharp-abdominal-pain",
+    "symptoms": [
+      "sharp-abdominal-pain",
+      "vomiting",
+      "nausea"
+    ],
+    "excluded_symptoms": [
+      "cough",
+      "ear-pain"
+    ],
+    "ground_truth": {
+      "disease_id": "acute-pancreatitis",
+      "disease_name": "Acute pancreatitis",
+      "ddxplus_pathology": "Acute pancreatitis"
+    }
+  },
+  {
+    "case_id": "DDX-018",
+    "specialty": "Tiêu Hóa",
+    "clinical_scenario_vi": "Bệnh nhân nam 65 tuổi, đau âm ỉ liên tục hố chậu trái, sốt nhẹ, chướng bụng và táo bón xen lẫn tiêu chảy.",
+    "clinical_scenario_en": "65-year-old male with persistent left lower quadrant pain, low fever, abdominal distension, and alternating bowel habits.",
+    "demographics": {
+      "age": 65,
+      "sex": "male"
+    },
+    "temporal": {
+      "onset": "acute",
+      "durationValue": 2,
+      "durationUnit": "days"
+    },
+    "chief_complaint": "lower-abdominal-pain",
+    "symptoms": [
+      "sharp-abdominal-pain",
+      "lower-abdominal-pain",
+      "diarrhea"
+    ],
+    "excluded_symptoms": [
+      "cough",
+      "ear-pain"
+    ],
+    "ground_truth": {
+      "disease_id": "diverticulitis",
+      "disease_name": "Diverticulitis",
+      "ddxplus_pathology": "Diverticulitis"
+    }
+  },
+  {
+    "case_id": "DDX-019",
+    "specialty": "Tiêu Hóa",
+    "clinical_scenario_vi": "Bệnh nhân nữ 25 tuổi, đi tiêu phân nhầy máu mủ nhiều lần trong ngày, đau mót rặn bụng dưới kéo dài hơn 1 tháng.",
+    "clinical_scenario_en": "25-year-old female with chronic bloody diarrhea, lower abdominal cramping, tenesmus, and weight loss for > 1 month.",
+    "demographics": {
+      "age": 25,
+      "sex": "female"
+    },
+    "temporal": {
+      "onset": "chronic",
+      "durationValue": 6,
+      "durationUnit": "weeks"
+    },
+    "chief_complaint": "diarrhea",
+    "symptoms": [
+      "diarrhea",
+      "sharp-abdominal-pain",
+      "blood-in-stool"
+    ],
+    "excluded_symptoms": [
+      "ear-pain",
+      "cough"
+    ],
+    "ground_truth": {
+      "disease_id": "ulcerative-colitis",
+      "disease_name": "Ulcerative colitis",
+      "ddxplus_pathology": "Ulcerative colitis"
+    }
+  },
+  {
+    "case_id": "DDX-020",
+    "specialty": "Tiêu Hóa",
+    "clinical_scenario_vi": "Bệnh nhân nam 24 tuổi, đau bụng mạn tính từng cơn, tiêu chảy kéo dài sụt cân nghiêm trọng, mệt mỏi.",
+    "clinical_scenario_en": "24-year-old male with chronic recurrent abdominal cramping, persistent diarrhea, severe weight loss, and fatigue.",
+    "demographics": {
+      "age": 24,
+      "sex": "male"
+    },
+    "temporal": {
+      "onset": "chronic",
+      "durationValue": 10,
+      "durationUnit": "weeks"
+    },
+    "chief_complaint": "sharp-abdominal-pain",
+    "symptoms": [
+      "sharp-abdominal-pain",
+      "diarrhea",
+      "vomiting"
+    ],
+    "excluded_symptoms": [
+      "cough",
+      "ear-pain"
+    ],
+    "ground_truth": {
+      "disease_id": "crohn-disease",
+      "disease_name": "Crohn disease",
+      "ddxplus_pathology": "Crohn's disease"
+    }
+  },
+  {
+    "case_id": "DDX-021",
+    "specialty": "Tiêu Hóa",
+    "clinical_scenario_vi": "Bệnh nhân nam 55 tuổi, xuất hiện khối phồng vùng bẹn phải to lên khi ho hoặc đứng lâu, nằm xuống thì thụt vào.",
+    "clinical_scenario_en": "55-year-old male with reducible right groin bulge that enlarges with coughing or prolonged standing.",
+    "demographics": {
+      "age": 55,
+      "sex": "male"
+    },
+    "temporal": {
+      "onset": "subacute",
+      "durationValue": 3,
+      "durationUnit": "weeks"
+    },
+    "chief_complaint": "groin-mass",
+    "symptoms": [
+      "groin-pain",
+      "groin-mass",
+      "sharp-abdominal-pain"
+    ],
+    "excluded_symptoms": [
+      "diarrhea",
+      "cough"
+    ],
+    "ground_truth": {
+      "disease_id": "inguinal-hernia",
+      "disease_name": "Inguinal hernia",
+      "ddxplus_pathology": "Inguinal hernia"
+    }
+  },
+  {
+    "case_id": "DDX-022",
+    "specialty": "Tiêu Hóa",
+    "clinical_scenario_vi": "Bệnh nhân nữ 61 tuổi, tức nghẹn vùng sau xương ức và thượng vị sau ăn no, ợ nóng buồn nôn, khó nuốt nhẹ.",
+    "clinical_scenario_en": "61-year-old female with postprandial retrosternal discomfort, heartburn, nausea, and mild dysphagia when lying flat.",
+    "demographics": {
+      "age": 61,
+      "sex": "female"
+    },
+    "temporal": {
+      "onset": "chronic",
+      "durationValue": 8,
+      "durationUnit": "weeks"
+    },
+    "chief_complaint": "sharp-chest-pain",
+    "symptoms": [
+      "sharp-abdominal-pain",
+      "sharp-chest-pain",
+      "nausea"
+    ],
+    "excluded_symptoms": [
+      "diarrhea",
+      "cough"
+    ],
+    "ground_truth": {
+      "disease_id": "hiatal-hernia",
+      "disease_name": "Hiatal hernia",
+      "ddxplus_pathology": "Hiatal hernia"
+    }
+  },
+  {
+    "case_id": "DDX-023",
+    "specialty": "Thần Kinh",
+    "clinical_scenario_vi": "Bệnh nhân nữ 27 tuổi, đau nhói nửa đầu giật theo nhịp mạch, sợ ánh sáng và tiếng động, buồn nôn dữ dội.",
+    "clinical_scenario_en": "27-year-old female with unilateral pulsating throbbing headache, photophobia, phonophobia, and severe nausea.",
+    "demographics": {
+      "age": 27,
+      "sex": "female"
+    },
+    "temporal": {
+      "onset": "acute",
+      "durationValue": 1,
+      "durationUnit": "days"
+    },
+    "chief_complaint": "headache",
+    "symptoms": [
+      "headache",
+      "nausea",
+      "vomiting"
+    ],
+    "excluded_symptoms": [
+      "fever",
+      "cough"
+    ],
+    "ground_truth": {
+      "disease_id": "migraine",
+      "disease_name": "Migraine",
+      "ddxplus_pathology": "Migraine"
+    }
+  },
+  {
+    "case_id": "DDX-024",
+    "specialty": "Thần Kinh",
+    "clinical_scenario_vi": "Bệnh nhân nam 33 tuổi làm IT, đau đầu như vòng dây siết chặt quanh trán và gáy, ê ẩm cơ cổ vai, làm việc căng thẳng.",
+    "clinical_scenario_en": "33-year-old IT worker with band-like bilateral squeezing headache around forehead and occiput, neck muscle stiffness.",
+    "demographics": {
+      "age": 33,
+      "sex": "male"
+    },
+    "temporal": {
+      "onset": "subacute",
+      "durationValue": 5,
+      "durationUnit": "days"
+    },
+    "chief_complaint": "headache",
+    "symptoms": [
+      "headache",
+      "neck-pain",
+      "nausea"
+    ],
+    "excluded_symptoms": [
+      "fever",
+      "ear-pain"
+    ],
+    "ground_truth": {
+      "disease_id": "tension-headache",
+      "disease_name": "Tension headache",
+      "ddxplus_pathology": "Tension-type headache"
+    }
+  },
+  {
+    "case_id": "DDX-025",
+    "specialty": "Tâm Thần",
+    "clinical_scenario_vi": "Bệnh nhân nữ 23 tuổi, đột ngột cảm giác sợ hãi tột cùng sắp chết, tim đập thình thịch, ngộp thở, chóng mặt quay cuồng.",
+    "clinical_scenario_en": "23-year-old female with sudden acute impending doom sensation, palpitations, air hunger, dizziness, and tremors.",
+    "demographics": {
+      "age": 23,
+      "sex": "female"
+    },
+    "temporal": {
+      "onset": "acute",
+      "durationValue": 30,
+      "durationUnit": "hours"
+    },
+    "chief_complaint": "shortness-of-breath",
+    "symptoms": [
+      "shortness-of-breath",
+      "dizziness",
+      "sharp-chest-pain"
+    ],
+    "excluded_symptoms": [
+      "fever",
+      "cough"
+    ],
+    "ground_truth": {
+      "disease_id": "panic-attack",
+      "disease_name": "Panic attack",
+      "ddxplus_pathology": "Panic attack"
+    }
+  },
+  {
+    "case_id": "DDX-026",
+    "specialty": "Tâm Thần",
+    "clinical_scenario_vi": "Bệnh nhân nam 36 tuổi, thường xuyên lo âu bất an, trầm cảm, hay lên cơn khó thở bồn chồn kéo dài nhiều tuần.",
+    "clinical_scenario_en": "36-year-old male with persistent generalized anxiety, depression, recurrent unprovoked panic spells, and dyspnea.",
+    "demographics": {
+      "age": 36,
+      "sex": "male"
+    },
+    "temporal": {
+      "onset": "chronic",
+      "durationValue": 6,
+      "durationUnit": "weeks"
+    },
+    "chief_complaint": "anxiety-and-nervousness",
+    "symptoms": [
+      "anxiety-and-nervousness",
+      "depression",
+      "shortness-of-breath"
+    ],
+    "excluded_symptoms": [
+      "fever",
+      "diarrhea"
+    ],
+    "ground_truth": {
+      "disease_id": "panic-disorder",
+      "disease_name": "Panic disorder",
+      "ddxplus_pathology": "Panic disorder"
+    }
+  },
+  {
+    "case_id": "DDX-027",
+    "specialty": "Thần Kinh",
+    "clinical_scenario_vi": "Bệnh nhân nữ 30 tuổi, sụp mi mắt hai bên nặng dần về chiều tối, nhìn đôi (song thị), yếu cơ tay chân khi vận động.",
+    "clinical_scenario_en": "30-year-old female with bilateral progressive ptosis worsening in evening, binocular diplopia, and proximal limb fatigue.",
+    "demographics": {
+      "age": 30,
+      "sex": "female"
+    },
+    "temporal": {
+      "onset": "subacute",
+      "durationValue": 3,
+      "durationUnit": "weeks"
+    },
+    "chief_complaint": "double-vision",
+    "symptoms": [
+      "double-vision",
+      "weakness",
+      "fatigue"
+    ],
+    "excluded_symptoms": [
+      "fever",
+      "diarrhea"
+    ],
+    "ground_truth": {
+      "disease_id": "myasthenia-gravis",
+      "disease_name": "Myasthenia gravis",
+      "ddxplus_pathology": "Myasthenia gravis"
+    }
+  },
+  {
+    "case_id": "DDX-028",
+    "specialty": "Tim Mạch",
+    "clinical_scenario_vi": "Bệnh nhân nam 59 tuổi, đau thắt nghẹt sau xương ức như bị đè nặng khi leo cầu thang, lan lên vai trái, nghỉ ngơi 5 phút đỡ.",
+    "clinical_scenario_en": "59-year-old male with retrosternal constricting crushing chest pressure upon climbing stairs, radiating to left shoulder.",
+    "demographics": {
+      "age": 59,
+      "sex": "male"
+    },
+    "temporal": {
+      "onset": "acute",
+      "durationValue": 15,
+      "durationUnit": "hours"
+    },
+    "chief_complaint": "sharp-chest-pain",
+    "symptoms": [
+      "sharp-chest-pain",
+      "shortness-of-breath",
+      "chest-tightness"
+    ],
+    "excluded_symptoms": [
+      "fever",
+      "cough"
+    ],
+    "ground_truth": {
+      "disease_id": "angina",
+      "disease_name": "Angina",
+      "ddxplus_pathology": "Stable angina"
+    }
+  },
+  {
+    "case_id": "DDX-029",
+    "specialty": "Tim Mạch",
+    "clinical_scenario_vi": "Bệnh nhân nam 32 tuổi, đau nhói ngực dữ dội tăng lên khi hít sâu hoặc nằm ngửa, cúi người ra trước thấy dễ chịu hơn, khó thở.",
+    "clinical_scenario_en": "32-year-old male with sharp stabbing precordial pain exacerbated by deep inspiration and supine position, relieved by leaning forward.",
+    "demographics": {
+      "age": 32,
+      "sex": "male"
+    },
+    "temporal": {
+      "onset": "acute",
+      "durationValue": 2,
+      "durationUnit": "days"
+    },
+    "chief_complaint": "sharp-chest-pain",
+    "symptoms": [
+      "sharp-chest-pain",
+      "shortness-of-breath",
+      "difficulty-breathing"
+    ],
+    "excluded_symptoms": [
+      "cough",
+      "diarrhea"
+    ],
+    "ground_truth": {
+      "disease_id": "pericarditis",
+      "disease_name": "Pericarditis",
+      "ddxplus_pathology": "Acute pericarditis"
+    }
+  },
+  {
+    "case_id": "DDX-030",
+    "specialty": "Da Liễu",
+    "clinical_scenario_vi": "Bệnh nhân nữ 24 tuổi, nổi mẩn đỏ ngứa rát dữ dội ở vùng cổ tay sau khi đeo đồng hồ kim loại mới 2 ngày.",
+    "clinical_scenario_en": "24-year-old female with acute erythematous pruritic vesicular rash on right wrist 2 days after wearing a new metallic watch.",
+    "demographics": {
+      "age": 24,
+      "sex": "female"
+    },
+    "temporal": {
+      "onset": "acute",
+      "durationValue": 2,
+      "durationUnit": "days"
+    },
+    "chief_complaint": "skin-rash",
+    "symptoms": [
+      "skin-rash",
+      "itching-of-skin",
+      "abnormal-appearing-skin"
+    ],
+    "excluded_symptoms": [
+      "fever",
+      "cough"
+    ],
+    "ground_truth": {
+      "disease_id": "contact-dermatitis",
+      "disease_name": "Contact dermatitis",
+      "ddxplus_pathology": "Contact dermatitis"
+    }
+  },
+  {
+    "case_id": "DDX-031",
+    "specialty": "Da Liễu",
+    "clinical_scenario_vi": "Bé trai 8 tuổi, da khô nứt nẻ, ngứa dữ dội ở nếp gấp khuỷu tay và kheo chân, gãi trầy xước rỉ dịch.",
+    "clinical_scenario_en": "8-year-old boy with chronic lichenified excoriated dry pruritic patches in flexural creases (antecubital and popliteal fossae).",
+    "demographics": {
+      "age": 8,
+      "sex": "male"
+    },
+    "temporal": {
+      "onset": "chronic",
+      "durationValue": 4,
+      "durationUnit": "weeks"
+    },
+    "chief_complaint": "skin-rash",
+    "symptoms": [
+      "skin-rash",
+      "itching-of-skin",
+      "abnormal-appearing-skin"
+    ],
+    "excluded_symptoms": [
+      "fever",
+      "ear-pain"
+    ],
+    "ground_truth": {
+      "disease_id": "eczema",
+      "disease_name": "Eczema",
+      "ddxplus_pathology": "Atopic dermatitis (Eczema)"
+    }
+  },
+  {
+    "case_id": "DDX-032",
+    "specialty": "Da Liễu",
+    "clinical_scenario_vi": "Bệnh nhân nam 41 tuổi, xuất hiện các mảng dát đỏ phủ vảy trắng bạc như sáp nến ở cùi chỏ và đầu gối, ngứa nhẹ.",
+    "clinical_scenario_en": "41-year-old male with well-demarcated erythematous plaques covered by silvery micaceous scales on elbows and knees.",
+    "demographics": {
+      "age": 41,
+      "sex": "male"
+    },
+    "temporal": {
+      "onset": "chronic",
+      "durationValue": 12,
+      "durationUnit": "weeks"
+    },
+    "chief_complaint": "skin-rash",
+    "symptoms": [
+      "skin-rash",
+      "itching-of-skin",
+      "skin-dryness-peeling-scaliness-or-roughness"
+    ],
+    "excluded_symptoms": [
+      "fever",
+      "cough"
+    ],
+    "ground_truth": {
+      "disease_id": "psoriasis",
+      "disease_name": "Psoriasis",
+      "ddxplus_pathology": "Plaque psoriasis"
+    }
+  },
+  {
+    "case_id": "DDX-033",
+    "specialty": "Da Liễu",
+    "clinical_scenario_vi": "Bé gái 5 tuổi, nổi các bọng nước quanh mũi miệng vỡ ra đóng vảy tiết màu vàng mật ong, ngứa nhiều, sốt nhẹ.",
+    "clinical_scenario_en": "5-year-old girl with erythematous vesicles around perioral region ruptured into honey-colored crusted erosions.",
+    "demographics": {
+      "age": 5,
+      "sex": "female"
+    },
+    "temporal": {
+      "onset": "acute",
+      "durationValue": 3,
+      "durationUnit": "days"
+    },
+    "chief_complaint": "skin-rash",
+    "symptoms": [
+      "skin-rash",
+      "skin-lesion",
+      "fever"
+    ],
+    "excluded_symptoms": [
+      "cough",
+      "ear-pain"
+    ],
+    "ground_truth": {
+      "disease_id": "impetigo",
+      "disease_name": "Impetigo",
+      "ddxplus_pathology": "Impetigo"
+    }
+  },
+  {
+    "case_id": "DDX-034",
+    "specialty": "Da Liễu",
+    "clinical_scenario_vi": "Bệnh nhân nam 54 tuổi, đau rát bỏng vùng mạn sườn phải, sau 2 ngày nổi dải mụn nước mọc thành chùm theo khoanh gian sườn.",
+    "clinical_scenario_en": "54-year-old male with acute severe burning unilateral dermatomal pain in right flank followed by grouped vesicular eruptions.",
+    "demographics": {
+      "age": 54,
+      "sex": "male"
+    },
+    "temporal": {
+      "onset": "acute",
+      "durationValue": 3,
+      "durationUnit": "days"
+    },
+    "chief_complaint": "skin-rash",
+    "symptoms": [
+      "skin-rash",
+      "back-pain",
+      "skin-lesion"
+    ],
+    "excluded_symptoms": [
+      "cough",
+      "ear-pain"
+    ],
+    "ground_truth": {
+      "disease_id": "shingles-herpes-zoster",
+      "disease_name": "Shingles (herpes zoster)",
+      "ddxplus_pathology": "Herpes zoster (Shingles)"
+    }
+  },
+  {
+    "case_id": "DDX-035",
+    "specialty": "Dị Ứng",
+    "clinical_scenario_vi": "Bệnh nhân nam 20 tuổi, nổi mề đay toàn thân ngứa ngáy dữ dội, phản ứng dị ứng sau khi ăn nhộng tằm.",
+    "clinical_scenario_en": "20-year-old male with generalized acute pruritic urticarial wheals and angioedema shortly after silkworm pupae ingestion.",
+    "demographics": {
+      "age": 20,
+      "sex": "male"
+    },
+    "temporal": {
+      "onset": "acute",
+      "durationValue": 2,
+      "durationUnit": "hours"
+    },
+    "chief_complaint": "skin-rash",
+    "symptoms": [
+      "skin-rash",
+      "allergic-reaction",
+      "itching-of-skin"
+    ],
+    "excluded_symptoms": [
+      "ear-pain",
+      "cough"
+    ],
+    "ground_truth": {
+      "disease_id": "allergy",
+      "disease_name": "Allergy",
+      "ddxplus_pathology": "Allergic reaction (Urticaria)"
+    }
+  },
+  {
+    "case_id": "DDX-036",
+    "specialty": "Dị Ứng",
+    "clinical_scenario_vi": "Bệnh nhân nữ 22 tuổi, hai mắt đỏ ngầu, ngứa mắt liên tục muốn dụi, chảy nước mắt nhiều vào mùa phấn hoa nở.",
+    "clinical_scenario_en": "22-year-old female with bilateral conjunctival injection, severe ocular pruritus, tearing during seasonal pollen bloom.",
+    "demographics": {
+      "age": 22,
+      "sex": "female"
+    },
+    "temporal": {
+      "onset": "acute",
+      "durationValue": 2,
+      "durationUnit": "days"
+    },
+    "chief_complaint": "itchiness-of-eye",
+    "symptoms": [
+      "eye-redness",
+      "itchiness-of-eye",
+      "pain-in-eye"
+    ],
+    "excluded_symptoms": [
+      "ear-pain",
+      "cough"
+    ],
+    "ground_truth": {
+      "disease_id": "conjunctivitis-due-to-allergy",
+      "disease_name": "Conjunctivitis due to allergy",
+      "ddxplus_pathology": "Allergic conjunctivitis"
+    }
+  },
+  {
+    "case_id": "DDX-037",
+    "specialty": "Tiết Niệu",
+    "clinical_scenario_vi": "Bệnh nhân nữ 26 tuổi, tiểu buốt tiểu rắt, cảm giác nóng rát đường tiểu, đau tức vùng bụng dưới trên xương mu.",
+    "clinical_scenario_en": "26-year-old female with acute dysuria, urinary frequency, burning micturition, and suprapubic dull aching discomfort.",
+    "demographics": {
+      "age": 26,
+      "sex": "female"
+    },
+    "temporal": {
+      "onset": "acute",
+      "durationValue": 2,
+      "durationUnit": "days"
+    },
+    "chief_complaint": "painful-urination",
+    "symptoms": [
+      "painful-urination",
+      "suprapubic-pain",
+      "sharp-abdominal-pain"
+    ],
+    "excluded_symptoms": [
+      "cough",
+      "ear-pain"
+    ],
+    "ground_truth": {
+      "disease_id": "urinary-tract-infection",
+      "disease_name": "Urinary tract infection",
+      "ddxplus_pathology": "Urinary tract infection (UTI)"
+    }
+  },
+  {
+    "case_id": "DDX-038",
+    "specialty": "Tiết Niệu",
+    "clinical_scenario_vi": "Bệnh nhân nữ 38 tuổi, đi tiểu liên tục nhiều lần trong ngày nhưng mỗi lần chỉ ra vài giọt, tiểu buốt buốt tận óc, đau hạ vị.",
+    "clinical_scenario_en": "38-year-old female with intense urinary urgency, painful urination, frequency voiding small amounts, and suprapubic pain.",
+    "demographics": {
+      "age": 38,
+      "sex": "female"
+    },
+    "temporal": {
+      "onset": "acute",
+      "durationValue": 1,
+      "durationUnit": "days"
+    },
+    "chief_complaint": "painful-urination",
+    "symptoms": [
+      "painful-urination",
+      "suprapubic-pain",
+      "frequent-urination"
+    ],
+    "excluded_symptoms": [
+      "cough",
+      "ear-pain"
+    ],
+    "ground_truth": {
+      "disease_id": "cystitis",
+      "disease_name": "Cystitis",
+      "ddxplus_pathology": "Acute cystitis"
+    }
+  },
+  {
+    "case_id": "DDX-039",
+    "specialty": "Tiết Niệu",
+    "clinical_scenario_vi": "Bệnh nhân nam 43 tuổi, đột ngột đau quặn thận dữ dội vùng hông lưng lan xuống bẹn, tiểu ra máu, buồn nôn vã mồ hôi.",
+    "clinical_scenario_en": "43-year-old male with acute excruciating flank colic radiating toward groin, gross hematuria, nausea, and diaphoresis.",
+    "demographics": {
+      "age": 43,
+      "sex": "male"
+    },
+    "temporal": {
+      "onset": "acute",
+      "durationValue": 3,
+      "durationUnit": "hours"
+    },
+    "chief_complaint": "side-pain",
+    "symptoms": [
+      "side-pain",
+      "blood-in-urine",
+      "sharp-abdominal-pain"
+    ],
+    "excluded_symptoms": [
+      "cough",
+      "diarrhea"
+    ],
+    "ground_truth": {
+      "disease_id": "kidney-stone",
+      "disease_name": "Kidney stone",
+      "ddxplus_pathology": "Nephrolithiasis (Kidney stone)"
+    }
+  },
+  {
+    "case_id": "DDX-040",
+    "specialty": "Răng Hàm Mặt",
+    "clinical_scenario_vi": "Bệnh nhân nam 39 tuổi, đau răng dữ dội lan lên sưng vù cả môi và má một bên, há miệng khó khăn, đau buốt họng.",
+    "clinical_scenario_en": "39-year-old male with severe odontogenic pain progressing to unilateral facial and lip cellulitis, trismus, and odynophagia.",
+    "demographics": {
+      "age": 39,
+      "sex": "male"
+    },
+    "temporal": {
+      "onset": "acute",
+      "durationValue": 2,
+      "durationUnit": "days"
+    },
+    "chief_complaint": "lip-swelling",
+    "symptoms": [
+      "lip-swelling",
+      "sore-throat",
+      "toothache"
+    ],
+    "excluded_symptoms": [
+      "diarrhea",
+      "cough"
+    ],
+    "ground_truth": {
+      "disease_id": "cellulitis-or-abscess-of-mouth",
+      "disease_name": "Cellulitis or abscess of mouth",
+      "ddxplus_pathology": "Cellulitis / Abscess of mouth"
+    }
+  },
+  {
+    "case_id": "DDX-041",
+    "specialty": "Tai Mũi Họng",
+    "clinical_scenario_vi": "Bệnh nhân nữ 28 tuổi, đau rát họng tăng khi nuốt, sốt nhẹ 38°C, ho khan và khàn giọng nhẹ.",
+    "clinical_scenario_en": "28-year-old female presenting with severe sore throat exacerbated by swallowing, low-grade fever (38°C), dry cough, and mild hoarseness.",
+    "demographics": {
+      "age": 28,
+      "sex": "female"
+    },
+    "temporal": {
+      "onset": "acute",
+      "durationValue": 3,
+      "durationUnit": "days"
+    },
+    "chief_complaint": "sore-throat",
+    "symptoms": [
+      "sore-throat"
+    ],
+    "excluded_symptoms": [
+      "cough",
+      "fever",
+      "ear-pain"
+    ],
+    "ground_truth": {
+      "disease_id": "pharyngitis",
+      "disease_name": "Pharyngitis",
+      "ddxplus_pathology": "Viral pharyngitis"
+    }
+  },
+  {
+    "case_id": "DDX-042",
+    "specialty": "Tai Mũi Họng",
+    "clinical_scenario_vi": "Bệnh nhân nam 42 tuổi, nghẹt mũi đặc vàng xanh 5 ngày nay, nặng đầu vùng trán và má, ho đờm.",
+    "clinical_scenario_en": "42-year-old male with thick yellow-green nasal discharge for 5 days, frontal and maxillary headache, and productive cough.",
+    "demographics": {
+      "age": 42,
+      "sex": "male"
+    },
+    "temporal": {
+      "onset": "acute",
+      "durationValue": 5,
+      "durationUnit": "days"
+    },
+    "chief_complaint": "nasal-congestion",
+    "symptoms": [
+      "nasal-congestion"
+    ],
+    "excluded_symptoms": [
+      "sore-throat",
+      "cough",
+      "fever"
+    ],
+    "ground_truth": {
+      "disease_id": "acute-sinusitis",
+      "disease_name": "Acute sinusitis",
+      "ddxplus_pathology": "Acute sinusitis"
+    }
+  },
+  {
+    "case_id": "DDX-043",
+    "specialty": "Tai Mũi Họng",
+    "clinical_scenario_vi": "Bệnh nhân nam 35 tuổi, khàn tiếng rõ rệt sau đợt cảm cúm, đau họng nhẹ, ho khan rát cổ.",
+    "clinical_scenario_en": "35-year-old male with marked hoarseness following viral cold, mild throat soreness, and dry irritating cough.",
+    "demographics": {
+      "age": 35,
+      "sex": "male"
+    },
+    "temporal": {
+      "onset": "acute",
+      "durationValue": 4,
+      "durationUnit": "days"
+    },
+    "chief_complaint": "hoarse-voice",
+    "symptoms": [
+      "hoarse-voice"
+    ],
+    "excluded_symptoms": [
+      "sore-throat",
+      "cough",
+      "fever"
+    ],
+    "ground_truth": {
+      "disease_id": "laryngitis",
+      "disease_name": "Laryngitis",
+      "ddxplus_pathology": "Laryngitis"
+    }
+  },
+  {
+    "case_id": "DDX-044",
+    "specialty": "Tai Mũi Họng",
+    "clinical_scenario_vi": "Bệnh nhân nữ 19 tuổi, đau nhói trong tai phải, chảy ít dịch vàng tai, sốt 38.5°C sau viêm mũi họng.",
+    "clinical_scenario_en": "19-year-old female with sharp right earache, minor yellowish ear discharge, and 38.5°C fever following rhinopharyngitis.",
+    "demographics": {
+      "age": 19,
+      "sex": "female"
+    },
+    "temporal": {
+      "onset": "acute",
+      "durationValue": 2,
+      "durationUnit": "days"
+    },
+    "chief_complaint": "ear-pain",
+    "symptoms": [
+      "ear-pain",
+      "fever"
+    ],
+    "excluded_symptoms": [
+      "sore-throat",
+      "cough"
+    ],
+    "ground_truth": {
+      "disease_id": "acute-otitis-media",
+      "disease_name": "Acute otitis media",
+      "ddxplus_pathology": "Acute otitis media"
+    }
+  },
+  {
+    "case_id": "DDX-045",
+    "specialty": "Tiêu Hóa",
+    "clinical_scenario_vi": "Bệnh nhân nam 48 tuổi, ợ nóng rát sau xương ức lan lên họng sau ăn no hoặc nằm ngửa, buồn nôn.",
+    "clinical_scenario_en": "48-year-old male with retrosternal pyrosis radiating to throat after large meals or recumbency, and mild nausea.",
+    "demographics": {
+      "age": 48,
+      "sex": "male"
+    },
+    "temporal": {
+      "onset": "chronic",
+      "durationValue": 2,
+      "durationUnit": "months"
+    },
+    "chief_complaint": "upper-abdominal-pain",
+    "symptoms": [
+      "upper-abdominal-pain"
+    ],
+    "excluded_symptoms": [
+      "sharp-abdominal-pain",
+      "nausea",
+      "vomiting"
+    ],
+    "ground_truth": {
+      "disease_id": "gastroesophageal-reflux-disease-gerd",
+      "disease_name": "Gastroesophageal reflux disease (GERD)",
+      "ddxplus_pathology": "GERD"
+    }
+  },
+  {
+    "case_id": "DDX-046",
+    "specialty": "Tiêu Hóa",
+    "clinical_scenario_vi": "Bệnh nhân nữ 37 tuổi, đau cồn cào rát vùng thượng vị khi đói, đầy hơi chướng bụng, ợ hơi.",
+    "clinical_scenario_en": "37-year-old female with epigastric burning pain relieved by antacids, abdominal bloating, and belching.",
+    "demographics": {
+      "age": 37,
+      "sex": "female"
+    },
+    "temporal": {
+      "onset": "acute",
+      "durationValue": 6,
+      "durationUnit": "days"
+    },
+    "chief_complaint": "upper-abdominal-pain",
+    "symptoms": [
+      "upper-abdominal-pain",
+      "vomiting"
+    ],
+    "excluded_symptoms": [
+      "sharp-abdominal-pain",
+      "nausea"
+    ],
+    "ground_truth": {
+      "disease_id": "gastritis",
+      "disease_name": "Gastritis",
+      "ddxplus_pathology": "Gastritis"
+    }
+  },
+  {
+    "case_id": "DDX-047",
+    "specialty": "Tiêu Hóa",
+    "clinical_scenario_vi": "Bệnh nhân nam 52 tuổi, đau âm ỉ thượng vị về đêm đánh thức giấc ngủ, buồn nôn, sụt cân nhẹ.",
+    "clinical_scenario_en": "52-year-old male with nocturnal dull epigastric pain waking him up, occasional nausea, and mild weight loss.",
+    "demographics": {
+      "age": 52,
+      "sex": "male"
+    },
+    "temporal": {
+      "onset": "chronic",
+      "durationValue": 3,
+      "durationUnit": "weeks"
+    },
+    "chief_complaint": "upper-abdominal-pain",
+    "symptoms": [
+      "upper-abdominal-pain",
+      "vomiting"
+    ],
+    "excluded_symptoms": [
+      "sharp-abdominal-pain",
+      "nausea"
+    ],
+    "ground_truth": {
+      "disease_id": "gastroduodenal-ulcer",
+      "disease_name": "Gastroduodenal ulcer",
+      "ddxplus_pathology": "Peptic ulcer"
+    }
+  },
+  {
+    "case_id": "DDX-048",
+    "specialty": "Tiêu Hóa",
+    "clinical_scenario_vi": "Bệnh nhân nam 23 tuổi, đau bụng hố chậu phải tăng dần, sốt nhẹ 38°C, buồn nôn và chán ăn.",
+    "clinical_scenario_en": "23-year-old male with progressive right lower quadrant pain, low fever (38°C), nausea, and anorexia.",
+    "demographics": {
+      "age": 23,
+      "sex": "male"
+    },
+    "temporal": {
+      "onset": "acute",
+      "durationValue": 1,
+      "durationUnit": "days"
+    },
+    "chief_complaint": "lower-abdominal-pain",
+    "symptoms": [
+      "lower-abdominal-pain"
+    ],
+    "excluded_symptoms": [
+      "sharp-abdominal-pain",
+      "spotting-or-bleeding-during-pregnancy",
+      "upper-abdominal-pain"
+    ],
+    "ground_truth": {
+      "disease_id": "appendicitis",
+      "disease_name": "Appendicitis",
+      "ddxplus_pathology": "Acute appendicitis"
+    }
+  },
+  {
+    "case_id": "DDX-049",
+    "specialty": "Tiêu Hóa",
+    "clinical_scenario_vi": "Bệnh nhân nữ 29 tuổi, khởi phát đau âm ỉ quanh rốn sau chuyển sang nhói đau hố chậu phải, nôn 1 lần.",
+    "clinical_scenario_en": "29-year-old female with periumbilical pain shifting to sharp right iliac fossa pain, accompanied by single vomiting episode.",
+    "demographics": {
+      "age": 29,
+      "sex": "female"
+    },
+    "temporal": {
+      "onset": "acute",
+      "durationValue": 18,
+      "durationUnit": "hours"
+    },
+    "chief_complaint": "sharp-abdominal-pain",
+    "symptoms": [
+      "sharp-abdominal-pain",
+      "vomiting"
+    ],
+    "excluded_symptoms": [
+      "diarrhea",
+      "nausea"
+    ],
+    "ground_truth": {
+      "disease_id": "appendicitis",
+      "disease_name": "Appendicitis",
+      "ddxplus_pathology": "Acute appendicitis"
+    }
+  },
+  {
+    "case_id": "DDX-050",
+    "specialty": "Tiêu Hóa",
+    "clinical_scenario_vi": "Bệnh nhân nam 31 tuổi, đi tiêu phân lỏng nhiều nước 6 lần/ngày kèm sốt 38.5°C và nôn ói sau ăn hải sản.",
+    "clinical_scenario_en": "31-year-old male with watery diarrhea (6 times/day), fever 38.5°C, abdominal cramping, and vomiting after seafood.",
+    "demographics": {
+      "age": 31,
+      "sex": "male"
+    },
+    "temporal": {
+      "onset": "acute",
+      "durationValue": 2,
+      "durationUnit": "days"
+    },
+    "chief_complaint": "diarrhea",
+    "symptoms": [
+      "diarrhea"
+    ],
+    "excluded_symptoms": [
+      "sharp-abdominal-pain",
+      "nausea",
+      "vomiting"
+    ],
+    "ground_truth": {
+      "disease_id": "infectious-gastroenteritis",
+      "disease_name": "Infectious gastroenteritis",
+      "ddxplus_pathology": "Viral gastroenteritis"
+    }
+  },
+  {
+    "case_id": "DDX-051",
+    "specialty": "Tiêu Hóa",
+    "clinical_scenario_vi": "Bệnh nhân nữ 45 tuổi, tiêu chảy phân nước không sốt, đau quặn bụng sau khi dùng đồ uống chứa sữa.",
+    "clinical_scenario_en": "45-year-old female with afebrile watery diarrhea, cramping abdominal pain following dairy consumption.",
+    "demographics": {
+      "age": 45,
+      "sex": "female"
+    },
+    "temporal": {
+      "onset": "acute",
+      "durationValue": 1,
+      "durationUnit": "days"
+    },
+    "chief_complaint": "diarrhea",
+    "symptoms": [
+      "diarrhea"
+    ],
+    "excluded_symptoms": [
+      "sharp-abdominal-pain",
+      "nausea",
+      "vomiting"
+    ],
+    "ground_truth": {
+      "disease_id": "noninfectious-gastroenteritis",
+      "disease_name": "Noninfectious gastroenteritis",
+      "ddxplus_pathology": "Gastroenteritis"
+    }
+  },
+  {
+    "case_id": "DDX-052",
+    "specialty": "Tiêu Hóa",
+    "clinical_scenario_vi": "Bệnh nhân nữ 54 tuổi, đau quặn hạ sườn phải dữ dội lan ra vai sau bữa ăn dầu mỡ, sốt 38.8°C, buồn nôn.",
+    "clinical_scenario_en": "54-year-old female with severe right upper quadrant colic radiating to right shoulder post-fatty meal, fever 38.8°C, nausea.",
+    "demographics": {
+      "age": 54,
+      "sex": "female"
+    },
+    "temporal": {
+      "onset": "acute",
+      "durationValue": 2,
+      "durationUnit": "days"
+    },
+    "chief_complaint": "upper-abdominal-pain",
+    "symptoms": [
+      "upper-abdominal-pain",
+      "sharp-abdominal-pain"
+    ],
+    "excluded_symptoms": [
+      "vomiting",
+      "nausea"
+    ],
+    "ground_truth": {
+      "disease_id": "cholecystitis",
+      "disease_name": "Cholecystitis",
+      "ddxplus_pathology": "Cholecystitis"
+    }
+  },
+  {
+    "case_id": "DDX-053",
+    "specialty": "Tiêu Hóa",
+    "clinical_scenario_vi": "Bệnh nhân nam 59 tuổi, đau âm ỉ không điển hình vùng thượng vị và hạ sườn phải kèm đầy bụng khó tiêu.",
+    "clinical_scenario_en": "59-year-old male with vague atypical epigastric discomfort, abdominal bloating, and dyspepsia.",
+    "demographics": {
+      "age": 59,
+      "sex": "male"
+    },
+    "temporal": {
+      "onset": "chronic",
+      "durationValue": 4,
+      "durationUnit": "weeks"
+    },
+    "chief_complaint": "upper-abdominal-pain",
+    "symptoms": [
+      "upper-abdominal-pain"
+    ],
+    "excluded_symptoms": [
+      "sharp-abdominal-pain",
+      "nausea",
+      "vomiting"
+    ],
+    "ground_truth": {
+      "disease_id": "gallstone",
+      "disease_name": "Gallstone",
+      "ddxplus_pathology": "Cholelithiasis"
+    }
+  },
+  {
+    "case_id": "DDX-054",
+    "specialty": "Tiêu Hóa",
+    "clinical_scenario_vi": "Bệnh nhân nam 41 tuổi, đau bụng thượng vị dữ dội xuyên ra sau lưng sau uống rượu, nôn ói liên tục.",
+    "clinical_scenario_en": "41-year-old male with excruciating epigastric pain radiating directly to back following alcohol intake, intractable vomiting.",
+    "demographics": {
+      "age": 41,
+      "sex": "male"
+    },
+    "temporal": {
+      "onset": "acute",
+      "durationValue": 1,
+      "durationUnit": "days"
+    },
+    "chief_complaint": "sharp-abdominal-pain",
+    "symptoms": [
+      "sharp-abdominal-pain",
+      "vomiting"
+    ],
+    "excluded_symptoms": [
+      "diarrhea",
+      "nausea"
+    ],
+    "ground_truth": {
+      "disease_id": "acute-pancreatitis",
+      "disease_name": "Acute pancreatitis",
+      "ddxplus_pathology": "Acute pancreatitis"
+    }
+  },
+  {
+    "case_id": "DDX-055",
+    "specialty": "Tiêu Hóa",
+    "clinical_scenario_vi": "Bệnh nhân nam 68 tuổi, đau nhức hố chậu trái liên tục, sốt nhẹ, táo bón 3 ngày nay.",
+    "clinical_scenario_en": "68-year-old male with constant left lower quadrant aching pain, low-grade fever, constipation for 3 days.",
+    "demographics": {
+      "age": 68,
+      "sex": "male"
+    },
+    "temporal": {
+      "onset": "acute",
+      "durationValue": 3,
+      "durationUnit": "days"
+    },
+    "chief_complaint": "lower-abdominal-pain",
+    "symptoms": [
+      "lower-abdominal-pain",
+      "sharp-abdominal-pain"
+    ],
+    "excluded_symptoms": [
+      "pelvic-pain",
+      "nausea"
+    ],
+    "ground_truth": {
+      "disease_id": "diverticulitis",
+      "disease_name": "Diverticulitis",
+      "ddxplus_pathology": "Diverticulitis"
+    }
+  },
+  {
+    "case_id": "DDX-056",
+    "specialty": "Tiêu Hóa",
+    "clinical_scenario_vi": "Bệnh nhân nam 62 tuổi, xuất hiện khối phồng vùng bẹn phải khi ho hoặc đứng lâu, đau tức nhẹ.",
+    "clinical_scenario_en": "62-year-old male with reducible right groin bulge protruding upon coughing or standing, accompanied by mild dragging ache.",
+    "demographics": {
+      "age": 62,
+      "sex": "male"
+    },
+    "temporal": {
+      "onset": "chronic",
+      "durationValue": 2,
+      "durationUnit": "months"
+    },
+    "chief_complaint": "groin-mass",
+    "symptoms": [
+      "groin-mass"
+    ],
+    "excluded_symptoms": [
+      "sharp-abdominal-pain",
+      "skin-swelling",
+      "swelling-of-scrotum"
+    ],
+    "ground_truth": {
+      "disease_id": "inguinal-hernia",
+      "disease_name": "Inguinal hernia",
+      "ddxplus_pathology": "Inguinal hernia"
+    }
+  },
+  {
+    "case_id": "DDX-057",
+    "specialty": "Thần Kinh",
+    "clinical_scenario_vi": "Bệnh nhân nữ 26 tuổi, đau nửa đầu phải theo nhịp mạch đập, buồn nôn, sợ ánh sáng và tiếng động.",
+    "clinical_scenario_en": "26-year-old female with unilateral throbbing right hemicrania, photophobia, phonophobia, and nausea.",
+    "demographics": {
+      "age": 26,
+      "sex": "female"
+    },
+    "temporal": {
+      "onset": "acute",
+      "durationValue": 1,
+      "durationUnit": "days"
+    },
+    "chief_complaint": "headache",
+    "symptoms": [
+      "headache"
+    ],
+    "excluded_symptoms": [
+      "cough",
+      "nasal-congestion",
+      "sore-throat"
+    ],
+    "ground_truth": {
+      "disease_id": "migraine",
+      "disease_name": "Migraine",
+      "ddxplus_pathology": "Migraine"
+    }
+  },
+  {
+    "case_id": "DDX-058",
+    "specialty": "Thần Kinh",
+    "clinical_scenario_vi": "Bệnh nhân nữ 32 tuổi, đau đầu dữ dội kèm chóng mặt hoa mắt, nôn ói nhiều lần sau chuỗi ngày mất ngủ.",
+    "clinical_scenario_en": "32-year-old female with intense throbbing headache, vertigo, and multiple emetic episodes post-insomnia.",
+    "demographics": {
+      "age": 32,
+      "sex": "female"
+    },
+    "temporal": {
+      "onset": "acute",
+      "durationValue": 2,
+      "durationUnit": "days"
+    },
+    "chief_complaint": "headache",
+    "symptoms": [
+      "headache"
+    ],
+    "excluded_symptoms": [
+      "cough",
+      "nasal-congestion",
+      "sore-throat"
+    ],
+    "ground_truth": {
+      "disease_id": "migraine",
+      "disease_name": "Migraine",
+      "ddxplus_pathology": "Migraine"
+    }
+  },
+  {
+    "case_id": "DDX-059",
+    "specialty": "Thần Kinh",
+    "clinical_scenario_vi": "Bệnh nhân nam 39 tuổi, đau tức nặng đầu hai bên như có vòng thắt chặt quanh trán, căng cơ cổ gáy.",
+    "clinical_scenario_en": "39-year-old male with bilateral band-like constricting head pressure, neck stiffness and fatigue.",
+    "demographics": {
+      "age": 39,
+      "sex": "male"
+    },
+    "temporal": {
+      "onset": "chronic",
+      "durationValue": 3,
+      "durationUnit": "weeks"
+    },
+    "chief_complaint": "headache",
+    "symptoms": [
+      "headache"
+    ],
+    "excluded_symptoms": [
+      "cough",
+      "nasal-congestion",
+      "fever"
+    ],
+    "ground_truth": {
+      "disease_id": "tension-headache",
+      "disease_name": "Tension headache",
+      "ddxplus_pathology": "Tension headache"
+    }
+  },
+  {
+    "case_id": "DDX-060",
+    "specialty": "Thần Kinh",
+    "clinical_scenario_vi": "Bệnh nhân nữ 44 tuổi, nhức đầu âm ỉ vùng chẩm và trán, đau mỏi vai gáy khi làm việc bàn giấy kéo dài.",
+    "clinical_scenario_en": "44-year-old female with dull occipitofrontal tension headache, neck pain and general malaise during sedentary desk work.",
+    "demographics": {
+      "age": 44,
+      "sex": "female"
+    },
+    "temporal": {
+      "onset": "chronic",
+      "durationValue": 1,
+      "durationUnit": "months"
+    },
+    "chief_complaint": "headache",
+    "symptoms": [
+      "headache"
+    ],
+    "excluded_symptoms": [
+      "cough",
+      "nasal-congestion",
+      "fever"
+    ],
+    "ground_truth": {
+      "disease_id": "tension-headache",
+      "disease_name": "Tension headache",
+      "ddxplus_pathology": "Tension headache"
+    }
+  },
+  {
+    "case_id": "DDX-061",
+    "specialty": "Thần Kinh",
+    "clinical_scenario_vi": "Bệnh nhân nữ 27 tuổi, sụp mi mắt hai bên, nhìn đôi (song thị) tăng dần về chiều tối, yếu cơ nhai.",
+    "clinical_scenario_en": "27-year-old female with bilateral fluctuating ptosis, diplopia worsening in the evening, and masticatory muscle weakness.",
+    "demographics": {
+      "age": 27,
+      "sex": "female"
+    },
+    "temporal": {
+      "onset": "chronic",
+      "durationValue": 4,
+      "durationUnit": "weeks"
+    },
+    "chief_complaint": "double-vision",
+    "symptoms": [
+      "double-vision"
+    ],
+    "excluded_symptoms": [
+      "lacrimation",
+      "diminished-vision",
+      "fatigue"
+    ],
+    "ground_truth": {
+      "disease_id": "myasthenia-gravis",
+      "disease_name": "Myasthenia gravis",
+      "ddxplus_pathology": "Myasthenia gravis"
+    }
+  },
+  {
+    "case_id": "DDX-062",
+    "specialty": "Thần Kinh",
+    "clinical_scenario_vi": "Bệnh nhân nam 49 tuổi, nhức đầu kèm giảm thính lực nhẹ và chóng mặt tư thế thoáng qua.",
+    "clinical_scenario_en": "49-year-old male with persistent headache, minor hearing reduction, and transient positional vertigo.",
+    "demographics": {
+      "age": 49,
+      "sex": "male"
+    },
+    "temporal": {
+      "onset": "chronic",
+      "durationValue": 2,
+      "durationUnit": "months"
+    },
+    "chief_complaint": "dizziness",
+    "symptoms": [
+      "dizziness"
+    ],
+    "excluded_symptoms": [
+      "nausea",
+      "diminished-hearing",
+      "fainting"
+    ],
+    "ground_truth": {
+      "disease_id": "migraine",
+      "disease_name": "Migraine",
+      "ddxplus_pathology": "Migraine"
+    }
+  },
+  {
+    "case_id": "DDX-063",
+    "specialty": "Thần Kinh",
+    "clinical_scenario_vi": "Bệnh nhân nam 34 tuổi, đau nhức đầu căng tức sau gáy, cứng cổ mệt mỏi sau đợt thức khuya làm dự án.",
+    "clinical_scenario_en": "34-year-old male with non-pulsatile occipital pressure, neck tension, and mental exhaustion following prolonged overtime.",
+    "demographics": {
+      "age": 34,
+      "sex": "male"
+    },
+    "temporal": {
+      "onset": "acute",
+      "durationValue": 4,
+      "durationUnit": "days"
+    },
+    "chief_complaint": "headache",
+    "symptoms": [
+      "headache"
+    ],
+    "excluded_symptoms": [
+      "cough",
+      "nasal-congestion",
+      "sore-throat"
+    ],
+    "ground_truth": {
+      "disease_id": "tension-headache",
+      "disease_name": "Tension headache",
+      "ddxplus_pathology": "Tension headache"
+    }
+  },
+  {
+    "case_id": "DDX-064",
+    "specialty": "Tâm Thần",
+    "clinical_scenario_vi": "Bệnh nhân nữ 24 tuổi, đột ngột hồi hộp tim đập dồn dập, tức ngực khó thở, vã mồ hôi và sợ hãi cực độ.",
+    "clinical_scenario_en": "24-year-old female with sudden surge of palpitations, chest tightness, dyspnea, diaphoresis, and impending sense of doom.",
+    "demographics": {
+      "age": 24,
+      "sex": "female"
+    },
+    "temporal": {
+      "onset": "acute",
+      "durationValue": 30,
+      "durationUnit": "minutes"
+    },
+    "chief_complaint": "anxiety-and-nervousness",
+    "symptoms": [
+      "anxiety-and-nervousness"
+    ],
+    "excluded_symptoms": [
+      "depression",
+      "shortness-of-breath",
+      "sharp-chest-pain"
+    ],
+    "ground_truth": {
+      "disease_id": "panic-attack",
+      "disease_name": "Panic attack",
+      "ddxplus_pathology": "Panic attack"
+    }
+  },
+  {
+    "case_id": "DDX-065",
+    "specialty": "Tâm Thần",
+    "clinical_scenario_vi": "Bệnh nhân nam 29 tuổi, cơn hoảng sợ bất thình lình, cảm giác nghẹt thở, chóng mặt quay cuồng, tê bì đầu ngón tay.",
+    "clinical_scenario_en": "29-year-old male with abrupt panic episode, air hunger, lightheadedness, and acroparesthesia.",
+    "demographics": {
+      "age": 29,
+      "sex": "male"
+    },
+    "temporal": {
+      "onset": "acute",
+      "durationValue": 45,
+      "durationUnit": "minutes"
+    },
+    "chief_complaint": "chest-tightness",
+    "symptoms": [
+      "chest-tightness",
+      "shortness-of-breath"
+    ],
+    "excluded_symptoms": [
+      "sharp-chest-pain",
+      "cough"
+    ],
+    "ground_truth": {
+      "disease_id": "panic-attack",
+      "disease_name": "Panic attack",
+      "ddxplus_pathology": "Panic attack"
+    }
+  },
+  {
+    "case_id": "DDX-066",
+    "specialty": "Tâm Thần",
+    "clinical_scenario_vi": "Bệnh nhân nữ 33 tuổi, các cơn hoảng loạn tức ngực khó thở tái diễn liên tục, lo âu thường trực sợ tái phát.",
+    "clinical_scenario_en": "33-year-old female with recurrent unexpected panic surges, persistent anticipatory anxiety, and situational avoidance.",
+    "demographics": {
+      "age": 33,
+      "sex": "female"
+    },
+    "temporal": {
+      "onset": "chronic",
+      "durationValue": 6,
+      "durationUnit": "months"
+    },
+    "chief_complaint": "anxiety-and-nervousness",
+    "symptoms": [
+      "anxiety-and-nervousness"
+    ],
+    "excluded_symptoms": [
+      "depression",
+      "shortness-of-breath",
+      "depressive-or-psychotic-symptoms"
+    ],
+    "ground_truth": {
+      "disease_id": "panic-disorder",
+      "disease_name": "Panic disorder",
+      "ddxplus_pathology": "Panic disorder"
+    }
+  },
+  {
+    "case_id": "DDX-067",
+    "specialty": "Tâm Thần",
+    "clinical_scenario_vi": "Bệnh nhân nam 36 tuổi, thức giấc giữa đêm vì tim đập nhanh hồi hộp, cảm giác ngực bị bóp nghẹt, vã mồ hôi lạnh.",
+    "clinical_scenario_en": "36-year-old male awakened at midnight by tachycardia, constricting chest tightness, cold sweats, and overwhelming fright.",
+    "demographics": {
+      "age": 36,
+      "sex": "male"
+    },
+    "temporal": {
+      "onset": "acute",
+      "durationValue": 1,
+      "durationUnit": "hours"
+    },
+    "chief_complaint": "anxiety-and-nervousness",
+    "symptoms": [
+      "anxiety-and-nervousness"
+    ],
+    "excluded_symptoms": [
+      "depression",
+      "shortness-of-breath",
+      "sharp-chest-pain"
+    ],
+    "ground_truth": {
+      "disease_id": "panic-attack",
+      "disease_name": "Panic attack",
+      "ddxplus_pathology": "Panic attack"
+    }
+  },
+  {
+    "case_id": "DDX-068",
+    "specialty": "Tim Mạch",
+    "clinical_scenario_vi": "Bệnh nhân nam 61 tuổi, đau thắt sau xương ức như đá đè khi leo cầu thang, lan lên hàm và vai trái, giảm khi nghỉ.",
+    "clinical_scenario_en": "61-year-old male with retrosternal crushing angina on exertion radiating to jaw and left shoulder, relieved by rest.",
+    "demographics": {
+      "age": 61,
+      "sex": "male"
+    },
+    "temporal": {
+      "onset": "acute",
+      "durationValue": 10,
+      "durationUnit": "minutes"
+    },
+    "chief_complaint": "sharp-chest-pain",
+    "symptoms": [
+      "sharp-chest-pain"
+    ],
+    "excluded_symptoms": [
+      "cough",
+      "shortness-of-breath",
+      "nausea"
+    ],
+    "ground_truth": {
+      "disease_id": "angina",
+      "disease_name": "Angina",
+      "ddxplus_pathology": "Angina pectoris"
+    }
+  },
+  {
+    "case_id": "DDX-069",
+    "specialty": "Tim Mạch",
+    "clinical_scenario_vi": "Bệnh nhân nam 58 tuổi, tức nặng ngực trái kèm khó thở khi đi bộ nhanh, mệt mỏi, đỡ đau sau 5 phút nghỉ ngơi.",
+    "clinical_scenario_en": "58-year-old male with left precordial pressure and dyspnea on rapid walking, fatigue, subsiding within 5 minutes of rest.",
+    "demographics": {
+      "age": 58,
+      "sex": "male"
+    },
+    "temporal": {
+      "onset": "acute",
+      "durationValue": 5,
+      "durationUnit": "minutes"
+    },
+    "chief_complaint": "sharp-chest-pain",
+    "symptoms": [
+      "sharp-chest-pain"
+    ],
+    "excluded_symptoms": [
+      "cough",
+      "shortness-of-breath",
+      "nausea"
+    ],
+    "ground_truth": {
+      "disease_id": "angina",
+      "disease_name": "Angina",
+      "ddxplus_pathology": "Angina pectoris"
+    }
+  },
+  {
+    "case_id": "DDX-070",
+    "specialty": "Tim Mạch",
+    "clinical_scenario_vi": "Bệnh nhân nam 32 tuổi, đau ngực nhói sau xương ức tăng khi hít sâu hoặc nằm ngửa, giảm khi ngồi cúi người ra trước, sốt nhẹ.",
+    "clinical_scenario_en": "32-year-old male with pleuritic retrosternal chest pain aggravated by recumbency and inspiration, relieved by leaning forward, low fever.",
+    "demographics": {
+      "age": 32,
+      "sex": "male"
+    },
+    "temporal": {
+      "onset": "acute",
+      "durationValue": 2,
+      "durationUnit": "days"
+    },
+    "chief_complaint": "sharp-chest-pain",
+    "symptoms": [
+      "sharp-chest-pain",
+      "shortness-of-breath"
+    ],
+    "excluded_symptoms": [
+      "cough",
+      "chest-tightness"
+    ],
+    "ground_truth": {
+      "disease_id": "pericarditis",
+      "disease_name": "Pericarditis",
+      "ddxplus_pathology": "Acute pericarditis"
+    }
+  },
+  {
+    "case_id": "DDX-071",
+    "specialty": "Tim Mạch",
+    "clinical_scenario_vi": "Bệnh nhân nữ 29 tuổi, đau ngực trước tim nhói như dao đâm sau đợt viêm đường hô hấp trên, khó thở nhẹ, mệt mỏi.",
+    "clinical_scenario_en": "29-year-old female with sharp stabbing precordial pain post-viral infection, mild dyspnea, and malaise.",
+    "demographics": {
+      "age": 29,
+      "sex": "female"
+    },
+    "temporal": {
+      "onset": "acute",
+      "durationValue": 3,
+      "durationUnit": "days"
+    },
+    "chief_complaint": "sharp-chest-pain",
+    "symptoms": [
+      "sharp-chest-pain",
+      "shortness-of-breath"
+    ],
+    "excluded_symptoms": [
+      "cough",
+      "chest-tightness"
+    ],
+    "ground_truth": {
+      "disease_id": "pericarditis",
+      "disease_name": "Pericarditis",
+      "ddxplus_pathology": "Acute pericarditis"
+    }
+  },
+  {
+    "case_id": "DDX-072",
+    "specialty": "Tim Mạch",
+    "clinical_scenario_vi": "Bệnh nhân nam 66 tuổi, các cơn thắt ngực gắng sức tái diễn nhiều tháng, kèm hồi hộp và hụt hơi khi bưng bê vật nặng.",
+    "clinical_scenario_en": "66-year-old male with recurrent exertional substernal tightness, palpitations, and breathlessness upon lifting heavy loads.",
+    "demographics": {
+      "age": 66,
+      "sex": "male"
+    },
+    "temporal": {
+      "onset": "chronic",
+      "durationValue": 4,
+      "durationUnit": "months"
+    },
+    "chief_complaint": "sharp-chest-pain",
+    "symptoms": [
+      "sharp-chest-pain"
+    ],
+    "excluded_symptoms": [
+      "cough",
+      "shortness-of-breath",
+      "nausea"
+    ],
+    "ground_truth": {
+      "disease_id": "angina",
+      "disease_name": "Angina",
+      "ddxplus_pathology": "Angina pectoris"
+    }
+  },
+  {
+    "case_id": "DDX-073",
+    "specialty": "Tim Mạch",
+    "clinical_scenario_vi": "Bệnh nhân nữ 52 tuổi, đau âm ỉ không điển hình vùng ngực kèm ho khan và khó thở nhẹ khi gắng sức.",
+    "clinical_scenario_en": "52-year-old female with atypical chest soreness, dry cough, and mild exertional breathlessness.",
+    "demographics": {
+      "age": 52,
+      "sex": "female"
+    },
+    "temporal": {
+      "onset": "chronic",
+      "durationValue": 3,
+      "durationUnit": "weeks"
+    },
+    "chief_complaint": "sharp-chest-pain",
+    "symptoms": [
+      "sharp-chest-pain"
+    ],
+    "excluded_symptoms": [
+      "cough",
+      "shortness-of-breath",
+      "nausea"
+    ],
+    "ground_truth": {
+      "disease_id": "pericarditis",
+      "disease_name": "Pericarditis",
+      "ddxplus_pathology": "Acute pericarditis"
+    }
+  },
+  {
+    "case_id": "DDX-074",
+    "specialty": "Da Liễu",
+    "clinical_scenario_vi": "Bệnh nhân nữ 38 tuổi, hai bàn tay nổi ban đỏ ngứa rát dữ dội, mụn nước nhỏ sau khi dùng nước lau sàn công nghiệp.",
+    "clinical_scenario_en": "38-year-old female with intense pruritic erythematous rash, vesicles on hands following industrial cleaning agent exposure.",
+    "demographics": {
+      "age": 38,
+      "sex": "female"
+    },
+    "temporal": {
+      "onset": "acute",
+      "durationValue": 2,
+      "durationUnit": "days"
+    },
+    "chief_complaint": "itching-of-skin",
+    "symptoms": [
+      "itching-of-skin",
+      "skin-rash"
+    ],
+    "excluded_symptoms": [
+      "allergic-reaction",
+      "skin-lesion"
+    ],
+    "ground_truth": {
+      "disease_id": "contact-dermatitis",
+      "disease_name": "Contact dermatitis",
+      "ddxplus_pathology": "Contact dermatitis"
+    }
+  },
+  {
+    "case_id": "DDX-075",
+    "specialty": "Da Liễu",
+    "clinical_scenario_vi": "Bệnh nhân nam 25 tuổi, nổi ban sẩn đỏ ngứa ngáy vùng cổ tay đúng vị trí tiếp xúc khóa kim loại đồng hồ.",
+    "clinical_scenario_en": "25-year-old male with localized erythematous papular itchy rash on wrist corresponding to metallic watch buckle.",
+    "demographics": {
+      "age": 25,
+      "sex": "male"
+    },
+    "temporal": {
+      "onset": "acute",
+      "durationValue": 4,
+      "durationUnit": "days"
+    },
+    "chief_complaint": "skin-rash",
+    "symptoms": [
+      "skin-rash",
+      "itching-of-skin"
+    ],
+    "excluded_symptoms": [
+      "fever",
+      "allergic-reaction"
+    ],
+    "ground_truth": {
+      "disease_id": "contact-dermatitis",
+      "disease_name": "Contact dermatitis",
+      "ddxplus_pathology": "Contact dermatitis"
+    }
+  },
+  {
+    "case_id": "DDX-076",
+    "specialty": "Da Liễu",
+    "clinical_scenario_vi": "Bệnh nhân nữ 22 tuổi, mảng da khô nứt nẻ, bong tróc vảy và ngứa nhiều ở nếp gấp khuỷu tay và cẳng chân.",
+    "clinical_scenario_en": "22-year-old female with dry, excoriated, lichenified scaly pruritic plaques at flexural creases of elbows and knees.",
+    "demographics": {
+      "age": 22,
+      "sex": "female"
+    },
+    "temporal": {
+      "onset": "chronic",
+      "durationValue": 4,
+      "durationUnit": "months"
+    },
+    "chief_complaint": "itching-of-skin",
+    "symptoms": [
+      "itching-of-skin"
+    ],
+    "excluded_symptoms": [
+      "allergic-reaction",
+      "skin-lesion",
+      "skin-rash"
+    ],
+    "ground_truth": {
+      "disease_id": "eczema",
+      "disease_name": "Eczema",
+      "ddxplus_pathology": "Atopic dermatitis"
+    }
+  },
+  {
+    "case_id": "DDX-077",
+    "specialty": "Da Liễu",
+    "clinical_scenario_vi": "Bệnh nhân nam 30 tuổi, da mu bàn tay khô ráp ngứa dữ dội, rỉ dịch viêm và đóng mày mủn.",
+    "clinical_scenario_en": "30-year-old male with severe itchy xerotic erythematous hand dermatitis with weeping exudates and crusting.",
+    "demographics": {
+      "age": 30,
+      "sex": "male"
+    },
+    "temporal": {
+      "onset": "chronic",
+      "durationValue": 2,
+      "durationUnit": "months"
+    },
+    "chief_complaint": "skin-rash",
+    "symptoms": [
+      "skin-rash",
+      "itching-of-skin"
+    ],
+    "excluded_symptoms": [
+      "fever",
+      "allergic-reaction"
+    ],
+    "ground_truth": {
+      "disease_id": "eczema",
+      "disease_name": "Eczema",
+      "ddxplus_pathology": "Atopic dermatitis"
+    }
+  },
+  {
+    "case_id": "DDX-078",
+    "specialty": "Da Liễu",
+    "clinical_scenario_vi": "Bệnh nhân nam 7 tuổi, nổi các bọng nước nông quanh mũi miệng nhanh chóng vỡ tạo vảy tiết dày màu vàng mật ong.",
+    "clinical_scenario_en": "7-year-old boy with perioral shallow vesiculopustules rapidly rupturing into thick honey-colored crusts.",
+    "demographics": {
+      "age": 7,
+      "sex": "male"
+    },
+    "temporal": {
+      "onset": "acute",
+      "durationValue": 3,
+      "durationUnit": "days"
+    },
+    "chief_complaint": "skin-lesion",
+    "symptoms": [
+      "skin-lesion",
+      "abnormal-appearing-skin",
+      "skin-rash"
+    ],
+    "excluded_symptoms": [
+      "skin-moles"
+    ],
+    "ground_truth": {
+      "disease_id": "impetigo",
+      "disease_name": "Impetigo",
+      "ddxplus_pathology": "Impetigo"
+    }
+  },
+  {
+    "case_id": "DDX-079",
+    "specialty": "Da Liễu",
+    "clinical_scenario_vi": "Bệnh nhân nữ 10 tuổi, vết trầy xước cánh tay bị nhiễm trùng sinh mụn mủ đóng mài vàng mật ong, ngứa nhẹ.",
+    "clinical_scenario_en": "10-year-old girl with infected arm abrasions exhibiting honey-colored crusting pustules and mild pruritus.",
+    "demographics": {
+      "age": 10,
+      "sex": "female"
+    },
+    "temporal": {
+      "onset": "acute",
+      "durationValue": 4,
+      "durationUnit": "days"
+    },
+    "chief_complaint": "skin-lesion",
+    "symptoms": [
+      "skin-lesion",
+      "abnormal-appearing-skin",
+      "skin-rash"
+    ],
+    "excluded_symptoms": [
+      "skin-moles"
+    ],
+    "ground_truth": {
+      "disease_id": "impetigo",
+      "disease_name": "Impetigo",
+      "ddxplus_pathology": "Impetigo"
+    }
+  },
+  {
+    "case_id": "DDX-080",
+    "specialty": "Da Liễu",
+    "clinical_scenario_vi": "Bệnh nhân nam 45 tuổi, nổi ban sẩn đỏ ngứa ngáy nhiều ở vùng cẳng tay sau khi tiếp xúc sơn công nghiệp.",
+    "clinical_scenario_en": "45-year-old male with pruritic erythematous rash and papules on forearms following industrial paint exposure.",
+    "demographics": {
+      "age": 56,
+      "sex": "male"
+    },
+    "temporal": {
+      "onset": "acute",
+      "durationValue": 3,
+      "durationUnit": "days"
+    },
+    "chief_complaint": "skin-rash",
+    "symptoms": [
+      "skin-rash",
+      "itching-of-skin"
+    ],
+    "excluded_symptoms": [
+      "fever",
+      "allergic-reaction"
+    ],
+    "ground_truth": {
+      "disease_id": "contact-dermatitis",
+      "disease_name": "Contact dermatitis",
+      "ddxplus_pathology": "Contact dermatitis"
+    }
+  },
+  {
+    "case_id": "DDX-081",
+    "specialty": "Da Liễu",
+    "clinical_scenario_vi": "Bệnh nhân nam 40 tuổi, mảng bong vảy mỏng rải rác toàn thân kèm ngứa nhẹ mạn tính.",
+    "clinical_scenario_en": "40-year-old male with widespread diffuse fine scaliness, mild pruritus, and dry skin texture.",
+    "demographics": {
+      "age": 40,
+      "sex": "male"
+    },
+    "temporal": {
+      "onset": "chronic",
+      "durationValue": 5,
+      "durationUnit": "months"
+    },
+    "chief_complaint": "skin-dryness-peeling-scaliness-or-roughness",
+    "symptoms": [
+      "skin-dryness-peeling-scaliness-or-roughness"
+    ],
+    "excluded_symptoms": [
+      "skin-rash",
+      "skin-lesion",
+      "irregular-appearing-nails"
+    ],
+    "ground_truth": {
+      "disease_id": "psoriasis",
+      "disease_name": "Psoriasis",
+      "ddxplus_pathology": "Plaque psoriasis"
+    }
+  },
+  {
+    "case_id": "DDX-082",
+    "specialty": "Da Liễu",
+    "clinical_scenario_vi": "Bệnh nhân nữ 64 tuổi, đau nhức dây thần kinh mạn tính sau đợt phát ban mụn nước ở thân mình.",
+    "clinical_scenario_en": "64-year-old female with persistent postherpetic burning pain and dysesthesia following healed trunk eruption.",
+    "demographics": {
+      "age": 64,
+      "sex": "female"
+    },
+    "temporal": {
+      "onset": "chronic",
+      "durationValue": 3,
+      "durationUnit": "months"
+    },
+    "chief_complaint": "side-pain",
+    "symptoms": [
+      "side-pain"
+    ],
+    "excluded_symptoms": [
+      "back-pain",
+      "nausea",
+      "vomiting"
+    ],
+    "ground_truth": {
+      "disease_id": "shingles-herpes-zoster",
+      "disease_name": "Shingles (herpes zoster)",
+      "ddxplus_pathology": "Herpes zoster"
+    }
+  },
+  {
+    "case_id": "DDX-083",
+    "specialty": "Dị Ứng",
+    "clinical_scenario_vi": "Bệnh nhân nam 23 tuổi, nổi mày đay phù sưng đỏ ngứa rải rác toàn thân và sưng môi sau khi ăn tôm cua.",
+    "clinical_scenario_en": "23-year-old male with widespread pruritic urticarial wheals and mild labial angioedema following shellfish consumption.",
+    "demographics": {
+      "age": 23,
+      "sex": "male"
+    },
+    "temporal": {
+      "onset": "acute",
+      "durationValue": 2,
+      "durationUnit": "hours"
+    },
+    "chief_complaint": "allergic-reaction",
+    "symptoms": [
+      "allergic-reaction",
+      "skin-rash",
+      "itching-of-skin"
+    ],
+    "excluded_symptoms": [
+      "fever"
+    ],
+    "ground_truth": {
+      "disease_id": "allergy",
+      "disease_name": "Allergy",
+      "ddxplus_pathology": "Allergic reaction"
+    }
+  },
+  {
+    "case_id": "DDX-084",
+    "specialty": "Dị Ứng",
+    "clinical_scenario_vi": "Bệnh nhân nữ 20 tuổi, hắt hơi liên tục, chảy nước mũi trong, ngứa mắt và nghẹt mũi khi dọn dẹp bụi nhà.",
+    "clinical_scenario_en": "20-year-old female with paroxysmal sneezing bouts, clear rhinorrhea, bilateral ocular pruritus during housecleaning.",
+    "demographics": {
+      "age": 20,
+      "sex": "female"
+    },
+    "temporal": {
+      "onset": "acute",
+      "durationValue": 1,
+      "durationUnit": "days"
+    },
+    "chief_complaint": "allergic-reaction",
+    "symptoms": [
+      "allergic-reaction",
+      "skin-rash",
+      "itching-of-skin",
+      "fever"
+    ],
+    "excluded_symptoms": [],
+    "ground_truth": {
+      "disease_id": "allergy",
+      "disease_name": "Allergy",
+      "ddxplus_pathology": "Allergic reaction"
+    }
+  },
+  {
+    "case_id": "DDX-085",
+    "specialty": "Dị Ứng",
+    "clinical_scenario_vi": "Bệnh nhân nam 36 tuổi, phát ban đỏ ngứa toàn thân dạng sẩn phù sau khi uống kháng sinh đường uống.",
+    "clinical_scenario_en": "36-year-old male with generalized erythematous urticarial drug eruption and itching following oral antibiotics.",
+    "demographics": {
+      "age": 36,
+      "sex": "male"
+    },
+    "temporal": {
+      "onset": "acute",
+      "durationValue": 1,
+      "durationUnit": "days"
+    },
+    "chief_complaint": "skin-rash",
+    "symptoms": [
+      "skin-rash",
+      "itching-of-skin",
+      "allergic-reaction"
+    ],
+    "excluded_symptoms": [
+      "fever"
+    ],
+    "ground_truth": {
+      "disease_id": "allergy",
+      "disease_name": "Allergy",
+      "ddxplus_pathology": "Allergic reaction"
+    }
+  },
+  {
+    "case_id": "DDX-086",
+    "specialty": "Dị Ứng",
+    "clinical_scenario_vi": "Bệnh nhân nữ 27 tuổi, hai mắt đỏ rực ngứa dữ dội, chảy nước mắt trong và cộm mắt sau khi ra vườn hoa.",
+    "clinical_scenario_en": "27-year-old female with intense bilateral ocular pruritus, conjunctival injection, lacrimation post-gardening.",
+    "demographics": {
+      "age": 27,
+      "sex": "female"
+    },
+    "temporal": {
+      "onset": "acute",
+      "durationValue": 2,
+      "durationUnit": "days"
+    },
+    "chief_complaint": "itchiness-of-eye",
+    "symptoms": [
+      "itchiness-of-eye",
+      "eye-redness",
+      "fever",
+      "pain-in-eye"
+    ],
+    "excluded_symptoms": [],
+    "ground_truth": {
+      "disease_id": "conjunctivitis-due-to-allergy",
+      "disease_name": "Conjunctivitis due to allergy",
+      "ddxplus_pathology": "Allergic conjunctivitis"
+    }
+  },
+  {
+    "case_id": "DDX-087",
+    "specialty": "Dị Ứng",
+    "clinical_scenario_vi": "Bệnh nhân nam 18 tuổi, ngứa rát mắt hai bên, phù nề kết mạc mắt và mi mắt mỗi đợt chuyển mùa.",
+    "clinical_scenario_en": "18-year-old male with recurrent seasonal eye redness, ocular itching, and bilateral chemosis.",
+    "demographics": {
+      "age": 18,
+      "sex": "male"
+    },
+    "temporal": {
+      "onset": "chronic",
+      "durationValue": 2,
+      "durationUnit": "weeks"
+    },
+    "chief_complaint": "eye-redness",
+    "symptoms": [
+      "eye-redness",
+      "swollen-eye",
+      "itchiness-of-eye",
+      "diminished-vision"
+    ],
+    "excluded_symptoms": [],
+    "ground_truth": {
+      "disease_id": "conjunctivitis-due-to-allergy",
+      "disease_name": "Conjunctivitis due to allergy",
+      "ddxplus_pathology": "Allergic conjunctivitis"
+    }
+  },
+  {
+    "case_id": "DDX-088",
+    "specialty": "Dị Ứng",
+    "clinical_scenario_vi": "Bệnh nhân nữ 43 tuổi, ngứa rát da toàn thân không rõ căn nguyên kèm khô tróc da nhẹ theo mùa.",
+    "clinical_scenario_en": "43-year-old female with idiopathic generalized pruritus and dry superficial scaliness without clear wheals.",
+    "demographics": {
+      "age": 43,
+      "sex": "female"
+    },
+    "temporal": {
+      "onset": "chronic",
+      "durationValue": 2,
+      "durationUnit": "months"
+    },
+    "chief_complaint": "itching-of-skin",
+    "symptoms": [
+      "itching-of-skin",
+      "skin-lesion",
+      "skin-rash"
+    ],
+    "excluded_symptoms": [
+      "allergic-reaction"
+    ],
+    "ground_truth": {
+      "disease_id": "allergy",
+      "disease_name": "Allergy",
+      "ddxplus_pathology": "Allergic reaction"
+    }
+  },
+  {
+    "case_id": "DDX-089",
+    "specialty": "Tiết Niệu",
+    "clinical_scenario_vi": "Bệnh nhân nữ 25 tuổi, đi tiểu buốt rát buốt, tiểu rắt nhiều lần trong ngày, đau tức vùng bụng dưới.",
+    "clinical_scenario_en": "25-year-old female with sharp dysuria, increased urinary frequency, urgency, and hypogastric tenderness.",
+    "demographics": {
+      "age": 25,
+      "sex": "female"
+    },
+    "temporal": {
+      "onset": "acute",
+      "durationValue": 2,
+      "durationUnit": "days"
+    },
+    "chief_complaint": "painful-urination",
+    "symptoms": [
+      "painful-urination",
+      "sharp-abdominal-pain",
+      "suprapubic-pain",
+      "side-pain"
+    ],
+    "excluded_symptoms": [],
+    "ground_truth": {
+      "disease_id": "urinary-tract-infection",
+      "disease_name": "Urinary tract infection",
+      "ddxplus_pathology": "UTI"
+    }
+  },
+  {
+    "case_id": "DDX-090",
+    "specialty": "Tiết Niệu",
+    "clinical_scenario_vi": "Bệnh nhân nữ 31 tuổi, tiểu rắt buốt liên tục cứ 15 phút một lần, nước tiểu đục có mùi khai hăng, sốt nhẹ 37.8°C.",
+    "clinical_scenario_en": "31-year-old female with intense urinary frequency, foul-smelling cloudy urine, low fever 37.8°C, and suprapubic discomfort.",
+    "demographics": {
+      "age": 31,
+      "sex": "female"
+    },
+    "temporal": {
+      "onset": "acute",
+      "durationValue": 3,
+      "durationUnit": "days"
+    },
+    "chief_complaint": "frequent-urination",
+    "symptoms": [
+      "frequent-urination",
+      "painful-urination",
+      "suprapubic-pain"
+    ],
+    "excluded_symptoms": [
+      "involuntary-urination"
+    ],
+    "ground_truth": {
+      "disease_id": "urinary-tract-infection",
+      "disease_name": "Urinary tract infection",
+      "ddxplus_pathology": "UTI"
+    }
+  },
+  {
+    "case_id": "DDX-091",
+    "specialty": "Tiết Niệu",
+    "clinical_scenario_vi": "Bệnh nhân nữ 29 tuổi, nóng rát buốt niệu đạo khi đi tiểu, đau căng tức khó chịu trên xương mu, tiểu ngắt quãng.",
+    "clinical_scenario_en": "29-year-old female with burning micturition, suprapubic ache, and urinary urgency without systemic fever.",
+    "demographics": {
+      "age": 29,
+      "sex": "female"
+    },
+    "temporal": {
+      "onset": "acute",
+      "durationValue": 2,
+      "durationUnit": "days"
+    },
+    "chief_complaint": "painful-urination",
+    "symptoms": [
+      "painful-urination",
+      "sharp-abdominal-pain",
+      "suprapubic-pain",
+      "side-pain"
+    ],
+    "excluded_symptoms": [],
+    "ground_truth": {
+      "disease_id": "cystitis",
+      "disease_name": "Cystitis",
+      "ddxplus_pathology": "Acute cystitis"
+    }
+  },
+  {
+    "case_id": "DDX-092",
+    "specialty": "Tiết Niệu",
+    "clinical_scenario_vi": "Bệnh nhân nữ 35 tuổi, tiểu buốt dữ dội cuối bãi, nước tiểu có vệt hồng (tiểu máu vi thể), tức hạ vị.",
+    "clinical_scenario_en": "35-year-old female with terminal dysuria, pink-tinged hematuria, and lower abdominal cramping.",
+    "demographics": {
+      "age": 35,
+      "sex": "female"
+    },
+    "temporal": {
+      "onset": "acute",
+      "durationValue": 1,
+      "durationUnit": "days"
+    },
+    "chief_complaint": "painful-urination",
+    "symptoms": [
+      "painful-urination",
+      "sharp-abdominal-pain",
+      "suprapubic-pain",
+      "side-pain"
+    ],
+    "excluded_symptoms": [],
+    "ground_truth": {
+      "disease_id": "cystitis",
+      "disease_name": "Cystitis",
+      "ddxplus_pathology": "Acute cystitis"
+    }
+  },
+  {
+    "case_id": "DDX-093",
+    "specialty": "Tiết Niệu",
+    "clinical_scenario_vi": "Bệnh nhân nam 46 tuổi, cơn đau quặn thận dữ dội vùng hông lưng phải lan xuống bẹn và cơ quan sinh dục, buồn nôn, tiểu máu.",
+    "clinical_scenario_en": "46-year-old male with acute excruciating right flank colicky pain radiating to groin, nausea, and macroscopic hematuria.",
+    "demographics": {
+      "age": 46,
+      "sex": "male"
+    },
+    "temporal": {
+      "onset": "acute",
+      "durationValue": 6,
+      "durationUnit": "hours"
+    },
+    "chief_complaint": "side-pain",
+    "symptoms": [
+      "side-pain",
+      "back-pain",
+      "sharp-abdominal-pain",
+      "nausea"
+    ],
+    "excluded_symptoms": [],
+    "ground_truth": {
+      "disease_id": "kidney-stone",
+      "disease_name": "Kidney stone",
+      "ddxplus_pathology": "Nephrolithiasis"
+    }
+  },
+  {
+    "case_id": "DDX-094",
+    "specialty": "Tiết Niệu",
+    "clinical_scenario_vi": "Bệnh nhân nam 51 tuổi, đau quặn từng cơn mạn sườn trái không tư thế giảm đau, nôn ói và tiểu buốt rắt.",
+    "clinical_scenario_en": "51-year-old male with severe paroxysmal left flank spasm, restlessness, vomiting, and dysuria.",
+    "demographics": {
+      "age": 51,
+      "sex": "male"
+    },
+    "temporal": {
+      "onset": "acute",
+      "durationValue": 12,
+      "durationUnit": "hours"
+    },
+    "chief_complaint": "side-pain",
+    "symptoms": [
+      "side-pain",
+      "back-pain",
+      "sharp-abdominal-pain",
+      "nausea"
+    ],
+    "excluded_symptoms": [],
+    "ground_truth": {
+      "disease_id": "kidney-stone",
+      "disease_name": "Kidney stone",
+      "ddxplus_pathology": "Nephrolithiasis"
+    }
+  },
+  {
+    "case_id": "DDX-095",
+    "specialty": "Tiết Niệu",
+    "clinical_scenario_vi": "Bệnh nhân nữ 48 tuổi, sốt 38.6°C, tiểu buốt tiểu nhiều lần kèm đau mỏi thắt lưng hông hai bên.",
+    "clinical_scenario_en": "48-year-old female with fever (38.6°C), severe dysuria, urinary frequency, and bilateral back ache.",
+    "demographics": {
+      "age": 48,
+      "sex": "female"
+    },
+    "temporal": {
+      "onset": "acute",
+      "durationValue": 3,
+      "durationUnit": "days"
+    },
+    "chief_complaint": "painful-urination",
+    "symptoms": [
+      "painful-urination",
+      "sharp-abdominal-pain",
+      "suprapubic-pain",
+      "side-pain"
+    ],
+    "excluded_symptoms": [],
+    "ground_truth": {
+      "disease_id": "urinary-tract-infection",
+      "disease_name": "Urinary tract infection",
+      "ddxplus_pathology": "UTI"
+    }
+  },
+  {
+    "case_id": "DDX-096",
+    "specialty": "Răng Hàm Mặt",
+    "clinical_scenario_vi": "Bệnh nhân nam 34 tuổi, đau nhức răng hàm dưới dữ dội, sưng nề nóng đỏ vùng góc hàm và má phải, sốt 38.5°C.",
+    "clinical_scenario_en": "34-year-old male with severe mandibular toothache, erythematous warm facial swelling over right jaw angle, fever 38.5°C.",
+    "demographics": {
+      "age": 34,
+      "sex": "male"
+    },
+    "temporal": {
+      "onset": "acute",
+      "durationValue": 3,
+      "durationUnit": "days"
+    },
+    "chief_complaint": "toothache",
+    "symptoms": [
+      "toothache",
+      "mouth-ulcer",
+      "lip-swelling"
+    ],
+    "excluded_symptoms": [
+      "facial-pain"
+    ],
+    "ground_truth": {
+      "disease_id": "cellulitis-or-abscess-of-mouth",
+      "disease_name": "Cellulitis or abscess of mouth",
+      "ddxplus_pathology": "Dental abscess"
+    }
+  },
+  {
+    "case_id": "DDX-097",
+    "specialty": "Răng Hàm Mặt",
+    "clinical_scenario_vi": "Bệnh nhân nữ 41 tuổi, sưng đau nề vùng sàn miệng và dưới hàm sau sâu răng, khó há miệng và đau khi nuốt.",
+    "clinical_scenario_en": "41-year-old female with submandibular and floor of mouth inflammatory edema post-caries, trismus, and painful swallowing.",
+    "demographics": {
+      "age": 41,
+      "sex": "female"
+    },
+    "temporal": {
+      "onset": "acute",
+      "durationValue": 4,
+      "durationUnit": "days"
+    },
+    "chief_complaint": "toothache",
+    "symptoms": [
+      "toothache",
+      "mouth-ulcer",
+      "lip-swelling"
+    ],
+    "excluded_symptoms": [
+      "facial-pain"
+    ],
+    "ground_truth": {
+      "disease_id": "cellulitis-or-abscess-of-mouth",
+      "disease_name": "Cellulitis or abscess of mouth",
+      "ddxplus_pathology": "Cellulitis of mouth"
+    }
+  },
+  {
+    "case_id": "DDX-098",
+    "specialty": "Răng Hàm Mặt",
+    "clinical_scenario_vi": "Bệnh nhân nam 28 tuổi, đau buốt răng lung lay kèm sưng to một bên má, chảy mủ chân răng, sốt nhẹ.",
+    "clinical_scenario_en": "28-year-old male with throbbing dental pain, mobile tooth, unilateral cheek swelling with purulent gingival drainage, fever.",
+    "demographics": {
+      "age": 28,
+      "sex": "male"
+    },
+    "temporal": {
+      "onset": "acute",
+      "durationValue": 2,
+      "durationUnit": "days"
+    },
+    "chief_complaint": "toothache",
+    "symptoms": [
+      "toothache",
+      "mouth-ulcer",
+      "lip-swelling"
+    ],
+    "excluded_symptoms": [
+      "facial-pain"
+    ],
+    "ground_truth": {
+      "disease_id": "cellulitis-or-abscess-of-mouth",
+      "disease_name": "Cellulitis or abscess of mouth",
+      "ddxplus_pathology": "Dental abscess"
+    }
+  },
+  {
+    "case_id": "DDX-099",
+    "specialty": "Răng Hàm Mặt",
+    "clinical_scenario_vi": "Bệnh nhân nam 45 tuổi, sưng phồng nướu răng đau nhức giật lên nửa đầu và tai, há miệng hạn chế do viêm tấy.",
+    "clinical_scenario_en": "45-year-old male with localized gingival abscess, throbbing pain radiating to ear/hemicrania, and moderate trismus.",
+    "demographics": {
+      "age": 45,
+      "sex": "male"
+    },
+    "temporal": {
+      "onset": "acute",
+      "durationValue": 3,
+      "durationUnit": "days"
+    },
+    "chief_complaint": "toothache",
+    "symptoms": [
+      "toothache",
+      "mouth-ulcer",
+      "lip-swelling"
+    ],
+    "excluded_symptoms": [
+      "facial-pain"
+    ],
+    "ground_truth": {
+      "disease_id": "cellulitis-or-abscess-of-mouth",
+      "disease_name": "Cellulitis or abscess of mouth",
+      "ddxplus_pathology": "Dental abscess"
+    }
+  },
+  {
+    "case_id": "DDX-100",
+    "specialty": "Răng Hàm Mặt",
+    "clinical_scenario_vi": "Bệnh nhân nữ 37 tuổi, viêm tấy sưng nề mô mềm vùng mặt dưới cằm do biến chứng sâu răng nhiễm trùng, sốt 38.3°C.",
+    "clinical_scenario_en": "37-year-old female with submental soft tissue cellulitis complicating odontogenic infection, fever 38.3°C, and facial fullness.",
+    "demographics": {
+      "age": 37,
+      "sex": "female"
+    },
+    "temporal": {
+      "onset": "acute",
+      "durationValue": 2,
+      "durationUnit": "days"
+    },
+    "chief_complaint": "toothache",
+    "symptoms": [
+      "toothache",
+      "mouth-ulcer",
+      "lip-swelling"
+    ],
+    "excluded_symptoms": [
+      "facial-pain"
+    ],
+    "ground_truth": {
+      "disease_id": "cellulitis-or-abscess-of-mouth",
+      "disease_name": "Cellulitis or abscess of mouth",
+      "ddxplus_pathology": "Cellulitis of mouth"
+    }
+  }
+]
