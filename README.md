@@ -76,12 +76,11 @@ Hệ thống y tế công lập chịu áp lực quá tải kéo dài tại các
 [Người Dùng] ─── (Mô tả triệu chứng) ───► [Bộ Bóc Tách Thực Thể Lâm Sàng (SCE)]
                                                     │ (Nhân khẩu học, Thời gian, Triệu chứng)
                                                     ▼
-                                    [Đối Soát Thực Thể 4 Tầng]
+                                    [Đối Soát Thực Thể 3 Tầng]
                    ┌────────────────────────────────┴───────────────────────────────┐
                    │ Tầng 1: CUI & Exact Slug Match                                 │
                    │ Tầng 2: UMLS Metathesaurus Search API                          │
                    │ Tầng 3: Dense Vector Semantic Search (Cosine Sim >= 0.35)      │
-                   │ Tầng 4: LLM Fallback (Ràng buộc slug có sẵn trong SymCAT)       │
                    └────────────────────────────────┬───────────────────────────────┘
                                                     │ Triệu chứng chuẩn hóa (474 slugs)
                                                     ▼
@@ -108,11 +107,10 @@ Hệ thống y tế công lập chịu áp lực quá tải kéo dài tại các
 * **SymCAT Knowledge Graph (Neo4j)**: 801 thực thể bệnh lý, 474 triệu chứng chuẩn hóa và ma trận xác suất có điều kiện $P(\text{Triệu chứng} \mid \text{Bệnh})$ trích xuất từ nguồn dữ liệu dịch tễ học lâm sàng thực nghiệm của CDC Hoa Kỳ.
 * **UMLS Metathesaurus (NLM)**: Ánh xạ ngôn ngữ giao tiếp đời thường của người bệnh sang mã định danh khái niệm y khoa quốc tế (CUI), loại bỏ mơ hồ ngữ nghĩa.
 
-### 2.2. Cơ chế đối soát thực thể 4 tầng phân cấp (4-Tier Symptom Matching)
+### 2.2. Cơ chế đối soát thực thể 3 tầng phân cấp (3-Tier Symptom Matching)
 1. **Tầng 1 (CUI & Exact Match)**: So khớp trực tiếp mã CUI UMLS hoặc slug ký tự chuẩn trong Neo4j.
 2. **Tầng 2 (UMLS Terminology API)**: Tra cứu danh pháp đồng nghĩa y khoa quốc tế từ Thư viện Y khoa Hoa Kỳ.
 3. **Tầng 3 (Dense Vector Semantic Search)**: Nhúng vector đặc trưng và đo khoảng cách Cosine với 474 triệu chứng chuẩn (ngưỡng tối thiểu $\ge 0.35$).
-4. **Tầng 4 (LLM Fallback Verification)**: Prompt ép buộc LLM chỉ được chọn slug duy nhất có trong danh mục của SymCAT, ngăn chặn hoàn toàn việc bịa triệu chứng.
 
 ### 2.3. Thuật toán suy luận xác suất Bayes định lượng
 Điểm nghi ngờ của từng bệnh lý được tính toán minh bạch theo công thức:
@@ -122,7 +120,7 @@ $$\text{Score} = f(\text{BaseScore}, \text{Demographics}, \text{Temporal}) - \te
 * **BaseScore**: Xác suất Bayes tích lũy dựa trên trọng số thực nghiệm $P(S \mid D)$ trong đồ thị SymCAT.
 * **Demographics**: Hệ số nguy cơ cá nhân theo tuổi và giới tính sinh học của người bệnh.
 * **Temporal**: Hệ số tương thích giữa thời gian khởi phát thực tế (cấp tính vài giờ vs mạn tính nhiều tuần) với diễn tiến tự nhiên của bệnh lý.
-* **Penalty (Điểm phạt triệu chứng phủ định)**: Áp dụng tư duy loại trừ y khoa (*Rule-out*). Nếu bệnh lý bắt buộc phải có triệu chứng đặc hiệu mà người bệnh xác nhận **KHÔNG CÓ**, hệ thống trừ điểm nặng để loại bỏ bệnh, triệt tiêu nguy cơ chẩn đoán nhầm.
+* **Penalty (Điểm phạt triệu chứng phủ định)**: Áp dụng tư duy loại trừ y khoa (*Rule-out*). Nếu bệnh lý bắt buộc phải có triệu chứng đặc hiệu mà người bệnh xác nhận **KHÔNG CÓ**, hệ thống trừ điểm nặng để loại bỏ bệnh, giảm thiểu nguy cơ chẩn đoán nhầm.
 
 ### 2.4. Thuật toán chọn câu hỏi phân biệt thông minh (Differential Questions)
 Để tránh hỏi lan man dồn dập, thuật toán đo **độ lệch chuẩn xác suất (Standard Deviation - StDev)** giữa các bệnh lý dẫn đầu danh sách nghi ngờ:
