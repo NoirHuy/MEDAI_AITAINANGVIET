@@ -16,12 +16,12 @@ tags:
   - paypal-sdk
   - admin-dashboard
 license: mit
-short_description: MedAI - Hệ thống sàng lọc lâm sàng thông minh ứng dụng kiến trúc Hybrid GraphRAG và suy luận Bayes
+short_description: MedAI - Hệ thống sàng lọc lâm sàng thông minh ứng dụng kiến trúc GraphRAG và suy luận Bayes
 ---
 
 # 🩺 MedAI_Ứng dụng chẩn đoán lâm sàn thông minh
 
-> **Hệ Thống Trợ Lý Sàng Lọc & Hỗ Trợ Quyết Định Lâm Sàng Ban Đầu Ứng Dụng Kiến Trúc Hybrid GraphRAG, Đồ Thị Tri Thức Y Khoa SymCAT và Động Cơ Suy Luận Xác Suất Bayes Định Lượng**
+> **Hệ Thống Trợ Lý Sàng Lọc & Hỗ Trợ Quyết Định Lâm Sàng Ban Đầu Ứng Dụng Kiến Trúc GraphRAG, Đồ Thị Tri Thức Y Khoa SymCAT và Động Cơ Suy Luận Xác Suất Bayes Định Lượng**
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 [![React](https://img.shields.io/badge/Frontend-React%2019%20SPA-61dafb.svg)](https://react.dev/)
@@ -36,7 +36,7 @@ short_description: MedAI - Hệ thống sàng lọc lâm sàng thông minh ứng
 ## 📑 MỤC LỤC
 
 1. [Tổng Quan & Bài Toán Thực Tiễn](#1-tổng-quan--bài-toán-thực-tiễn)
-2. [Kiến Trúc Cốt Lõi Hybrid GraphRAG & Thuật Toán AI](#2-kiến-trúc-cốt-lõi-hybrid-graphrag--thuật-toán-ai)
+2. [Kiến Trúc Cốt Lõi GraphRAG & Thuật Toán AI](#2-kiến-trúc-cốt-lõi-graphrag--thuật-toán-ai)
 3. [Quy Trình Hội Thoại Lâm Sàng 2 Giai Đoạn](#3-quy-trình-hội-thoại-lâm-sàng-2-giai-đoạn)
 4. [An Toàn Y Tế & Bảo Mật Dữ Liệu (Nghị định 13/2023/NĐ-CP)](#4-an-toàn-y-tế-và-bảo-mật-dữ-liệu-nghị-định-132023nđ-cp)
 5. [Kết Quả Đánh Giá Thực Nghiệm (DDXPlus Benchmark)](#5-kết-quả-đánh-giá-thực-nghiệm-ddxplus-benchmark)
@@ -61,17 +61,17 @@ Hệ thống y tế công lập chịu áp lực quá tải kéo dài tại các
 * **Rủi ro an toàn**: Thiếu thuật toán nhận diện cờ đỏ cấp cứu (*Emergency Red Flags*) tức thời và không bảo vệ dữ liệu sức khỏe cá nhân (PHI).
 
 ### 1.3. Giải pháp đột phá từ MedAI
-**MedAI** ứng dụng kiến trúc **Hybrid GraphRAG**, kết hợp chặt chẽ giữa:
+**MedAI** ứng dụng kiến trúc **GraphRAG**, kết hợp chặt chẽ giữa:
 1. **Độ chính xác lâm sàng**: Khóa cứng suy luận trên **Đồ thị tri thức SymCAT (801 bệnh lý, 474 triệu chứng chuẩn hóa)** và động cơ suy luận xác suất Bayes định lượng. Triệt tiêu hoàn toàn ảo giác AI (0% hallucination rate).
 2. **An toàn & Bảo mật**: Tự động nhận diện cờ đỏ khẩn cấp (gợi ý gọi cấp cứu 115) và mã hóa toàn trình dữ liệu sức khỏe cá nhân theo chuẩn **AES-256-GCM** cấp độ trường, tuân thủ Nghị định 13/2023/NĐ-CP.
 3. **Trải nghiệm cá nhân hóa 24/7**: Tự động ghi nhớ tiền sử bệnh, dị ứng thuốc và tương tác lâm sàng 2 giai đoạn tự nhiên, thấu cảm.
 
 ---
 
-## 🧬 2. KIẾN TRÚC CỐT LÕI HYBRID GRAPHRAG & THUẬT TOÁN AI
+## 🧬 2. KIẾN TRÚC CỐT LÕI GRAPHRAG & THUẬT TOÁN AI
 
 ```text
-                                  KIẾN TRÚC HYBRID GRAPHRAG CỦA MEDAI
+                                  KIẾN TRÚC GRAPHRAG CỦA MEDAI
                                   
 [Người Dùng] ─── (Mô tả triệu chứng) ───► [Bộ Bóc Tách Thực Thể Lâm Sàng (SCE)]
                                                     │ (Nhân khẩu học, Thời gian, Triệu chứng)
