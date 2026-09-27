@@ -50,7 +50,7 @@ short_description: MedAI - Hệ thống sàng lọc lâm sàng thông minh ứng
 ## 🎯 1. TỔNG QUAN & BÀI TOÁN THỰC TIỄN
 
 ### 1.1. Thực trạng tiếp cận thông tin y tế
-Hệ thống y tế công lập chịu áp lực quá tải kéo dài tại các bệnh viện tuyến tỉnh và trung ương, trong khi phần lớn các lượt khám ban đầu hoàn toàn có thể sàng lọc, phân luồng từ sớm tại tuyến y tế cơ sở hoặc tự theo dõi tại nhà có định hướng chuyên môn. Khi gặp vấn đề sức khỏe, người dân có thói quen tự tra cứu tự do trên mạng, dẫn đến:
+Trong bối cảnh nhu cầu chăm sóc sức khỏe ngày một gia tăng, việc nâng cao hiệu quả tiếp nhận và phân luồng y tế ban đầu đóng vai trò đặc biệt quan trọng, khi nhiều trường hợp triệu chứng thông thường có thể được định hướng và sàng lọc từ sớm tại tuyến cơ sở hoặc theo dõi tại nhà có cơ sở khoa học. Khi gặp vấn đề sức khỏe, người dân có thói quen tự tra cứu tự do trên mạng, dẫn đến:
 * **Hội chứng lo âu bệnh tật trực tuyến (Cyberchondria)**: Tự suy diễn các triệu chứng thông thường thành bệnh nan y nguy hiểm, gây bất an tâm lý và tạo thêm áp lực khám chữa bệnh không cần thiết.
 * **Tự ý dùng thuốc và sai phác đồ (Self-medication)**: Tự ý mua kháng sinh, kháng viêm liều cao khi chưa có chỉ định, gây kháng thuốc và làm lu mờ các triệu chứng cảnh báo ngoại khoa nguy hiểm.
 
