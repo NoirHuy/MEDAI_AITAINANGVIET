@@ -13,7 +13,6 @@ tags:
   - ddxplus-benchmark
   - aes-256-gcm
   - vps-deployment
-  - paypal-sdk
   - admin-dashboard
 license: mit
 short_description: MedAI - Hệ thống sàng lọc lâm sàng thông minh ứng dụng kiến trúc GraphRAG và suy luận Bayes
@@ -230,8 +229,7 @@ Port 20128             Port 7687                                  Port 27017 / P
 | 🌐 **Knowledge Graph** | `Port 7687` | Neo4j AuraDB, Cypher Query | Lưu trữ đồ thị SymCAT, tính toán xác suất Bayes |
 | 🗄️ **Persistence Layer** | `Port 27017` | MongoDB 7.0 Mongoose | Quản lý người dùng, mã hóa lịch sử khám bệnh |
 | ⚡ **Cache Layer** | `Port 6379` | Redis 7 Alpine | Bộ đệm trạng thái SCE gia số, danh mục triệu chứng |
-| 💳 **Cổng Thanh Toán** | REST API v2 | PayPal SDK v2 | Nâng cấp gói cước Pro y tế (99.000đ/tháng) |
-| 📊 **Admin Dashboard** | `/admin` | React, Recharts | Giám sát doanh thu, token AI, kiểm toán ca cấp cứu |
+| 📊 **Admin Dashboard** | `/admin` | React, Recharts | Giám sát lưu lượng token AI, kiểm toán ca cấp cứu |
 
 ---
 
@@ -246,8 +244,9 @@ Dự án sở hữu bộ kiểm thử tự động toàn diện gồm **17 test 
   * `memoryCrypto.js`: Kiểm tra mã hóa và giải mã chuẩn AES-256-GCM.
   * `errorHandler.js` & `validation.js`: Kiểm tra xử lý ngoại lệ và bắt lỗi Zod schema.
 * **Nhóm kiểm thử tích hợp (Integration Tests)**:
-  * `chat.routes.quota.test.js`: Kiểm soát hạn ngạch gói cước Free (5 câu) và Pro không giới hạn.
-  * `payment.routes.test.js`: Kiểm tra webhook và vòng đời giao dịch PayPal REST API v2.
+  * `auth.routes.test.js`: Kiểm tra xác thực đăng nhập, đăng ký và cấp phát mã phiên JWT an toàn.
+  * `account.routes.test.js`: Quản lý hồ sơ người dùng, đổi mật khẩu và bảo mật dữ liệu cá nhân.
+  * `chat.routes.test.js`: Kiểm tra luồng gọi hội thoại sàng lọc và bóc tách bệnh sử lâm sàng.
   * `requireAdmin`: Kiểm tra phân quyền quản trị viên.
 * **Nhóm kiểm thử giao diện (Frontend Tests)**:
   * `ClinicalStatusIndicator.test.js`: Kiểm tra vòng tròn phần trăm SVG và phân cấp màu mức độ nguy cơ.
@@ -303,11 +302,6 @@ NEO4J_PASSWORD=your-secure-password
 # Cổng điều phối 9Router AI Gateway
 LLM_ENDPOINT=http://127.0.0.1:20128/v1/chat/completions
 LLM_API_KEY=your-9router-api-key
-
-# Cổng thanh toán PayPal REST API v2
-PAYPAL_CLIENT_ID=your-paypal-client-id
-PAYPAL_CLIENT_SECRET=your-paypal-client-secret
-PAYPAL_MODE=sandbox # hoặc 'live' khi triển khai chính thức
 ```
 
 ### 8.3. Khởi chạy bằng Docker Compose (Khuyến nghị cho Production)
