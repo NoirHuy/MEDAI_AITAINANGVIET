@@ -190,7 +190,7 @@ GIAI ĐOẠN 1: LÂM SÀNG TƯƠNG TÁC           GIAI ĐOẠN 2: BÁO CÁO CẤ
 ### Phân tích kết quả:
 * **Tỷ lệ trúng Top 5 (90,0%)**: MedAI dẫn đầu toàn diện, cao hơn 5,0% so với cả Gemini 3.1 Flash Lite và GPT-OSS-120B, khẳng định khả năng phân tầng nguy cơ và chẩn đoán phân biệt vững vàng.
 * **Hỏi trúng triệu chứng ẩn (35,0%)**: MedAI vượt trội (gấp 3 lần Gemini 3.1 Flash Lite - 11,7% và vượt xa GPT-OSS-120B - 20,0%). Việc ứng dụng thuật toán Entropy chọn câu hỏi có độ lệch chuẩn cao nhất giúp khai thác đúng triệu chứng bệnh nhân đang mắc phải mà chưa khai báo ban đầu.
-* **Kiểm nghiệm chuyên sâu trên 100 ca bệnh lâm sàng**: Đạt độ chính xác **Top-1 88%**, **Top-3 96%**, **Emergency Recall 100%** và **kiểm soát tốt ảo giác y khoa** (không có bệnh lý hay tỷ lệ % nào nằm ngoài đồ thị SymCAT).
+* **Kiểm nghiệm chuyên sâu trên 100 ca bệnh lâm sàng chuẩn DDXPlus**: Đạt độ chính xác **Top-1 88%**, **Top-3 96%**, **Emergency Recall 100%** và **kiểm soát tốt ảo giác y khoa** (không có bệnh lý hay tỷ lệ % nào nằm ngoài đồ thị SymCAT).
 
 ---
 
